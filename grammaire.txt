@@ -11,7 +11,9 @@ in not or print return None
 
 ====================
 
-<file>          ::= NEWLINE? <def>* <stmt>+ EOF
+<file>          ::= NEWLINE? <defs> <stmt>+ EOF
+<defs>          ::= <def><defs>
+                  | ^
 <def>           ::= def <ident> (<ident_list>) : <suite>
 <suite>         ::= <simple_stmt> NEWLINE
                   | NEWLINE BEGIN <stmt>+ END

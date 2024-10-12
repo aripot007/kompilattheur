@@ -11,71 +11,71 @@ in not or print return None
 
 ====================
 
-<newline_opt>   ::= NEWLINE
-                  | ^
-<file>          ::= <newline_opt> <defs> <stmt><opt_stmts> EOF
-<defs>          ::= <def><defs>
-                  | ^
-<def>           ::= def <ident> (<ident_list>) : <suite>
-<suite>         ::= <simple_stmt> NEWLINE
-                  | NEWLINE BEGIN <stmt><opt_stmts> END
-<simple_stmt>   ::= return <expr>
-                  | <ident> = <expr>
-                  | <expr> [<expr>] = <expr>
-                  | print(<expr>)
-                  | <expr>
-<opt_stmts>       ::= <stmt><opt_stmts>
-                  | ^
-<stmt>          ::= <simple_stmt> NEWLINE
-                  | if <expr> :
-                  | if <expr> : <suite> else : <suite>
-                  | for <ident> in <expr> : <suite>
-<expr>          ::= <expr_and><expr2>
-<expr2>         ::= or <expr_and><expr2>
-                  | ^
-<expr_and>      ::= <expr_not><expr_and2>
-<expr_and2>     ::= and <expr_not><expr_and2>
-                  | ^
-<expr_not>      ::= not <expr_cmp>
-                  | <expr_cmp>
-<expr_cmp>      ::= <expr_add><expr_cmp2>
-<expr_cmp2>     ::= < <expr_add><expr_cmp2>
-                  | <= <expr_add><expr_cmp2>
-                  | > <expr_add><expr_cmp2>
-                  | >= <expr_add><expr_cmp2>
-                  | == <expr_add><expr_cmp2>
-                  | != <expr_add><expr_cmp2>
-                  | ^
-<expr_add>      ::= <expr_mult><expr_add2>
-<expr_add2>     ::= + <expr_mult><expr_add2>
-                  | - <expr_mult><expr_add2>
-                  | ^
-<expr_mult>     ::= <expr_neg><expr_mult2>
-<expr_mult2>    ::= * <expr_neg><expr_mult2>
-                  | // <expr_neg><expr_mult2>
-                  | % <expr_neg><expr_mult2>
-                  | ^
-<expr_neg>      ::= - <expr_bracket>
-                  | <expr_bracket>
-<expr_bracket>  ::= [<expr_list>]
-                  | <factor>[<expr>]
-                  | <factor>
-<factor>        ::= <const>
-                  | <ident>
-                  | <ident> (<expr_list>)
-                  | (<expr>)
-<const>         ::= <integer> | <string> | True | False | None
+"<newline_opt>"   : "NEWLINE"
+                  | ;
+"<file>"          : "<newline_opt>" "<defs>" "<stmt>""<opt_stmts>" "EOF";
+"<defs>"          : "<def>""<defs>"
+                  | ;
+"<def>"           : "def" "<ident>" "(""<ident_list>"")" ":" "<suite>";
+"<suite>"         : "<simple_stmt>" "NEWLINE"
+                  | "NEWLINE" "BEGIN" "<stmt>""<opt_stmts>" "END";
+"<simple_stmt>"   : "return" "<expr>"
+                  | "<ident>" "=" "<expr>"
+                  | "<expr>" "[""<expr>""]" "=" "<expr>"
+                  | "print""(""<expr>"")"
+                  | "<expr>";
+"<opt_stmts>"     : "<stmt>""<opt_stmts>"
+                  | ;
+"<stmt>"          : "<simple_stmt>" "NEWLINE"
+                  | "if" "<expr>" ":"
+                  | "if" "<expr>" ":" "<suite>" "else" ":" "<suite>"
+                  | "for" "<ident>" "in" "<expr>" ":" "<suite>";
+"<expr>"          : "<expr_and>""<expr2>";
+"<expr2>"         : "or" "<expr_and>""<expr2>"
+                  | ;
+"<expr_and>"      : "<expr_not>""<expr_and2>";
+"<expr_and2>"     : "and" "<expr_not>""<expr_and2>"
+                  | ;
+"<expr_not>"      : "not" "<expr_cmp>"
+                  | "<expr_cmp>";
+"<expr_cmp>"      : "<expr_add>""<expr_cmp2>";
+"<expr_cmp2>"     : "<" "<expr_add>""<expr_cmp2>"
+                  | "<=" "<expr_add>""<expr_cmp2>"
+                  | ">" "<expr_add>""<expr_cmp2>"
+                  | ">=" "<expr_add>""<expr_cmp2>"
+                  | "==" "<expr_add>""<expr_cmp2>"
+                  | "!=" "<expr_add>""<expr_cmp2>"
+                  | ;
+"<expr_add>"      : "<expr_mult>""<expr_add2>";
+"<expr_add2>"     : "+" "<expr_mult>""<expr_add2>"
+                  | "-" "<expr_mult>""<expr_add2>"
+                  | ;
+"<expr_mult>"     : "<expr_neg>""<expr_mult2>";
+"<expr_mult2>"    : "*" "<expr_neg>""<expr_mult2>"
+                  | "//" "<expr_neg>""<expr_mult2>"
+                  | "%" "<expr_neg>""<expr_mult2>"
+                  | ;
+"<expr_neg>"      : "-" "<expr_bracket>"
+                  | "<expr_bracket>";
+"<expr_bracket>"  : "[""<expr_list>""]"
+                  | "<factor>""[""<expr>""]"
+                  | "<factor>";
+"<factor>"        : "<const>"
+                  | "<ident>"
+                  | "<ident>" "(""<expr_list>"")"
+                  | "(""<expr>"")";
+"<const>"         : "<integer>" | "<string>" | "True" | "False" | "None";
 
 # Liste d'expressions séparées par des virgules
-<expr_list>         ::= <expr><expr_list_suite>
-                      | ^
-<expr_list_suite>   ::= ,<expr_list_expr>
-                      | ^
-<expr_list_expr>    ::= <expr><expr_list_suite>
+"<expr_list>"         : "<expr>""<expr_list_suite>"
+                      | ;
+"<expr_list_suite>"   : ",""<expr_list_expr>"
+                      | ;
+"<expr_list_expr>"    : "<expr>""<expr_list_suite>";
 
 # Liste d'identificateurs séparées par des virgules
-<ident_list>         ::= <ident><ident_list_suite>
-                       | ^
-<ident_list_suite>   ::= ,<ident_list_ident>
-                       | ^
-<ident_list_ident>   ::= <ident><ident_list_suite>
+"<ident_list>"         : "<ident>""<ident_list_suite>"
+                       | ;
+"<ident_list_suite>"   : ",""<ident_list_ident>"
+                       | ;
+"<ident_list_ident>"   : "<ident>""<ident_list_suite>";

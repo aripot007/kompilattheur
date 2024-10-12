@@ -11,25 +11,33 @@ in not or print return None
 
 ====================
 
+"<file>"          : "<newline_opt>" "<defs>" "<stmt>""<opt_stmts>" "EOF";
 "<newline_opt>"   : "NEWLINE"
                   | ;
-"<file>"          : "<newline_opt>" "<defs>" "<stmt>""<opt_stmts>" "EOF";
 "<defs>"          : "<def>""<defs>"
                   | ;
 "<def>"           : "def" "<ident>" "(""<ident_list>"")" ":" "<suite>";
 "<suite>"         : "<simple_stmt>" "NEWLINE"
                   | "NEWLINE" "BEGIN" "<stmt>""<opt_stmts>" "END";
+
 "<simple_stmt>"   : "return" "<expr>"
                   | "<ident>" "=" "<expr>"
-                  | "<expr>" "[""<expr>""]" "=" "<expr>"
-                  | "print""(""<expr>"")"
-                  | "<expr>";
+                  | "<expr>" "<simple_stmt_expr>" 
+                  | "print""(""<expr>"")";
+
+"<simple_stmt_expr>" : "[""<expr>""]" "=" "<expr>"
+                     | ;
+
 "<opt_stmts>"     : "<stmt>""<opt_stmts>"
                   | ;
+
 "<stmt>"          : "<simple_stmt>" "NEWLINE"
-                  | "if" "<expr>" ":"
-                  | "if" "<expr>" ":" "<suite>" "else" ":" "<suite>"
+                  | "if" "<expr>" ":" "<suite>" "<stmt_if>"
                   | "for" "<ident>" "in" "<expr>" ":" "<suite>";
+
+"<stmt_if>"       : "else" ":" "<suite>"
+                  | ;
+
 "<expr>"          : "<expr_and>""<expr2>";
 "<expr2>"         : "or" "<expr_and>""<expr2>"
                   | ;
@@ -57,13 +65,20 @@ in not or print return None
                   | ;
 "<expr_neg>"      : "-" "<expr_bracket>"
                   | "<expr_bracket>";
+
 "<expr_bracket>"  : "[""<expr_list>""]"
-                  | "<factor>""[""<expr>""]"
-                  | "<factor>";
+                  | "<factor>""<expr_brack_factor>";
+
+"<expr_brack_factor>" : "[""<expr>""]"
+                      | ;
+
 "<factor>"        : "<const>"
-                  | "<ident>"
-                  | "<ident>" "(""<expr_list>"")"
+                  | "<ident>" "<factor_ident>"
                   | "(""<expr>"")";
+
+"<factor_ident>"  : "(""<expr_list>"")"
+                  | ;
+
 "<const>"         : "<integer>" | "<string>" | "True" | "False" | "None";
 
 # Liste d'expressions séparées par des virgules

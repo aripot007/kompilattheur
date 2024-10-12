@@ -1,37 +1,28 @@
-pub struct FileChars {
-    index: usize,
-    size: usize,
-    file_path: String,
+use std::fs::File;
+use std::io::prelude::Read;
+
+pub struct Reader {
+    file: File,
 }
 
-impl Iterator for FileChars {
+impl Iterator for Reader {
     type Item = char;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.index < self.size {
-            self.index += 1;
-            let res = std::fs::read_to_string(&self.file_path)
-                .ok()
-                .and_then(|s| s.chars().nth(self.index - 1));
-            res
-        } else {
-            None
+        let mut buffer = [0; 1];
+        match self.file.read(&mut buffer) {
+            Ok(0) => None,
+            Ok(_) => Some(buffer[0] as char),
+            Err(e) => panic!("Error reading file: {e}"),
         }
     }
 }
 
-pub fn file_chars(file_path: String) -> FileChars {
-    if !std::path::Path::new(&file_path).exists() {
-        panic!("File does not exist: {}", file_path);
-    }
+pub fn reader(file_path: String) -> Reader {
+    let file = match File::open(&file_path) {
+        Ok(file) => file,
+        Err(e) => panic!("Error opening file: {e}"),
+    };
 
-    let size = std::fs::read_to_string(&file_path)
-        .map(|s| s.chars().count())
-        .unwrap_or(0);
-
-    FileChars {
-        index: 0,
-        size,
-        file_path,
-    }
+    Reader { file }
 }

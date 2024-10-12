@@ -12,7 +12,7 @@ in not or print return None
 ====================
 
 <file>          ::= NEWLINE? <def>* <stmt>+ EOF
-<def>           ::= def <ident> (<ident>,*) : <suite>
+<def>           ::= def <ident> (<ident_list>) : <suite>
 <suite>         ::= <simple_stmt> NEWLINE
                   | NEWLINE BEGIN <stmt>+ END
 <simple_stmt>   ::= return <expr>
@@ -30,9 +30,23 @@ in not or print return None
                   | - <expr>
                   | not <expr>
                   | <expr> <binop> <expr>
-                  | <ident> (<expr>,*)
-                  | [<expr>,*]
+                  | <ident> (<expr_list>)
+                  | [<expr_list>]
                   | (<expr>)
 <binop>         ::= + | - | * | // | % | <= | >= | > | <
                   | != | == | and | or
 <const>         ::= <integer> | <string> | True | False | None
+
+# Liste d'expressions séparées par des virgules
+<expr_list>         ::= <expr><expr_list_suite>
+                      | ^
+<expr_list_suite>   ::= ,<expr_list_expr>
+                      | ^
+<expr_list_expr>    ::= <expr><expr_list_suite>
+
+# Liste d'identificateurs séparées par des virgules
+<ident_list>         ::= <ident><ident_list_suite>
+                      | ^
+<ident_list_suite>   ::= ,<ident_list_ident>
+                      | ^
+<ident_list_ident>    ::= <ident><ident_list_suite>

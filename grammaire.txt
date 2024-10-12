@@ -1,0 +1,38 @@
+<digit> ::= 0-9
+<alpha> ::= a-z | A-Z
+<ident> ::= (<alpha>|_)(<alpha>|_|<digit>)*
+
+<integer> ::= 0|1-9 <digit>*
+
+Mots clés : 
+
+and def else for if True False
+in not or print return None
+
+====================
+
+<file>          ::= NEWLINE? <def>* <stmt>+ EOF
+<def>           ::= def <ident> (<ident>,*) : <suite>
+<suite>         ::= <simple_stmt> NEWLINE
+                  | NEWLINE BEGIN <stmt>+ END
+<simple_stmt>   ::= return <expr>
+                  | <ident> = <expr>
+                  | <expr> [<expr>] = <expr>
+                  | print(<expr>)
+                  | <expr>
+<stmt>          ::= <simple_stmt> NEWLINE
+                  | if <expr> :
+                  | if <expr> : <suite> else : <suite>
+                  | for <ident> in <expr> : <suite>
+<expr>          ::= <const>
+                  | <ident>
+                  | <expr>[<expr>]
+                  | - <expr>
+                  | not <expr>
+                  | <expr> <binop> <expr>
+                  | <ident> (<expr>,*)
+                  | [<expr>,*]
+                  | (<expr>)
+<binop>         ::= + | - | * | // | % | <= | >= | > | <
+                  | != | == | and | or
+<const>         ::= <integer> | <string> | True | False | None

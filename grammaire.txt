@@ -11,17 +11,19 @@ in not or print return None
 
 ====================
 
-<file>          ::= NEWLINE? <defs> <stmt>+ EOF
+<file>          ::= NEWLINE? <defs> <stmt><opt_stmts> EOF
 <defs>          ::= <def><defs>
                   | ^
 <def>           ::= def <ident> (<ident_list>) : <suite>
 <suite>         ::= <simple_stmt> NEWLINE
-                  | NEWLINE BEGIN <stmt>+ END
+                  | NEWLINE BEGIN <stmt><opt_stmts> END
 <simple_stmt>   ::= return <expr>
                   | <ident> = <expr>
                   | <expr> [<expr>] = <expr>
                   | print(<expr>)
                   | <expr>
+<opt_stmts>       ::= <stmt><opt_stmts>
+                  | ^
 <stmt>          ::= <simple_stmt> NEWLINE
                   | if <expr> :
                   | if <expr> : <suite> else : <suite>

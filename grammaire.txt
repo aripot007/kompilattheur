@@ -28,17 +28,35 @@ in not or print return None
                   | if <expr> :
                   | if <expr> : <suite> else : <suite>
                   | for <ident> in <expr> : <suite>
-<expr>          ::= <const>
+<expr>          ::= <expr> or <expr_and>
+                  | <expr_and>
+<expr_and>      ::= <expr_and> and <expr_not>
+                  | <expr_not>
+<expr_not>      ::= not <expr_cmp>
+                  | <expr_cmp>
+<expr_cmp>      ::= <expr_cmp> < <expr_add>
+                  | <expr_cmp> <= <expr_add>
+                  | <expr_cmp> > <expr_add>
+                  | <expr_cmp> >= <expr_add>
+                  | <expr_cmp> == <expr_add>
+                  | <expr_cmp> != <expr_add>
+                  | <expr_add>
+<expr_add>      ::= <expr_add> + <expr_mult>
+                  | <expr_add> - <expr_mult>
+                  | <expr_mult>
+<expr_mult>     ::= <expr_mult> * <expr_neg>
+                  | <expr_mult> // <expr_neg>
+                  | <expr_mult> % <expr_neg>
+                  | <expr_neg>
+<expr_neg>      ::= - <expr_bracket>
+                  | <expr_bracket>
+<expr_bracket>  ::= [<expr_list>]
+                  | <factor>[<expr>]
+                  | <factor>
+<factor>        ::= <const>
                   | <ident>
-                  | <expr>[<expr>]
-                  | - <expr>
-                  | not <expr>
-                  | <expr> <binop> <expr>
                   | <ident> (<expr_list>)
-                  | [<expr_list>]
                   | (<expr>)
-<binop>         ::= + | - | * | // | % | <= | >= | > | <
-                  | != | == | and | or
 <const>         ::= <integer> | <string> | True | False | None
 
 # Liste d'expressions séparées par des virgules

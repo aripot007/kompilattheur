@@ -63,16 +63,16 @@ in not or print return None
                   | "//" "<expr_neg>""<expr_mult2>"
                   | "%" "<expr_neg>""<expr_mult2>"
                   | ;
-"<expr_neg>"      : "-" "<expr_bracket>"
-                  | "<expr_bracket>";
+"<expr_neg>"      : "-" "<expr_access>"
+                  | "<expr_access>";
 
-"<expr_bracket>"  : "[""<expr_list>""]"
-                  | "<factor>""<expr_brack_factor>";
+"<expr_access>"   : "<factor>" "<expr_access2>";
 
-"<expr_brack_factor>" : "[""<expr>""]"
-                      | ;
+"<expr_access2>"  : "[" "<expr>" "]" "<expr_access2>"
+                  | ;
 
 "<factor>"        : "<const>"
+                  | "[""<expr_list>""]"
                   | "<ident>" "<factor_ident>"
                   | "(""<expr>"")";
 

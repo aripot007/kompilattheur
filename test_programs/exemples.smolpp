@@ -1,0 +1,31 @@
+# Cette fonction dit bonjour
+def hello(name):
+
+    # Les lignes vides sont supportées
+
+    print("Hello, ")
+    print(name)
+
+    # Les caractères d'échappement aussi
+    print(" ! \n")
+
+
+hello("World")                    
+
+str = "En MiniPython 🐍, un \"String\" peut contenir n'importe quel caractère ! \\o/"
+print(str)
+
+
+# Cette fonction renvoie le maximum entre a et b
+# Permet de vérifier le fonctionnement de l'indentation
+def max(a, b):
+
+    if a < b:
+
+        return b
+                            # un commentaire avec une mauvaise indentation
+    else:
+# un autre commentaire avec une mauvaise indentation
+        return a
+
+max(42, 823543)

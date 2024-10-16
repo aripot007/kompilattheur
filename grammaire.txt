@@ -21,9 +21,12 @@ in not or print return None
                   | "NEWLINE" "BEGIN" "<stmt>""<opt_stmts>" "END";
 
 "<simple_stmt>"   : "return" "<expr>"
-                  | "<ident>" "=" "<expr>"
-                  | "<expr>" "<simple_stmt_expr>" 
+                  | "<ident>" "<simple_state_ident>"
+                  | "<expr_no_ident>" "<simple_stmt_expr>" 
                   | "print""(""<expr>"")";
+
+"<simple_state_ident>" : "=" "<expr>"
+                       | "<factor_ident>" "<expr_access2>" "<expr_mult2>" "<expr_add2>" "<expr_cmp2>" "<expr_and2>" "<expr2>" "<simple_stmt_expr>";
 
 "<simple_stmt_expr>" : "[""<expr>""]" "=" "<expr>"
                      | ;
@@ -39,14 +42,19 @@ in not or print return None
                   | ;
 
 "<expr>"          : "<expr_and>""<expr2>";
+"<expr_no_ident>" : "<expr_and_no_ident>""<expr2>";
 "<expr2>"         : "or" "<expr_and>""<expr2>"
                   | ;
 "<expr_and>"      : "<expr_not>""<expr_and2>";
+"<expr_and_no_ident>" : "<expr_not_no_ident>""<expr_and2>";
 "<expr_and2>"     : "and" "<expr_not>""<expr_and2>"
                   | ;
 "<expr_not>"      : "not" "<expr_cmp>"
                   | "<expr_cmp>";
+"<expr_not_no_ident>" : "not" "<expr_cmp>"
+                  | "<expr_cmp_no_ident>";
 "<expr_cmp>"      : "<expr_add>""<expr_cmp2>";
+"<expr_cmp_no_ident>" : "<expr_add_no_ident>""<expr_cmp2>";
 "<expr_cmp2>"     : "<" "<expr_add>""<expr_cmp2>"
                   | "<=" "<expr_add>""<expr_cmp2>"
                   | ">" "<expr_add>""<expr_cmp2>"
@@ -55,25 +63,35 @@ in not or print return None
                   | "!=" "<expr_add>""<expr_cmp2>"
                   | ;
 "<expr_add>"      : "<expr_mult>""<expr_add2>";
+"<expr_add_no_ident>" : "<expr_mult_no_ident>""<expr_add2>";
 "<expr_add2>"     : "+" "<expr_mult>""<expr_add2>"
                   | "-" "<expr_mult>""<expr_add2>"
                   | ;
 "<expr_mult>"     : "<expr_neg>""<expr_mult2>";
+"<expr_mult_no_ident>" : "<expr_neg_no_ident>""<expr_mult2>";
 "<expr_mult2>"    : "*" "<expr_neg>""<expr_mult2>"
                   | "//" "<expr_neg>""<expr_mult2>"
                   | "%" "<expr_neg>""<expr_mult2>"
                   | ;
 "<expr_neg>"      : "-" "<expr_access>"
                   | "<expr_access>";
+"<expr_neg_no_ident>"      : "-" "<expr_access>"
+                  | "<expr_access_no_ident>";
 
 "<expr_access>"   : "<factor>" "<expr_access2>";
+"<expr_access_no_ident>"   : "<factor_no_ident>" "<expr_access2>";
 
+# bug [] | ; 
 "<expr_access2>"  : "[" "<expr>" "]" "<expr_access2>"
                   | ;
 
 "<factor>"        : "<const>"
                   | "[""<expr_list>""]"
                   | "<ident>" "<factor_ident>"
+                  | "(""<expr>"")";
+
+"<factor_no_ident>"        : "<const>"
+                  | "[""<expr_list>""]"
                   | "(""<expr>"")";
 
 "<factor_ident>"  : "(""<expr_list>"")"

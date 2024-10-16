@@ -1,0 +1,139 @@
+pub struct SimpleToken {
+    pub tag: usize,
+}
+
+pub struct IntToken {
+    pub tag: usize,
+    pub value: usize,
+}
+
+pub struct IdToken {
+    pub tag: usize,
+    pub name: String,
+}
+
+pub enum Token {
+    Simple(SimpleToken),
+    Integer(IntToken),
+    Identifier(IdToken),
+}
+
+
+impl PartialEq for Token {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Token::Simple(a), Token::Simple(b)) => a.tag == b.tag,
+            (Token::Integer(a), Token::Integer(b)) => a.tag == b.tag,
+            (Token::Identifier(a), Token::Identifier(b)) => a.tag == b.tag,
+            _ => false,
+        }
+    }
+}
+
+impl Token {
+    pub fn simple(tag: usize) -> Token {
+        Token::Simple(SimpleToken { tag })
+    }
+    pub fn integer(tag: usize, value: usize) -> Token {
+        Token::Integer(IntToken { tag, value })
+    }
+    pub fn identifier(tag: usize, name: String) -> Token {
+        Token::Identifier(IdToken { tag, name })
+    }
+    pub fn get_tag(&self) -> usize {
+        match self {
+            Token::Simple(token) => token.tag,
+            Token::Integer(token) => token.tag,
+            Token::Identifier(token) => token.tag,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_simple_token() {
+        let token = SimpleToken { tag: 1 };
+        assert_eq!(token.tag, 1);
+    }
+
+    #[test]
+    fn test_int_token() {
+        let token = IntToken { tag: 1, value: 10 };
+        assert_eq!(token.tag, 1);
+        assert_eq!(token.value, 10);
+    }
+
+    #[test]
+    fn test_id_token() {
+        let token = IdToken {
+            tag: 1,
+            name: "test".to_string(),
+        };
+        assert_eq!(token.tag, 1);
+        assert_eq!(token.name, "test");
+    }
+
+    #[test]
+    fn test_token_enum() {
+        let simple_token = Token::simple(1);
+        let int_token = Token::integer(1, 10);
+        let id_token = Token::identifier(1, "test".to_string());
+        
+        if Token::simple(1) == simple_token {
+            assert!(true);
+        } else {
+            assert!(false);
+        }
+        
+        if Token::integer(1, 10) == int_token {
+            assert!(true);
+        } else {
+            assert!(false);
+        }
+        
+        if Token::identifier(1, "test".to_string()) == id_token {
+            assert!(true);
+        } else {
+            assert!(false);
+        }
+    }
+    
+    #[test]
+    fn test_token_neq() {
+        let simple_token = Token::simple(1);
+        let int_token = Token::integer(1, 10);
+        let id_token = Token::identifier(1, "test".to_string());
+        
+        if Token::simple(2) != simple_token {
+            assert!(true);
+        } else {
+            assert!(false);
+        }
+        
+        if Token::integer(2, 10) != int_token {
+            assert!(true);
+        } else {
+            assert!(false);
+        }
+        
+        if Token::identifier(2, "test".to_string()) != id_token {
+            assert!(true);
+        } else {
+            assert!(false);
+        }
+    }
+    
+    #[test]
+    fn test_token_get_tag() {
+        let simple_token = Token::simple(1);
+        let int_token = Token::integer(1, 10);
+        let id_token = Token::identifier(1, "test".to_string());
+        
+        assert_eq!(simple_token.get_tag(), 1);
+        assert_eq!(int_token.get_tag(), 1);
+        assert_eq!(id_token.get_tag(), 1);
+    }
+}

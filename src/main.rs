@@ -1,4 +1,5 @@
 mod reader;
+mod common;
 
 fn main() {
     println!("Hello, world!");
@@ -9,3 +10,4 @@ fn main() {
     }
     println!("Fin");
 }
+

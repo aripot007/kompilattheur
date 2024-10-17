@@ -22,11 +22,9 @@ in not or print return None
 
 "<simple_stmt>"   : "return" "<expr>"
                   | "<ident>" "=" "<expr>"
-                  | "<expr>" "<simple_stmt_expr>" 
-                  | "print""(""<expr>"")";
-
-"<simple_stmt_expr>" : "[""<expr>""]" "=" "<expr>"
-                     | ;
+                  | "<expr_no_access>" "[""<expr>""]" "<expr_access_eq>" "=" "<expr>" 
+                  | "print""(""<expr>"")"
+                  | "<expr>";
 
 "<opt_stmts>"     : "<stmt>""<opt_stmts>"
                   | ;
@@ -66,9 +64,40 @@ in not or print return None
 "<expr_neg>"      : "-" "<expr_access>"
                   | "<expr_access>";
 
+"<expr_no_access>": "<expr_and_no_access>""<expr2_no_access>";
+"<expr2_no_access>"         : "or" "<expr_and_no_access>""<expr2_no_access>"
+                  | ;
+"<expr_and_no_access>"      : "<expr_not_no_access>""<expr_and2_no_access>";
+"<expr_and2_no_access>"     : "and" "<expr_not_no_access>""<expr_and2_no_access>"
+                  | ;
+"<expr_not_no_access>"      : "not" "<expr_cmp_no_access>"
+                  | "<expr_cmp_no_access>";
+"<expr_cmp_no_access>"      : "<expr_add_no_access>""<expr_cmp2_no_access>";
+"<expr_cmp2_no_access>"     : "<" "<expr_add_no_access>""<expr_cmp2_no_access>"
+                  | "<=" "<expr_add_no_access>""<expr_cmp2_no_access>"
+                  | ">" "<expr_add_no_access>""<expr_cmp2_no_access>"
+                  | ">=" "<expr_add_no_access>""<expr_cmp2_no_access>"
+                  | "==" "<expr_add_no_access>""<expr_cmp2_no_access>"
+                  | "!=" "<expr_add_no_access>""<expr_cmp2_no_access>"
+                  | ;
+"<expr_add_no_access>"      : "<expr_mult_no_access>""<expr_add2_no_access>";
+"<expr_add2_no_access>"     : "+" "<expr_mult_no_access>""<expr_add2_no_access>"
+                  | "-" "<expr_mult_no_access>""<expr_add2_no_access>"
+                  | ;
+"<expr_mult_no_access>"     : "<expr_neg_no_access>""<expr_mult2_no_access>";
+"<expr_mult2_no_access>"    : "*" "<expr_neg_no_access>""<expr_mult2_no_access>"
+                  | "//" "<expr_neg_no_access>""<expr_mult2_no_access>"
+                  | "%" "<expr_neg_no_access>""<expr_mult2_no_access>"
+                  | ;
+"<expr_neg_no_access>"      : "-" "<factor>"
+                  | "<factor>";
+
 "<expr_access>"   : "<factor>" "<expr_access2>";
 
 "<expr_access2>"  : "[" "<expr>" "]" "<expr_access2>"
+                  | ;
+
+"<expr_access_eq>"  : "[" "<expr>" "]" "<expr_access_eq>"
                   | ;
 
 "<factor>"        : "<const>"

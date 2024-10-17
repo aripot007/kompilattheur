@@ -1,15 +1,15 @@
-<digit> ::= 0-9
-<alpha> ::= a-z | A-Z
-<ident> ::= (<alpha>|_)(<alpha>|_|<digit>)*
-
-<integer> ::= 0|1-9 <digit>*
-
-Mots clés : 
-
-and def else for if True False
-in not or print return None
-
-====================
+#<digit> ::= 0-9
+#<alpha> ::= a-z | A-Z
+#<ident> ::= (<alpha>|_)(<alpha>|_|<digit>)*
+#
+#<integer> ::= 0|1-9 <digit>*
+#
+#Mots clés : 
+#
+#and def else for if True False
+#in not or print return None
+#
+#====================
 
 "<file>"          : "<newline_opt>" "<defs>" "<stmt>""<opt_stmts>" "EOF";
 "<newline_opt>"   : "NEWLINE"

@@ -21,11 +21,14 @@
                   | "NEWLINE" "BEGIN" "<stmt>""<opt_stmts>" "END";
 
 #BUG HERE Factorisation "<expr_no_ident_no_access>" "[""<expr>""]" "<expr_access2_eq>" "=" "<expr>" et "<expr_no_ident>";
+# CHANGE "<expr_no_ident>"; ---> "<expr_no_ident_no_access>";
 "<simple_stmt>"   : "return" "<expr>"
                   | "print""(""<expr>"")"
                   | "<ident>" "<simple_state_ident>"
-                  | "<expr_no_ident_no_access>" "[""<expr>""]" "<expr_access2_eq>" "=" "<expr>" 
-                  | "<expr_no_ident>";
+                  | "<expr_no_ident_no_access>" "<expr_no_ident_no_access2>";
+
+"<expr_no_ident_no_access2>" : "[""<expr>""]" "<expr_access2_eq>" "=" "<expr>" 
+                             | ;
 
 #POSSIBLE CHANGE (ROMAIN) "<factor_ident>" "<expr_mult2_no_access>" "<expr_add2_no_access>" "<expr_cmp2_no_access>" "<expr_and2_no_access>" "<expr2_no_access>" "<simple_stmt_expr>"
 "<simple_state_ident>" : "=" "<expr>"

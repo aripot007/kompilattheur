@@ -20,8 +20,8 @@
 "<suite>"         : "<simple_stmt>" "NEWLINE"
                   | "NEWLINE" "BEGIN" "<stmt>""<opt_stmts>" "END";
 
-#BUG HERE Factorisation "<expr_no_ident_no_access>" "[""<expr>""]" "<expr_access2_eq>" "=" "<expr>" et "<expr_no_ident>";
 # CHANGE "<expr_no_ident>"; ---> "<expr_no_ident_no_access>";
+# WHAT WE DON'T ACCEPT BUT WE SHOULD ACCEPT IS access to a single expression: this case -> E[E][E]...[E]\n
 "<simple_stmt>"   : "return" "<expr>"
                   | "print""(""<expr>"")"
                   | "<ident>" "<simple_state_ident>"

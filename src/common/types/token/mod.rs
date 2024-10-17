@@ -1,19 +1,23 @@
 pub struct SimpleToken {
+    // tag est un identifiant unique pour chaque token
     pub tag: usize,
 }
 
 pub struct IntToken {
     pub tag: usize,
+    // stocke la valeur de l'entier
     pub value: usize,
 }
 
 pub struct IdToken {
     pub tag: usize,
+    // stocke le nom de l'identifiant
     pub name: String,
 }
 
 pub struct KeywordToken {
     pub tag: usize,
+    // stocke le mot clé
     pub name: String,
 }
 

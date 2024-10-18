@@ -61,6 +61,14 @@ impl Token {
             Token::Keyword(token) => token.tag,
         }
     }
+    pub fn to_string(&self) -> String {
+        match self {
+            Token::Simple(token) => format!("<Simple,{}>", token.tag),
+            Token::Integer(token) => format!("<Int,{}>", token.value),
+            Token::Identifier(token) => format!("<Id,{}>", token.name),
+            Token::Keyword(token) => format!("<Keyword,{}>", token.name),
+        }
+    }
 }
 
 #[cfg(test)]

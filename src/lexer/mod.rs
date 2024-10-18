@@ -342,3 +342,24 @@ impl Iterator for Lexer {
         return None;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::reader::Reader;
+    use super::*;
+
+
+    #[test]
+    fn test_eof() {
+        let r = Reader::from("");
+
+        let l = new(r);
+
+        let s: String = l.collect();
+
+        println!("{}", s);
+
+        assert!(s == "<EOF>");
+    }
+
+}

@@ -11,7 +11,7 @@ impl Eq for NumToken {}
 
 
 pub struct IdToken {
-    id: usize,
+    pub id: usize,
 }
 
 impl PartialEq for IdToken {

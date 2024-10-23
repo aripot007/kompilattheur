@@ -1,4 +1,4 @@
-use std::fmt::format;
+use std::fmt::Display;
 
 
 #[derive(Clone)]
@@ -67,8 +67,45 @@ pub enum Token {
     Print,
 }
 
-impl ToString for Token {
-    fn to_string(&self) -> String {
+impl Display for Token {
+    
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Token::Identifier(_) => write!(f, "<Identifier, {}>", self.repr()),
+            _ => write!(f, "<{}>", self.repr()),
+        }
+        
+    }
+}
+
+impl PartialEq for Token {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Integer(num1), Self::Integer(num2)) => num1 == num2,
+            (Self::Identifier(id1), Self::Identifier(id2)) => id1 == id2,
+            _ => core::mem::discriminant(self) == core::mem::discriminant(other),
+        }
+    }
+}
+impl Eq for Token {}
+
+impl Token {
+
+    pub fn integer(value: u64) -> Token {
+        Token::Integer(NumToken {value})
+    }
+
+    /// Renvoie la représentation de ce token dans le code source
+    /// Pour les tokens simples, les strings, les entiers et les mots clés réservés, renvoie le texte correspondant dans le code source.
+    /// Pour les identifier, renvoie l'id de l'identifier
+    /// 
+    /// ```
+    /// assert_eq!(Token::Add.repr(), "+".to_string());
+    /// assert_eq!(Token::integer(42).repr(), "42".to_string());
+    /// assert_eq!(Token::String("Hello World !".to_string()).repr(), "\"Hello World !\"".to_string());
+    /// assert_eq!(Token::Identifier(IdToken {id:42}), "42".to_string());
+    /// ```
+    pub fn repr(&self) -> String {
         match self {
             Token::Integer(num_token) => format!("<Int, {}>", num_token.value),
             Token::Identifier(id_token) => format!("<Identifier, {}>", id_token.id),
@@ -109,23 +146,4 @@ impl ToString for Token {
             Token::CloseBracket => String::from("<]>"),
         }
     }
-}
-
-impl PartialEq for Token {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Self::Integer(num1), Self::Integer(num2)) => num1 == num2,
-            (Self::Identifier(id1), Self::Identifier(id2)) => id1 == id2,
-            _ => core::mem::discriminant(self) == core::mem::discriminant(other),
-        }
-    }
-}
-impl Eq for Token {}
-
-impl Token {
-
-    pub fn integer(value: u64) -> Token {
-        Token::Integer(NumToken {value})
-    }
-
 }

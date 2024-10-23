@@ -1,4 +1,4 @@
-struct Node<T> {
+pub struct Node<T> {
     value: T,
     childs: Option<Vec<Node<T>>>,
 }

@@ -1,4 +1,5 @@
 mod reader;
+mod common;
 mod lexer;
 use std::env;
 
@@ -21,3 +22,4 @@ fn main() {
 
     print!("\n");
 }
+

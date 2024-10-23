@@ -1,21 +1,21 @@
 use crate::common::types::token::{Token, IdToken};
 use std::collections::HashMap;
 
-struct SymbolTable {
-    // structure pour stocker la table des symboles
+pub struct TokenTable {
+    // structure pour stocker les tokens d'indentifiants et leurs noms
     symbol_table: HashMap<String, Token>,
     last_assigned_tag: usize,
 }
 
-pub fn new() -> SymbolTable {
+pub fn new() -> TokenTable {
     // initialisation de la table des symboles
-    SymbolTable {
+    TokenTable {
         symbol_table: HashMap::new(),
         last_assigned_tag: 1,
     }
 }
 
-impl SymbolTable {
+impl TokenTable {
     pub fn reserve_keyword(&mut self, name: &str, token: Token) {
         // insertion d'un mot réservé
         self.symbol_table.insert(

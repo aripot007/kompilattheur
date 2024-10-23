@@ -1,6 +1,7 @@
 mod reader;
 mod common;
 mod lexer;
+mod parser;
 use lexer::lexer::Lexer;
 use std::env;
 

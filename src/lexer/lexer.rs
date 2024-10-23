@@ -1,33 +1,34 @@
 use crate::reader;
 
-// TODO: Remove
-// Macro temporaire pour faire des tokens a partir d'un string
-macro_rules! tokenify {
-    ($($arg:tt)*) => {
-        Some(String::from(format!($($arg)*)))
-    };
-}
+use super::token_table::TokenTable;
+use crate::common::types::token::Token;
 
 pub fn get_operator_token(op: &str) -> Option<Token> {
     match op {
-        "+" => tokenify!("<+>"),
-        "-" => tokenify!("<->"),
-        "*" => tokenify!("<*>"),
-        "%" => tokenify!("<%>"),
-        ":" => tokenify!("<:>"),
-        "[" => tokenify!("<[>"),
-        "]" => tokenify!("<]>"),
-        "(" => tokenify!("<(>"),
-        ")" => tokenify!("<)>"),
-        "," => tokenify!("<,>"),
-        ">" => tokenify!("<gt>"),
-        "<" => tokenify!("<lt>"),
-        ">=" => tokenify!("<ge>"),
-        "<=" => tokenify!("<le>"),
-        "==" => tokenify!("<eq>"),
-        "=" => tokenify!("<=>"),
-        "!=" => tokenify!("<ne>"),
-        "//" => tokenify!("<//>"),
+        // Operators
+        "+" => Some(Token::Add),
+        "-" => Some(Token::Sub),
+        "*" => Some(Token::Mult),
+        "//" => Some(Token::Div),
+        "%" => Some(Token::Mod),
+        "=" => Some(Token::Assign),
+
+        // Boolean
+        "==" => Some(Token::Equal),
+        "!=" => Some(Token::NotEqual),
+        ">" => Some(Token::Greater),
+        ">=" => Some(Token::GreaterEq),
+        "<" => Some(Token::Less),
+        "<=" => Some(Token::LessEq),
+
+        // Program structure
+        ":" => Some(Token::Sep),
+        "," => Some(Token::Comma),
+        "(" => Some(Token::OpenParenthesis),
+        ")" => Some(Token::CloseParenthesis),
+        "[" => Some(Token::OpenBracket),
+        "]" => Some(Token::CloseBracket),
+
         _ => None,
     }
 }
@@ -52,9 +53,31 @@ pub struct Lexer {
 
     line_num: u64,
     char_num: u64,
+
+    token_table: TokenTable,
 }
 
-type Token = String;
+fn init_token_table() -> TokenTable {
+
+    let mut table = TokenTable::new();
+
+    table.reserve_word("True", Token::True);
+    table.reserve_word("False", Token::False);
+    table.reserve_word("None", Token::None);
+    table.reserve_word("or", Token::Or);
+    table.reserve_word("and", Token::And);
+    table.reserve_word("not", Token::Not);
+    table.reserve_word("if", Token::If);
+    table.reserve_word("else", Token::Else);
+    table.reserve_word("for", Token::For);
+    table.reserve_word("def", Token::Def);
+    table.reserve_word("return", Token::Return);
+    table.reserve_word("print", Token::Print);
+
+    return table;
+
+}
+
 impl Lexer {
 
     pub fn new(mut reader: reader::Reader) -> Lexer {
@@ -70,6 +93,7 @@ impl Lexer {
             char_num: 1,
             end_token_count: 0,
             emit_begin: false,
+            token_table: init_token_table(),
         };
     }
 
@@ -157,19 +181,19 @@ impl Lexer {
     // Parse un integer a partir du caractère courant
     fn parse_integer(&mut self) -> Token {
 
-        let mut number: usize = 0;
+        let mut number: u64 = 0;
 
         match self.peek {
             Some('0') => {
                 self.read_next_char();
-                return format!("<int, 0>");
+                return Token::integer(0);
             },
             Some(c) if c.is_digit(10) => {},
             _ => panic!("trying to use parse_integer while not on a digit"),
         }
 
         while self.peek.is_some_and(|c| c.is_digit(10)) {
-            let v: usize = match self.peek.unwrap().to_digit(10) {
+            let v: u64 = match self.peek.unwrap().to_digit(10) {
                 Some(v) => v.try_into().unwrap(),
                 None => {
                     self.syntax_error("Could not convert digit to usize");
@@ -184,14 +208,14 @@ impl Lexer {
             let (n, of2) = n.overflowing_add(v);
 
             if of1 | of2 {
-                self.syntax_error("Integer cannot be represented on this machine");
+                self.syntax_error("Integer cannot be represented on a 64 bit integer");
             }
             number = n;
 
             self.read_next_char();
         }
 
-        return format!("<int, {}>", number);
+        return Token::integer(number);
     }
 
     // Parse un identifier à partir du caractère courant
@@ -205,7 +229,7 @@ impl Lexer {
             self.read_next_char();
         }
 
-        return format!("<ident, \"{}\">", identifier);
+        return self.token_table.get_token(identifier);
 
     }
 
@@ -239,7 +263,7 @@ impl Lexer {
             self.read_next_char();
         }
 
-        return format!("<str, \"{}\">", text);
+        return Token::String(text);
     }
 }
 
@@ -254,12 +278,12 @@ impl Iterator for Lexer {
 
         if self.emit_begin {
             self.emit_begin = false;
-            return tokenify!("BEGIN");
+            return Some(Token::Begin);
         }
 
         if self.end_token_count > 0 {
             self.end_token_count -= 1;
-            return tokenify!("END");
+            return Some(Token::End);
         }
 
         // Already at the end of the file
@@ -268,7 +292,7 @@ impl Iterator for Lexer {
                 return None;
             } else {
                 self.emmitted_eof = true;
-                return tokenify!("<EOF>");
+                return Some(Token::EOF);
             }
         }
 
@@ -278,7 +302,7 @@ impl Iterator for Lexer {
         // Handle BEGIN and END tokens if indentation changes on a new line
         if new_line {
             self.parse_indentation(nb_indentation);
-            return tokenify!("NEWLINE");
+            return Some(Token::Newline);
         }
 
         match self.peek {
@@ -335,7 +359,7 @@ impl Iterator for Lexer {
             },
             None => {
                 self.emmitted_eof = true;
-                return tokenify!("<EOF>");
+                return Some(Token::EOF);
             }
         }
 

@@ -1,24 +1,26 @@
 use crate::common::types::token::{Token, IdToken};
 use std::collections::HashMap;
 
-struct SymbolTable {
-    // structure pour stocker la table des symboles
-    symbol_table: HashMap<String, Token>,
-    last_assigned_tag: usize,
+pub struct TokenTable {
+    /// Stocke les tokens connus
+    known_tokens: HashMap<String, Token>,
+
+    /// Stocke les noms des identifieurs déjà connus
+    id_names: Vec<String>,
 }
 
-pub fn new() -> SymbolTable {
-    // initialisation de la table des symboles
-    SymbolTable {
-        symbol_table: HashMap::new(),
-        last_assigned_tag: 1,
+impl TokenTable {
+
+    pub fn new() -> TokenTable {
+        TokenTable {
+            known_tokens: HashMap::new(),
+            id_names: Vec::new(),
+        }
     }
-}
 
-impl SymbolTable {
-    pub fn reserve_keyword(&mut self, name: &str, token: Token) {
+    pub fn reserve_word(&mut self, name: &str, token: Token) {
         // insertion d'un mot réservé
-        self.symbol_table.insert(
+        self.known_tokens.insert(
             name.to_string(),
             token,
         );
@@ -26,11 +28,11 @@ impl SymbolTable {
 
     pub fn get_token(&mut self, name: &str) -> &Token {
         let token = self
-            .symbol_table
+            .known_tokens
             .entry(name.to_string())
             .or_insert_with(|| {
-                let token = Token::Identifier(IdToken {id: self.last_assigned_tag});
-                self.last_assigned_tag += 1;
+                let token = Token::Identifier(IdToken {id: self.id_names.len()});
+                self.id_names.push(name.to_string());
                 token
             });
         token

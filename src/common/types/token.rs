@@ -117,3 +117,11 @@ impl PartialEq for Token {
     }
 }
 impl Eq for Token {}
+
+impl Token {
+
+    pub fn integer(value: u64) -> Token {
+        Token::Integer(NumToken {value})
+    }
+
+}

@@ -3,9 +3,15 @@
 // INSTEAD MODIFY THE SOURCE FILES AND RE-RUN THE GENERATOR SCRIPT
 use std::collections::HashMap;
 use crate::parser::lexem::Lexem;
-use crate::common::types::token::Token;
+use crate::common::types::token::{self, Token};
 pub struct AnalysisTable {
     table: [HashMap<Token, Vec<Lexem>>; 3],
+}
+
+impl AnalysisTable {
+    pub fn get(&self, id: &usize, token: &Token) -> Option<&Vec<Lexem>> {
+        self.table[*id].get(token)
+    }
 }
 
 pub fn get_analysis_table() -> AnalysisTable {

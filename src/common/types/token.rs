@@ -1,3 +1,5 @@
+use std::fmt::format;
+
 
 #[derive(Clone)]
 pub struct NumToken {
@@ -28,6 +30,7 @@ impl Eq for IdToken {}
 pub enum Token {
     Integer(NumToken),
     Identifier(IdToken),
+    String(String),
     Add,
     Sub,
     Mult,
@@ -69,6 +72,7 @@ impl ToString for Token {
         match self {
             Token::Integer(num_token) => format!("<Int, {}>", num_token.value),
             Token::Identifier(id_token) => format!("<Identifier, {}>", id_token.id),
+            Token::String(string) => format!("<String, \"{}\"", string.escape_debug()),
             Token::Add => String::from("<+>"),
             Token::Sub => String::from("<->"),
             Token::Mult => String::from("<*>"),

@@ -1,4 +1,4 @@
-use super::types::token::{IdToken, Token};
+use crate::common::types::token::{Token, IdToken};
 use std::collections::HashMap;
 
 struct SymbolTable {

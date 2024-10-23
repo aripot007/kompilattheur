@@ -1,2 +1,1 @@
-mod types;
-mod symbol_table;
+pub mod types;

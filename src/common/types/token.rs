@@ -41,6 +41,10 @@ pub enum Token {
     Newline,
     Comma,
     Sep,
+    OpenParenthesis,
+    CloseParenthesis,
+    OpenBracket,
+    CloseBracket,
     True,
     False,
     None,
@@ -87,6 +91,10 @@ impl ToString for Token {
             Token::Print => String::from("<Print>"),
             Token::Comma => String::from("<,>"),
             Token::Sep => String::from("<:>"),
+            Token::OpenParenthesis => String::from("<(>"),
+            Token::CloseParenthesis => String::from("<)>"),
+            Token::OpenBracket => String::from("<[>"),
+            Token::CloseBracket => String::from("<]>"),
         }
     }
 }

@@ -1,6 +1,7 @@
 mod reader;
 mod common;
 mod lexer;
+use lexer::lexer::Lexer;
 use std::env;
 
 fn main() {
@@ -14,7 +15,7 @@ fn main() {
     }
     
     let file_path = args[1].clone();
-    let lexer = lexer::new(reader::new(file_path));
+    let lexer = Lexer::new(reader::new(file_path));
 
     for token in lexer {
         print!("{} ", token);

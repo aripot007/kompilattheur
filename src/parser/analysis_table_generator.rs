@@ -21,6 +21,6 @@ pub fn generate_source_file(filename: &str) {
     generated_file.push_str("// INSTEAD MODIFY THE SOURCE FILES AND RE-RUN THE GENERATOR SCRIPT\n");
     generated_file.push_str("use crate::parser::lexem::Lexem;\n");
     generated_file.push_str("pub struct AnalysisTable {\n");
-    generated_file.push_str("    table: table: [[Vec<Lexem>; 1] ; 1],,\n");
+    generated_file.push_str("    table: [HashMap<Token, Vec<Lexem>>; 3],\n");
     generated_file.push_str("}\n");
 }

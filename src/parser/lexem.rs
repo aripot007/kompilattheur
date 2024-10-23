@@ -6,5 +6,5 @@ pub struct NonTerminal {
 
 pub enum Lexem {
     Terminal(Token),
-    NonTerminal()
+    NonTerminal(NonTerminal)
 }

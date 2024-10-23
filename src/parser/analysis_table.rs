@@ -2,6 +2,18 @@
 // DO NOT MODIFY THIS FILE DIRECTLY
 // INSTEAD MODIFY THE SOURCE FILES AND RE-RUN THE GENERATOR SCRIPT
 use crate::parser::lexem::Lexem;
+use crate::common::types::token::Token;
 pub struct AnalysisTable {
-    table: [[Vec<Lexem>; 1] ; 1],
+    table: [[Option<Vec<Lexem>>; 3] ; 3],
+}
+
+pub fn get_analysis_table() -> AnalysisTable {
+    let analysis_table = AnalysisTable {
+        table: [
+            [Some(vec![Lexem::Terminal(Token::Sub)]), Some(vec![Lexem::Terminal(Token::Sub)]), Some(vec![Lexem::Terminal(Token::Mult)])],
+            [Some(vec![Lexem::Terminal(Token::Add)]), None, Some(vec![Lexem::Terminal(Token::Mult)])],
+            [Some(vec![Lexem::Terminal(Token::Add)]), Some(vec![Lexem::Terminal(Token::Sub)]), Some(vec![Lexem::Terminal(Token::Mult)])],
+            ]
+    };
+    return analysis_table;
 }

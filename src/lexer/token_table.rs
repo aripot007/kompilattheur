@@ -26,7 +26,7 @@ impl TokenTable {
         );
     }
 
-    pub fn get_token(&mut self, name: &str) -> &Token {
+    pub fn get_token(&mut self, name: String) -> Token {
         let token = self
             .known_tokens
             .entry(name.to_string())
@@ -35,7 +35,7 @@ impl TokenTable {
                 self.id_names.push(name.to_string());
                 token
             });
-        token
+        token.clone()
     }
 }
 

@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 
-#[derive(Clone)]
+#[derive(Clone, Hash)]
 pub struct NumToken {
     value: u64,
 }
@@ -14,7 +14,7 @@ impl PartialEq for NumToken {
 impl Eq for NumToken {}
 
 
-#[derive(Clone)]
+#[derive(Clone, Hash)]
 pub struct IdToken {
     pub id: usize,
 }
@@ -26,7 +26,7 @@ impl PartialEq for IdToken {
 }
 impl Eq for IdToken {}
 
-#[derive(Clone)]
+#[derive(Clone, Hash)]
 pub enum Token {
     Integer(NumToken),
     Identifier(IdToken),

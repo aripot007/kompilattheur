@@ -11,6 +11,7 @@ pub fn get_operator_token(op: &str) -> Option<Token> {
         "*" => Some(Token::Mult),
         "//" => Some(Token::Div),
         "%" => Some(Token::Mod),
+        "=" => Some(Token::Assign),
 
         // Boolean
         "==" => Some(Token::Equal),
@@ -64,14 +65,14 @@ fn init_token_table() -> TokenTable {
     table.reserve_word("False", Token::False);
     table.reserve_word("None", Token::None);
     table.reserve_word("or", Token::Or);
-    table.reserve_word("and", Token::True);
+    table.reserve_word("and", Token::And);
     table.reserve_word("not", Token::Not);
     table.reserve_word("if", Token::If);
     table.reserve_word("else", Token::Else);
-    table.reserve_word("for", Token::True);
+    table.reserve_word("for", Token::For);
     table.reserve_word("def", Token::Def);
     table.reserve_word("return", Token::Return);
-    table.reserve_word("print", Token::True);
+    table.reserve_word("print", Token::Print);
 
     return table;
 

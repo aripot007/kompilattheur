@@ -24,10 +24,8 @@ impl<T: std::fmt::Display> Node<T> {
 
     pub fn remove_child(&mut self, n: usize) -> Vec<Rc<RefCell<Node<T>>>> {
         let mut result = Vec::new();
-        for i in 0..self.childs.len() {
-            if i != n {
-                result.push(self.childs[i].clone());
-            }
+        if n < self.childs.len() {
+            result = self.childs.remove(n).borrow().get_children();
         }
         result
     }
@@ -84,7 +82,7 @@ mod tests {
             "0 --> 3\n"
         );
 
-        print!("{}", result);
+        println!("{}", result);
 
         assert!(expected == result);
     }
@@ -104,6 +102,6 @@ mod tests {
         println!("{:?}", children[0].borrow().value);
 
         assert!(children.len() == 1);
-        assert!(children[0].borrow().value == "child2");
+        assert!(children[0].borrow().value == "child11");
     }
 }

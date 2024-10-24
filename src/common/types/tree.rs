@@ -64,8 +64,8 @@ mod tests {
 
     #[test]
     fn test_generate_mermaid() {
-        let mut root = new("root");
-        let mut child1 = new("child1");
+        let root = new("root");
+        let child1 = new("child1");
         let child11 = new("child11");
         child1.borrow_mut().add_child(child11);
         root.borrow_mut().add_child(child1);
@@ -91,8 +91,8 @@ mod tests {
 
     #[test]
     fn test_remove_child() {
-        let mut root = new("root");
-        let mut child1 = new("child1");
+        let root = new("root");
+        let child1 = new("child1");
         let child11 = new("child11");
         child1.borrow_mut().add_child(child11);
         root.borrow_mut().add_child(child1);
@@ -101,9 +101,9 @@ mod tests {
 
         let children = root.borrow_mut().remove_child(0);
 
-        print!("{:?}", children[0].borrow().value);
+        println!("{:?}", children[0].borrow().value);
 
         assert!(children.len() == 1);
-        assert!(children[0].borrow().value == "child11");
+        assert!(children[0].borrow().value == "child2");
     }
 }

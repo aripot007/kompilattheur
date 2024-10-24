@@ -366,3 +366,17 @@ impl Iterator for Lexer {
         return None;
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use crate::{common::types::token::Token, lexer::lexer::Lexer, reader::Reader};
+
+    #[test]
+    fn test_eof() {
+        let mut lexer = Lexer::new(Reader::from(""));
+        assert!(lexer.next() == Some(Token::EOF));
+        assert!(lexer.next() == None);
+    }
+
+}

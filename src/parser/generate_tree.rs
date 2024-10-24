@@ -15,10 +15,10 @@ pub fn generate_tree(mut lexer: Lexer) -> (bool, bool) {
         let x = stack.pop();
         match x {
             Some(Lexem::Terminal(token)) => {
-                if *token != input {
-                    error = true;
-                } else {
+                if token.is_same_type(&input) {
                     input = lexer.next().unwrap();
+                } else {
+                    error = true;
                 }
             }
             Some(Lexem::NonTerminal(id)) => {
@@ -44,10 +44,12 @@ pub fn generate_tree(mut lexer: Lexer) -> (bool, bool) {
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
     
     #[test]
     fn test_generate_tree() {
+
         let lexer = Lexer::new("1 + 1 * 1".into());
         for token in lexer {
             print!("{}", token);

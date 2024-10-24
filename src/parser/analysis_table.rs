@@ -17,11 +17,11 @@ impl AnalysisTable {
 pub fn get_analysis_table() -> AnalysisTable {
     let analysis_table = AnalysisTable {
         table: [
-            HashMap::from([(Token::integer(1), vec![Lexem::NonTerminal(2), Lexem::NonTerminal(1)]), (Token::OpenBracket, vec![Lexem::NonTerminal(2), Lexem::NonTerminal(1)])]),
+            HashMap::from([(Token::integer(0), vec![Lexem::NonTerminal(2), Lexem::NonTerminal(1)]), (Token::OpenBracket, vec![Lexem::NonTerminal(2), Lexem::NonTerminal(1)])]),
             HashMap::from([(Token::Add, vec![Lexem::Terminal(Token::Add), Lexem::NonTerminal(2), Lexem::NonTerminal(1)]), (Token::CloseBracket, Vec::new()), (Token::EOF, Vec::new())]),
-            HashMap::from([(Token::integer(1), vec![Lexem::NonTerminal(4),Lexem::NonTerminal(3)]), (Token::OpenBracket, vec![Lexem::NonTerminal(4),Lexem::NonTerminal(3)])]),
+            HashMap::from([(Token::integer(0), vec![Lexem::NonTerminal(4),Lexem::NonTerminal(3)]), (Token::OpenBracket, vec![Lexem::NonTerminal(4),Lexem::NonTerminal(3)])]),
             HashMap::from([(Token::Add, Vec::new()), (Token::Mult, vec![Lexem::Terminal(Token::Mult), Lexem::NonTerminal(4), Lexem::NonTerminal(3)]), (Token::CloseBracket, Vec::new()), (Token::EOF, Vec::new())]), 
-            HashMap::from([(Token::integer(1), vec![Lexem::Terminal(Token::integer(1))]), (Token::OpenBracket, vec![Lexem::Terminal(Token::OpenBracket), Lexem::NonTerminal(0), Lexem::Terminal(Token::CloseBracket)])]),
+            HashMap::from([(Token::integer(0), vec![Lexem::Terminal(Token::integer(0))]), (Token::OpenBracket, vec![Lexem::Terminal(Token::OpenBracket), Lexem::NonTerminal(0), Lexem::Terminal(Token::CloseBracket)])]),
             ]
     };
     return analysis_table;

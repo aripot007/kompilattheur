@@ -91,6 +91,10 @@ impl Eq for Token {}
 
 impl Token {
 
+    pub fn is_same_type(&self, other: &Token) -> bool {
+        core::mem::discriminant(self) == core::mem::discriminant(other)
+    }
+
     pub fn integer(value: u64) -> Token {
         Token::Integer(NumToken {value})
     }

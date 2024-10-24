@@ -3,9 +3,9 @@
 // INSTEAD MODIFY THE SOURCE FILES AND RE-RUN THE GENERATOR SCRIPT
 use std::collections::HashMap;
 use crate::parser::lexem::Lexem;
-use crate::common::types::token::{self, Token};
+use crate::common::types::token::Token;
 pub struct AnalysisTable {
-    table: [HashMap<Token, Vec<Lexem>>; 3],
+    table: [HashMap<Token, Vec<Lexem>>; 5],
 }
 
 impl AnalysisTable {
@@ -17,9 +17,11 @@ impl AnalysisTable {
 pub fn get_analysis_table() -> AnalysisTable {
     let analysis_table = AnalysisTable {
         table: [
-            HashMap::from([(Token::Add, vec![Lexem::Terminal(Token::Add)])]),
-            HashMap::from([(Token::Sub, vec![Lexem::Terminal(Token::Sub)])]),
-            HashMap::from([(Token::Mult, vec![Lexem::Terminal(Token::Mult)])]),
+            HashMap::from([(Token::integer(1), vec![Lexem::NonTerminal(2), Lexem::NonTerminal(1)]), (Token::OpenBracket, vec![Lexem::NonTerminal(2), Lexem::NonTerminal(1)])]),
+            HashMap::from([(Token::Add, vec![Lexem::Terminal(Token::Add), Lexem::NonTerminal(2), Lexem::NonTerminal(1)]), (Token::CloseBracket, Vec::new()), (Token::EOF, Vec::new())]),
+            HashMap::from([(Token::integer(1), vec![Lexem::NonTerminal(4),Lexem::NonTerminal(3)]), (Token::OpenBracket, vec![Lexem::NonTerminal(4),Lexem::NonTerminal(3)])]),
+            HashMap::from([(Token::Add, Vec::new()), (Token::Mult, vec![Lexem::Terminal(Token::Mult), Lexem::NonTerminal(4), Lexem::NonTerminal(3)]), (Token::CloseBracket, Vec::new()), (Token::EOF, Vec::new())]), 
+            HashMap::from([(Token::integer(1), vec![Lexem::Terminal(Token::integer(1))]), (Token::OpenBracket, vec![Lexem::Terminal(Token::OpenBracket), Lexem::NonTerminal(0), Lexem::Terminal(Token::CloseBracket)])]),
             ]
     };
     return analysis_table;

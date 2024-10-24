@@ -8,14 +8,17 @@ pub fn generate_tree(mut lexer: Lexer) -> (bool, bool) {
     let mut stack: Vec<&Lexem> = vec![&Lexem::NonTerminal(0)];
     let mut error = false;
     let mut accept = false;
+    let mut input = lexer.next().unwrap();
 
     while !error && !accept {
+        println!("Stack: {stack:?}, Input: {input}");
         let x = stack.pop();
-        let input = &lexer.next().unwrap();
         match x {
             Some(Lexem::Terminal(token)) => {
-                if token != input {
+                if *token != input {
                     error = true;
+                } else {
+                    input = lexer.next().unwrap();
                 }
             }
             Some(Lexem::NonTerminal(id)) => {
@@ -45,7 +48,12 @@ mod tests {
     
     #[test]
     fn test_generate_tree() {
-        let lexer = Lexer::new("1 + 2 * 3".into());
+        let lexer = Lexer::new("1 + 1 * 1".into());
+        for token in lexer {
+            print!("{}", token);
+        }
+        print!("\n");
+        let lexer = Lexer::new("1 + 1 * 1".into());
         let (accept, error) = generate_tree(lexer);
         assert_eq!(accept, true);
         assert_eq!(error, false);

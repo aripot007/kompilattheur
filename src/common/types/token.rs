@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 
-#[derive(Clone)]
+#[derive(Clone, Hash, Debug)]
 pub struct NumToken {
     value: u64,
 }
@@ -14,7 +14,7 @@ impl PartialEq for NumToken {
 impl Eq for NumToken {}
 
 
-#[derive(Clone)]
+#[derive(Clone, Hash, Debug)]
 pub struct IdToken {
     pub id: usize,
 }
@@ -26,7 +26,7 @@ impl PartialEq for IdToken {
 }
 impl Eq for IdToken {}
 
-#[derive(Clone)]
+#[derive(Clone, Hash, Debug)]
 pub enum Token {
     Integer(NumToken),
     Identifier(IdToken),
@@ -92,6 +92,10 @@ impl PartialEq for Token {
 impl Eq for Token {}
 
 impl Token {
+
+    pub fn is_same_type(&self, other: &Token) -> bool {
+        core::mem::discriminant(self) == core::mem::discriminant(other)
+    }
 
     pub fn integer(value: u64) -> Token {
         Token::Integer(NumToken {value})

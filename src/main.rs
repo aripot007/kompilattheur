@@ -1,7 +1,9 @@
 mod reader;
 mod common;
 mod lexer;
+mod parser;
 use lexer::lexer::Lexer;
+use parser::generate_tree::generate_tree;
 use std::env;
 
 fn main() {
@@ -15,12 +17,14 @@ fn main() {
     }
     
     let file_path = args[1].clone();
-    let lexer = Lexer::new(reader::new(file_path));
+    let lexer = Lexer::new(reader::new(file_path.clone()));
 
     for token in lexer {
         print!("{} ", token);
     }
 
     print!("\n");
+    let lexer = Lexer::new(reader::new(file_path));
+    generate_tree(lexer);
 }
 

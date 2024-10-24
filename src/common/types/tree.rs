@@ -1,31 +1,35 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
 pub struct Node<T> {
-    value: T,
-    childs: Vec<Node<T>>,
+    pub value: T,
+    pub childs: Vec<Rc<RefCell<Node<T>>>>,
 }
 
-pub fn new<T>(value: T) -> Node<T> {
-    Node {
+pub fn new<T>(value: T) -> Rc<RefCell<Node<T>>> {
+    Rc::new(RefCell::new(Node {
         value,
         childs: Vec::new(),
-    }
+    }))
 }
 
 impl<T: std::fmt::Display> Node<T> {
-    pub fn get_children(&self) -> &Vec<Node<T>> {
-        &self.childs
+    pub fn get_children(&self) -> Vec<Rc<RefCell<Node<T>>>> {
+        self.childs.clone()
     }
 
-    pub fn add_child(&mut self, child: Node<T>) {
+    pub fn add_child(&mut self, child: Rc<RefCell<Node<T>>>) {
         self.childs.push(child);
     }
 
-    pub fn remove_child(&mut self, n: usize) -> Vec<Node<T>> {
-        if n < self.childs.len() {
-            let children = self.childs.remove(n).childs;
-            children
-        } else {
-            Vec::new()
+    pub fn remove_child(&mut self, n: usize) -> Vec<Rc<RefCell<Node<T>>>> {
+        let mut result = Vec::new();
+        for i in 0..self.childs.len() {
+            if i != n {
+                result.push(self.childs[i].clone());
+            }
         }
+        result
     }
 
     pub fn generate_mermaid(&self) -> String {
@@ -39,10 +43,11 @@ impl<T: std::fmt::Display> Node<T> {
             let mut result = String::new();
             let nb = *counter;
             for child in node.get_children() {
+                let child_borrowed = &*child.borrow();
                 *counter += 1;
-                result.push_str(&format!("{}[{}]\n", counter, child.value));
+                result.push_str(&format!("{}[{}]\n", counter, child.borrow().value));
                 result.push_str(&format!("{} --> {}\n", nb, counter));
-                result.push_str(&generate_child(child, counter));
+                result.push_str(&generate_child(child_borrowed, counter));
             }
             result
         }
@@ -62,7 +67,7 @@ mod tests {
         let mut root = new("root");
         let mut child1 = new("child1");
         let child11 = new("child11");
-        child1.add_child(child11);
+        child1.borrow_mut().add_child(child11);
         root.add_child(child1);
         let child2 = new("child2");
         root.add_child(child2);

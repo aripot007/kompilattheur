@@ -85,6 +85,7 @@ impl PartialEq for Token {
         match (self, other) {
             (Self::Integer(num1), Self::Integer(num2)) => num1 == num2,
             (Self::Identifier(id1), Self::Identifier(id2)) => id1 == id2,
+            (Self::String(s1), Self::String(s2)) => s1 == s2,
             _ => core::mem::discriminant(self) == core::mem::discriminant(other),
         }
     }

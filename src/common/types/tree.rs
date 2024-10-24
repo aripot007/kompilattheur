@@ -68,11 +68,11 @@ mod tests {
         let mut child1 = new("child1");
         let child11 = new("child11");
         child1.borrow_mut().add_child(child11);
-        root.add_child(child1);
+        root.borrow_mut().add_child(child1);
         let child2 = new("child2");
-        root.add_child(child2);
+        root.borrow_mut().add_child(child2);
 
-        let result = root.generate_mermaid();
+        let result = root.borrow().generate_mermaid();
         let expected = concat!(
             "flowchart TD\n",
             "0[root]\n",
@@ -94,14 +94,16 @@ mod tests {
         let mut root = new("root");
         let mut child1 = new("child1");
         let child11 = new("child11");
-        child1.add_child(child11);
-        root.add_child(child1);
+        child1.borrow_mut().add_child(child11);
+        root.borrow_mut().add_child(child1);
         let child2 = new("child2");
-        root.add_child(child2);
+        root.borrow_mut().add_child(child2);
 
-        let children = root.remove_child(0);
+        let children = root.borrow_mut().remove_child(0);
+
+        print!("{:?}", children[0].borrow().value);
 
         assert!(children.len() == 1);
-        assert!(children[0].value == "child11");
+        assert!(children[0].borrow().value == "child11");
     }
 }

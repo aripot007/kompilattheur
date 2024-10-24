@@ -19,6 +19,7 @@ pub fn generate_tree(mut lexer: Lexer) -> (bool, bool) {
                     input = lexer.next().unwrap();
                 } else {
                     error = true;
+                    println!("Error: {token:?} != {input}");
                 }
             }
             Some(Lexem::NonTerminal(id)) => {
@@ -31,6 +32,7 @@ pub fn generate_tree(mut lexer: Lexer) -> (bool, bool) {
                     }
                     None => {
                         error = true;
+                        println!("Error: No entry for {id:?} and {input}");
                     }
                 }
             }
@@ -49,13 +51,13 @@ mod tests {
     
     #[test]
     fn test_generate_tree() {
-
-        let lexer = Lexer::new("1 + 1 * 1".into());
+        let source = "1 + (1 * 1)";
+        let lexer = Lexer::new(source.into());
         for token in lexer {
             print!("{}", token);
         }
         print!("\n");
-        let lexer = Lexer::new("1 + 1 * 1".into());
+        let lexer = Lexer::new(source.into());
         let (accept, error) = generate_tree(lexer);
         assert_eq!(accept, true);
         assert_eq!(error, false);

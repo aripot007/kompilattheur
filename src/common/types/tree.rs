@@ -19,6 +19,15 @@ impl<T: std::fmt::Display> Node<T> {
         self.childs.push(child);
     }
 
+    pub fn remove_child(&mut self, n: usize) -> Vec<Node<T>> {
+        if n < self.childs.len() {
+            let children = self.childs.remove(n).childs;
+            children
+        } else {
+            Vec::new()
+        }
+    }
+
     pub fn generate_mermaid(&self) -> String {
         let mut result = String::new();
         result.push_str("flowchart TD\n");
@@ -73,5 +82,21 @@ mod tests {
         print!("{}", result);
 
         assert!(expected == result);
+    }
+
+    #[test]
+    fn test_remove_child() {
+        let mut root = new("root");
+        let mut child1 = new("child1");
+        let child11 = new("child11");
+        child1.add_child(child11);
+        root.add_child(child1);
+        let child2 = new("child2");
+        root.add_child(child2);
+
+        let children = root.remove_child(0);
+
+        assert!(children.len() == 1);
+        assert!(children[0].value == "child11");
     }
 }

@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use crate::common::types::token::Token;
 use crate::{common::types::tree::Node, lexer::lexer::Lexer};
 use crate::parser::analysis_table::get_analysis_table;
 
@@ -45,6 +46,10 @@ pub fn generate_tree(mut lexer: Lexer) -> (bool, bool) {
                 }
             }
             None => {
+                if input != Token::EOF {
+                    error = true;
+                    println!("Error: Stack is empty and input is not EOF");
+                }
                 accept = true;
             }
         }
@@ -59,7 +64,7 @@ mod tests {
     
     #[test]
     fn test_generate_tree() {
-        let source = "1 + 1 * 1";
+        let source = "1 + 1 * 1)";
         let lexer = Lexer::new(source.into());
         for token in lexer {
             print!("{}", token);

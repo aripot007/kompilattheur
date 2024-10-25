@@ -6,14 +6,14 @@ pub struct Node<T> {
     pub childs: Vec<Rc<RefCell<Node<T>>>>,
 }
 
-pub fn new<T>(value: T) -> Rc<RefCell<Node<T>>> {
-    Rc::new(RefCell::new(Node {
-        value,
-        childs: Vec::new(),
-    }))
-}
-
 impl<T: std::fmt::Display> Node<T> {
+    pub fn new(value: T) -> Rc<RefCell<Node<T>>> {
+        Rc::new(RefCell::new(Node {
+            value,
+            childs: Vec::new(),
+        }))
+    }
+
     pub fn get_children(&self) -> Vec<Rc<RefCell<Node<T>>>> {
         self.childs.clone()
     }
@@ -58,16 +58,17 @@ impl<T: std::fmt::Display> Node<T> {
 
 #[cfg(test)]
 mod tests {
-    use super::new;
+    use super::Node;
+
 
     #[test]
     fn test_generate_mermaid() {
-        let root = new("root");
-        let child1 = new("child1");
-        let child11 = new("child11");
+        let root = Node::new("root");
+        let child1 = Node::new("child1");
+        let child11 = Node::new("child11");
         child1.borrow_mut().add_child(child11);
         root.borrow_mut().add_child(child1);
-        let child2 = new("child2");
+        let child2 = Node::new("child2");
         root.borrow_mut().add_child(child2);
 
         let result = root.borrow().generate_mermaid();
@@ -89,12 +90,12 @@ mod tests {
 
     #[test]
     fn test_remove_child() {
-        let root = new("root");
-        let child1 = new("child1");
-        let child11 = new("child11");
+        let root = Node::new("root");
+        let child1 = Node::new("child1");
+        let child11 = Node::new("child11");
         child1.borrow_mut().add_child(child11);
         root.borrow_mut().add_child(child1);
-        let child2 = new("child2");
+        let child2 = Node::new("child2");
         root.borrow_mut().add_child(child2);
 
         let children = root.borrow_mut().remove_child(0);

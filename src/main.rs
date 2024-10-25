@@ -2,9 +2,10 @@ mod reader;
 mod common;
 mod lexer;
 mod parser;
+use common::types::tree::Node;
 use lexer::lexer::Lexer;
-use parser::generate_tree::generate_tree;
-use std::env;
+use parser::{generate_tree::generate_tree, lexem::Lexem};
+use std::{cell::RefCell, env, rc::Rc};
 
 fn main() {
 
@@ -25,6 +26,7 @@ fn main() {
 
     print!("\n");
     let lexer = Lexer::new(reader::new(file_path));
-    generate_tree(lexer);
+    let (tree, accept, error): (Rc<RefCell<Node<Lexem>>>, bool, bool) = generate_tree(lexer);
+    println!("Mermaid tree: {}, Accepted: {}, Error: {}", tree.borrow().generate_mermaid(), accept, error);
 }
 

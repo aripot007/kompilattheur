@@ -36,7 +36,7 @@ impl<T: std::fmt::Display> Node<T> {
         result.push_str("flowchart TD\n");
 
         let mut counter: usize = 0;
-        result.push_str(&format!("{}[{}]\n", counter, self.value));
+        result.push_str(&format!("{}[\"{}\"]\n", counter, self.value));
 
         fn generate_child<T: std::fmt::Display>(node: &Node<T>, counter: &mut usize) -> String {
             let mut result = String::new();
@@ -44,7 +44,7 @@ impl<T: std::fmt::Display> Node<T> {
             for child in node.get_children() {
                 let child_borrowed = &*child.borrow();
                 *counter += 1;
-                result.push_str(&format!("{}[{}]\n", counter, child.borrow().value));
+                result.push_str(&format!("{}[\"{}\"]\n", counter, child.borrow().value));
                 result.push_str(&format!("{} --> {}\n", nb, counter));
                 result.push_str(&generate_child(child_borrowed, counter));
             }
@@ -60,7 +60,6 @@ impl<T: std::fmt::Display> Node<T> {
 #[cfg(test)]
 mod tests {
     use super::Node;
-
 
     #[test]
     fn test_generate_mermaid() {

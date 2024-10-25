@@ -6,14 +6,14 @@ pub struct Node<T> {
     pub childs: Vec<Rc<RefCell<Node<T>>>>,
 }
 
-pub fn new<T>(value: T) -> Rc<RefCell<Node<T>>> {
-    Rc::new(RefCell::new(Node {
-        value,
-        childs: Vec::new(),
-    }))
-}
-
 impl<T: std::fmt::Display> Node<T> {
+    pub fn new(value: T) -> Rc<RefCell<Node<T>>> {
+        Rc::new(RefCell::new(Node {
+            value,
+            childs: Vec::new(),
+        }))
+    }
+
     pub fn get_children(&self) -> Vec<Rc<RefCell<Node<T>>>> {
         self.childs.clone()
     }
@@ -24,10 +24,8 @@ impl<T: std::fmt::Display> Node<T> {
 
     pub fn remove_child(&mut self, n: usize) -> Vec<Rc<RefCell<Node<T>>>> {
         let mut result = Vec::new();
-        for i in 0..self.childs.len() {
-            if i != n {
-                result.push(self.childs[i].clone());
-            }
+        if n < self.childs.len() {
+            result = self.childs.remove(n).borrow().get_children();
         }
         result
     }
@@ -60,16 +58,17 @@ impl<T: std::fmt::Display> Node<T> {
 
 #[cfg(test)]
 mod tests {
-    use super::new;
+    use super::Node;
+
 
     #[test]
     fn test_generate_mermaid() {
-        let root = new("root");
-        let child1 = new("child1");
-        let child11 = new("child11");
+        let root = Node::new("root");
+        let child1 = Node::new("child1");
+        let child11 = Node::new("child11");
         child1.borrow_mut().add_child(child11);
         root.borrow_mut().add_child(child1);
-        let child2 = new("child2");
+        let child2 = Node::new("child2");
         root.borrow_mut().add_child(child2);
 
         let result = root.borrow().generate_mermaid();
@@ -84,19 +83,19 @@ mod tests {
             "0 --> 3\n"
         );
 
-        print!("{}", result);
+        println!("{}", result);
 
         assert!(expected == result);
     }
 
     #[test]
     fn test_remove_child() {
-        let root = new("root");
-        let child1 = new("child1");
-        let child11 = new("child11");
+        let root = Node::new("root");
+        let child1 = Node::new("child1");
+        let child11 = Node::new("child11");
         child1.borrow_mut().add_child(child11);
         root.borrow_mut().add_child(child1);
-        let child2 = new("child2");
+        let child2 = Node::new("child2");
         root.borrow_mut().add_child(child2);
 
         let children = root.borrow_mut().remove_child(0);
@@ -104,6 +103,6 @@ mod tests {
         println!("{:?}", children[0].borrow().value);
 
         assert!(children.len() == 1);
-        assert!(children[0].borrow().value == "child2");
+        assert!(children[0].borrow().value == "child11");
     }
 }

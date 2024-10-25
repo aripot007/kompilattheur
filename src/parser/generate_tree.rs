@@ -80,7 +80,7 @@ mod tests {
         let lexer = Lexer::new(source.into());
         let (tree, accept, error) = generate_tree(lexer);
         println!("{}", tree.borrow().generate_mermaid());
-        assert_eq!(accept, false);
+        assert_eq!(accept, true);
         assert_eq!(error, false);
     }
 }

@@ -74,12 +74,12 @@ mod tests {
         let result = root.borrow().generate_mermaid();
         let expected = concat!(
             "flowchart TD\n",
-            "0[root]\n",
-            "1[child1]\n",
+            "0[\"root\"]\n",
+            "1[\"child1\"]\n",
             "0 --> 1\n",
-            "2[child11]\n",
+            "2[\"child11\"]\n",
             "1 --> 2\n",
-            "3[child2]\n",
+            "3[\"child2\"]\n",
             "0 --> 3\n"
         );
 

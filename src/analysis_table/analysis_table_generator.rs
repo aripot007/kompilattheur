@@ -1,9 +1,8 @@
 use std::{fs::{self, read_to_string, File}, io::{self, BufRead, BufReader, Read}, iter::Product};
 
-use crate::{generator::grammar::ParsedLexem, parser::lexem::Lexem};
+use crate::{analysis_table::grammar::ParsedLexem, parser::lexem::Lexem};
 
 use super::grammar::{self, Grammar};
-
 
 /// Parse the first lexem name of a string
 fn parse_lexem_name(name: &str) -> &str{

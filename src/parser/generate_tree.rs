@@ -1,7 +1,7 @@
 use crate::lexer::lexer::Lexer;
-use crate::parser::analysis_table::get_analysis_table;
-
-use super::{analysis_table::AnalysisTable, lexem::Lexem};
+use crate::analysis_table::generated_table::get_analysis_table;
+use super::lexem::Lexem;
+use crate::analysis_table::analysis_table::AnalysisTable;
 
 pub fn generate_tree(mut lexer: Lexer) -> (bool, bool) {
     let analysis_table: AnalysisTable = get_analysis_table();

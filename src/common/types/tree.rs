@@ -23,6 +23,10 @@ impl<T: std::fmt::Display> Node<T> {
         self.childs.push(child);
     }
 
+    pub fn insert_child(&mut self, index: usize, child: Rc<RefCell<Node<T>>>) {
+        self.childs.insert(index, child);
+    }
+
     pub fn remove_child(&mut self, n: usize) -> Vec<Rc<RefCell<Node<T>>>> {
         let mut result = Vec::new();
         if n < self.childs.len() {

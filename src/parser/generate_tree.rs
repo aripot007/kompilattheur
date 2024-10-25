@@ -16,16 +16,18 @@ pub fn generate_tree(mut lexer: Lexer) -> (Rc<RefCell<Node<Lexem>>>, bool, bool)
     let mut input = lexer.next().unwrap();
 
     while !error && !accept {
-        println!("Stack: {:?}, Input: {}", stack, input);
+        //println!("Stack: {:?}, Input: {}", stack, input);
         let x = stack.pop();
-        println!("Tree: {:?}", tree.borrow());
-        println!("Node: {:?}", x);
+        //println!("Tree: {:?}", tree.borrow());
+        //println!("Node: {:?}", x);
         match x {
             Some(node) => {
                 let lexem = node.borrow_mut().value.clone();
                 match lexem {
                     Lexem::Terminal(token) => {
                         if token.is_same_type(&input) {
+                            //println!("Input: {:?}", input);
+                            node.borrow_mut().value = Lexem::Terminal(input.clone());
                             input = lexer.next().unwrap();
                         } else {
                             error = true;
@@ -39,7 +41,7 @@ pub fn generate_tree(mut lexer: Lexer) -> (Rc<RefCell<Node<Lexem>>>, bool, bool)
                                 for lexem in lexems.iter().rev() {
                                     let new_node = Node::new((*lexem).clone());
                                     stack.push(new_node.clone());
-                                    node.borrow_mut().add_child(new_node.clone());
+                                    node.borrow_mut().insert_child(0, new_node.clone());
                                 }
                             }
                             None => {
@@ -69,16 +71,16 @@ mod tests {
 
     #[test]
     fn test_generate_tree() {
-        let source = "1 + 1";
-        let lexer = Lexer::new(source.into());
-        for token in lexer {
-            print!("{}", token);
-        }
-        print!("\n");
+        let source = "2 + 5 * 7";
+        // let lexer = Lexer::new(source.into());
+        // for token in lexer {
+        //     print!("{}", token);
+        // }
+        // print!("\n");
         let lexer = Lexer::new(source.into());
         let (tree, accept, error) = generate_tree(lexer);
         println!("{}", tree.borrow().generate_mermaid());
-        assert_eq!(accept, true);
+        assert_eq!(accept, false);
         assert_eq!(error, false);
     }
 }

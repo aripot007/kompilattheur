@@ -15,6 +15,18 @@ impl AnalysisTable {
     }
 }
 
+pub fn get_non_terminal_name(id: &usize) -> String {
+    match id {
+        0 => "E",
+        1 => "E'",
+        2 => "T",
+        3 => "T'",
+        4 => "F",
+        _ => panic!("Unknown non terminal id"),
+    }
+    .to_string()
+}
+
 pub fn get_analysis_table() -> AnalysisTable {
     let analysis_table = AnalysisTable {
         table: [

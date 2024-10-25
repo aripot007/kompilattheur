@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use core::fmt::Display;
 
 use crate::{common::types::token::{IdToken, NumToken, Token}, parser::lexem::Lexem};
@@ -51,8 +51,16 @@ pub struct Grammar {
     /// Non terminaux produisant le mot vide
     empty_word_producers: Vec<ParsedLexem>,
 
+    /// Tableau contenant true pour les non terminaux produisant le mot vide
+    empty_word_producers_ids: Vec<bool>,
+
     /// Permet de savoir si la liste des non terminaux produisant le mot vide a été calculée
     empty_word_producers_computed: bool,
+
+    /// Liste des premiers pour les non terminaux
+    firsts: Vec<HashSet<Token>>,
+
+    firsts_computed: bool,
 
 }
 
@@ -60,6 +68,17 @@ pub struct Grammar {
 macro_rules! terminal {
     ($name: expr, $token: expr) => {
         ParsedLexem {name: $name.to_string(), lexem: Lexem::Terminal($token)}
+    };
+}
+
+/// Renvoie l'id d'un ParsedLexem non terminal
+/// Panic si le ParsedLexem n'est pas un non terminal
+macro_rules! non_terminal_id {
+    ($parsed_lexem: expr) => {
+        match $parsed_lexem.lexem {
+            Lexem::Terminal(_) => panic!("Trying to get terminal id from non-terminal ParsedLexem"),
+            Lexem::NonTerminal(id) => id,
+        }
     };
 }
 
@@ -71,7 +90,10 @@ impl Grammar {
             next_non_terminal_id: 0,
             non_terminal_lexems: HashMap::new(),
             empty_word_producers: Vec::new(),
+            empty_word_producers_ids: Vec::new(),
             empty_word_producers_computed: false,
+            firsts: Vec::new(),
+            firsts_computed: false,
         }
     }
 
@@ -169,17 +191,6 @@ impl Grammar {
     /// Calcule la liste des non-terminaux produisant le mot vide
     fn compute_empty_word_producers(&mut self) {
 
-        /// Renvoie l'id d'un ParsedLexem non terminal
-        /// Panic si le ParsedLexem n'est pas un non terminal
-        macro_rules! non_terminal_id {
-            ($parsed_lexem: expr) => {
-                match $parsed_lexem.lexem {
-                    Lexem::Terminal(_) => panic!("Trying to get terminal id from non-terminal ParsedLexem"),
-                    Lexem::NonTerminal(id) => id,
-                }
-            };
-        }
-
         let nb_non_terminal = self.non_terminal_lexems.len();
 
         // Tabeau de booléen des non terminaux produisant le mot vid
@@ -227,6 +238,100 @@ impl Grammar {
             .filter(|entry| producers[non_terminal_id!(entry.1)])
             .map(|entry| entry.1.clone())
             .collect();
+
+        self.empty_word_producers_ids = producers;
+    }
+
+    /// Renvoie les premiers de tous les non terminaux
+    pub fn firsts(&mut self) -> &Vec<HashSet<Token>> {
+        if !self.firsts_computed {
+            self.compute_firsts();
+        }
+        &self.firsts
+    }
+
+    /// Renvoie les premiers pour un non terminal
+    pub fn get_firsts(&mut self, lexem: &Lexem) -> &HashSet<Token> {
+        if !self.firsts_computed {
+            self.compute_firsts();
+        }
+
+        match lexem {
+            Lexem::Terminal(_) => panic!("Trying to get firsts for a terminal"),
+            Lexem::NonTerminal(id) => &self.firsts[*id],
+        }
+    }
+
+    fn compute_firsts(&mut self) {
+
+        // Initialise des ensembles vides pour les premiers de chaque non terminal
+        let mut firsts: Vec<HashSet<Token>> = vec![HashSet::new(); self.non_terminal_lexems.len()];
+
+        // Calcule les producteurs de mots vide si ce n'est pas déjà fait
+        // Nécessaire pour utiliser Self::produces_empty_word_unmut
+        if !self.empty_word_producers_computed {
+            self.compute_empty_word_producers();
+        }
+
+        loop {
+            let mut changed = false;
+
+            for rule in &self.rules {
+
+                let start_id = non_terminal_id!(rule.start);
+
+                for lexem in &rule.production {
+
+                    if let Lexem::Terminal(token) = &lexem.lexem {
+                        changed = firsts[start_id].insert(token.clone()) || changed;
+                        break;
+                    
+                    } else if let Lexem::NonTerminal(id) = &lexem.lexem {
+                        
+                        let firsts_copy: Vec<Token> = firsts[*id].iter().map(|t| t.clone()).collect();
+                        
+                        for first in firsts_copy {
+                            changed = firsts[start_id].insert(first) || changed;
+                        }
+
+                        if !self.produces_empty_word_unmut(&lexem.lexem) {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if !changed {
+                break;
+            }
+        }
+
+        self.firsts = firsts;
+        self.firsts_computed = true;
+    }
+
+    /// Détermine si un Lexem peut produire le mot vide.
+    /// Calcule les producteurs de mot vide si ils n'ont pas été calculés
+    pub fn produces_empty_word(&mut self, lexem: &Lexem) -> bool {
+        if !self.empty_word_producers_computed {
+            self.compute_empty_word_producers();
+        }
+        match lexem {
+            Lexem::Terminal(_) => false,
+            Lexem::NonTerminal(id) => *self.empty_word_producers_ids.get(*id).unwrap_or(&false),
+        }
+    }
+
+    /// Détermine si un Lexem peut produire le mot vide, sans calculer les producteurs de
+    /// mot vide. Si les producteurs de mot vide n'ont pas été calculés, panique.
+    pub fn produces_empty_word_unmut(&self, lexem: &Lexem) -> bool {
+        if !self.empty_word_producers_computed {
+            panic!("Trying to get empty word producers without computing it first");
+        }
+        match lexem {
+            Lexem::Terminal(_) => false,
+            Lexem::NonTerminal(id) => *self.empty_word_producers_ids.get(*id).unwrap_or(&false),
+        }
     }
 
 }

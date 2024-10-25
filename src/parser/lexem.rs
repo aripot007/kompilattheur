@@ -16,7 +16,10 @@ impl Debug for Lexem {
 
 impl Display for Lexem {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "{}", self.debug())
+        match self {
+            Lexem::Terminal(token) => write!(f, "{}", token),
+            Lexem::NonTerminal(id) => write!(f, "{}", id),   
+        }
     }
 }
 

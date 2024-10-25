@@ -7,10 +7,10 @@ use crate::{common::types::token::{IdToken, NumToken, Token}, parser::lexem::Lex
 #[derive(Clone, Debug)]
 pub struct ParsedLexem {
     /// Nom du lexem dans le fichier de la grammaire
-    name: String,
+    pub name: String,
 
     /// type Lexem utilisé dans le reste du compilateur
-    lexem: Lexem,
+    pub lexem: Lexem,
 }
 
 impl Display for ParsedLexem {
@@ -43,7 +43,7 @@ pub struct Grammar {
 
     /// Règles de la grammaire
     pub rules: Vec<Rule>,
-    non_terminal_lexems: HashMap<String, ParsedLexem>,
+    pub non_terminal_lexems: HashMap<String, ParsedLexem>,
     next_non_terminal_id: usize,
 
 }

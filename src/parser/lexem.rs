@@ -2,6 +2,7 @@ use std::fmt::{Debug, Formatter, Result}; // Add Debug trait import
 
 use crate::common::types::token::Token;
 
+#[derive(Clone)]
 pub enum Lexem {
     Terminal(Token),
     NonTerminal(usize),

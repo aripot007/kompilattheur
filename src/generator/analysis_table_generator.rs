@@ -118,11 +118,41 @@ pub fn generate_parsing_table(input_file: &str, output_file: &str) {
 
     let mut grammar = parse_grammar(input_file);
 
+    println!("Non terminaux : ");
+
+    for (name, lexem) in grammar.non_terminal_lexems.iter() {
+        let Lexem::NonTerminal(id) = lexem.lexem else {
+            panic!();
+        };
+        println!("{} ({})", name, id);
+    }
+
+    println!("Producteurs de mot vide : ");
+
+    let producers = grammar.empty_word_producers();
+
+    for p in producers {
+        print!("{} ", p);
+    }
+    println!("");
+
+    println!("Premiers : ");
+
     let firsts = grammar.firsts();
 
     let mut i = 0;
     for f in firsts {
         println!("P({}) : {:?}", i, f);
+        i += 1;
+    }
+
+    println!("Suivants : ");
+    
+    let follows = grammar.follows();
+
+    let mut i = 0;
+    for f in follows {
+        println!("S({}) : {:?}", i, f);
         i += 1;
     }
 

@@ -62,6 +62,11 @@ pub struct Grammar {
 
     firsts_computed: bool,
 
+    /// Liste des suivants pour les non terminaux
+    follows: Vec<HashSet<Token>>,
+
+    follows_computed: bool,
+
 }
 
 /// Crée le ParsedLexem correspondant à un lexem terminal
@@ -94,6 +99,8 @@ impl Grammar {
             empty_word_producers_computed: false,
             firsts: Vec::new(),
             firsts_computed: false,
+            follows: Vec::new(),
+            follows_computed: false,
         }
     }
 
@@ -262,6 +269,64 @@ impl Grammar {
         }
     }
 
+    /// Renvoie les premiers pour un non terminal, sans les calculer si besoin
+    /// Panique si les premiers n'ont pas déjà été calculés
+    pub fn get_firsts_unmut(&self, lexem: &Lexem) -> &HashSet<Token> {
+        if !self.firsts_computed {
+            panic!("Trying to get firsts without computing them")
+        }
+
+        match lexem {
+            Lexem::Terminal(_) => panic!("Trying to get firsts for a terminal"),
+            Lexem::NonTerminal(id) => &self.firsts[*id],
+        }
+    }
+
+    /// Calcule Premier(word) avec word un mot composé de terminaux et de non terminaux
+    pub fn get_word_firsts(&mut self, word: &[ParsedLexem]) -> HashSet<Token> {
+
+        let mut firsts: HashSet<Token> = HashSet::new();
+
+        for lexem in word {
+
+            if let Lexem::Terminal(token) = &lexem.lexem {
+                firsts.insert(token.clone());
+                break;
+
+            } else {
+                firsts.extend(self.get_firsts(&lexem.lexem).iter().map(|t| t.clone()));
+                if !self.produces_empty_word(&lexem.lexem) {
+                    break;
+                }
+            }
+        }
+
+        return firsts;
+    }
+
+    /// Calcule Premier(word) avec word un mot composé de terminaux et de non terminaux
+    /// Panique si les premiers et les producteurs de mot vide ne sont pas précalculés
+    pub fn get_word_firsts_unmut(&self, word: &[ParsedLexem]) -> HashSet<Token> {
+
+        let mut firsts: HashSet<Token> = HashSet::new();
+
+        for lexem in word {
+
+            if let Lexem::Terminal(token) = &lexem.lexem {
+                firsts.insert(token.clone());
+                break;
+
+            } else {
+                firsts.extend(self.get_firsts_unmut(&lexem.lexem).iter().map(|t| t.clone()));
+                if !self.produces_empty_word_unmut(&lexem.lexem) {
+                    break;
+                }
+            }
+        }
+
+        return firsts;
+    }
+
     fn compute_firsts(&mut self) {
 
         // Initialise des ensembles vides pour les premiers de chaque non terminal
@@ -332,6 +397,108 @@ impl Grammar {
             Lexem::Terminal(_) => false,
             Lexem::NonTerminal(id) => *self.empty_word_producers_ids.get(*id).unwrap_or(&false),
         }
+    }
+
+    /// Détermine si un mot peut produire le mot vide.
+    /// Calcule les producteurs de mot vide si ils n'ont pas été calculés
+    pub fn word_produces_empty_word(&mut self, word: &[ParsedLexem]) -> bool {
+        if !self.empty_word_producers_computed {
+            self.compute_empty_word_producers();
+        }
+        self.word_produces_empty_word_unmut(word)
+    }
+
+    /// Détermine si un mot peut produire le mot vide, sans calculer les producteurs de
+    /// mot vide. Si les producteurs de mot vide n'ont pas été calculés, panique.
+    pub fn word_produces_empty_word_unmut(&self, word: &[ParsedLexem]) -> bool {
+        if !self.empty_word_producers_computed {
+            panic!("Trying to get empty word producers without computing it first");
+        }
+
+        for lexem in word {
+            if let Lexem::Terminal(_) = &lexem.lexem {
+                return false;
+            }
+            if !self.empty_word_producers_ids[non_terminal_id!(lexem)] {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    pub fn follows(&mut self) -> &Vec<HashSet<Token>> {
+        if !self.follows_computed {
+            self.compute_follows();
+        }
+        &self.follows
+    }
+
+    fn compute_follows(&mut self) {
+
+        // Initialise des ensembles vides pour les suivants de chaque non terminal
+        let mut follows: Vec<HashSet<Token>> = vec![HashSet::new(); self.non_terminal_lexems.len()];
+
+        // Préalcule les premiers si besoin
+        if !self.firsts_computed {
+            self.compute_firsts();
+        }
+
+        // Préalcule les producteurs de mot vide si besoin
+        if !self.empty_word_producers_computed {
+            self.compute_empty_word_producers();
+        }
+        
+        
+        // Initialise l'axiome. On suppose que le "$" est représenté par le token EOF
+        follows[0].insert(Token::EOF);
+
+
+        loop {
+
+            let mut changed = false;
+
+            for rule in &self.rules {
+    
+                let mut current_lexem_index: usize = 0;
+    
+                for lexem in &rule.production {
+    
+                    let lexem_id = match &lexem.lexem {
+                        Lexem::Terminal(_) => {
+                            current_lexem_index += 1;
+                            continue;
+                        },
+                        Lexem::NonTerminal(id) => *id,
+                    };
+    
+                    // Le lexem actuel n'est pas terminal, on ajoute les premiers de la suite du mot aux suivants de ce lexem
+                    for t in self.get_word_firsts_unmut(&rule.production[current_lexem_index + 1 ..]) {
+                        changed = follows[lexem_id].insert(t.clone()) || changed;
+                    }
+
+                    // Si la suite du mot peut devenir le mot vide, on ajoute les suivants
+                    // du terminal à gauche de la règle
+                    if self.word_produces_empty_word_unmut(&rule.production[current_lexem_index + 1 ..]) {
+                        
+                        let follows_copy: Vec<Token> = follows[non_terminal_id!(rule.start)].iter().cloned().collect();
+                        for t in follows_copy {
+                            changed = follows[lexem_id].insert(t.clone()) || changed;
+                        }
+
+                    }
+
+                    current_lexem_index += 1;
+
+                }
+            }
+
+            if !changed {
+                break;
+            }
+        }
+
+        self.follows_computed = true;
+        self.follows = follows;
     }
 
 }

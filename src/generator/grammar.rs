@@ -43,8 +43,16 @@ pub struct Grammar {
 
     /// Règles de la grammaire
     pub rules: Vec<Rule>,
+
+    /// Lexemes non terminaux
     pub non_terminal_lexems: HashMap<String, ParsedLexem>,
     next_non_terminal_id: usize,
+
+    /// Non terminaux produisant le mot vide
+    empty_word_producers: Vec<ParsedLexem>,
+
+    /// Permet de savoir si la liste des non terminaux produisant le mot vide a été calculée
+    empty_word_producers_computed: bool,
 
 }
 
@@ -62,6 +70,8 @@ impl Grammar {
             rules: Vec::new(),
             next_non_terminal_id: 0,
             non_terminal_lexems: HashMap::new(),
+            empty_word_producers: Vec::new(),
+            empty_word_producers_computed: false,
         }
     }
 
@@ -136,7 +146,6 @@ impl Grammar {
         }
     }
 
-
     /// Ajoute une règle à la grammaire en utilisant les lexems 
     /// déjà parsés ou en en créant des nouveaux si besoin
     pub fn create_rule(&mut self, start: &str, products: Vec<String>) {
@@ -146,6 +155,78 @@ impl Grammar {
             production: products.iter().map(|l| self.get_lexem(l)).collect(),
         };
         self.rules.push(r);
+    }
+
+    pub fn empty_word_producers(&mut self) -> &Vec<ParsedLexem> {
+
+        if !self.empty_word_producers_computed {
+            self.compute_empty_word_producers();
+        }
+
+        &self.empty_word_producers
+    }
+
+    /// Calcule la liste des non-terminaux produisant le mot vide
+    fn compute_empty_word_producers(&mut self) {
+
+        /// Renvoie l'id d'un ParsedLexem non terminal
+        /// Panic si le ParsedLexem n'est pas un non terminal
+        macro_rules! non_terminal_id {
+            ($parsed_lexem: expr) => {
+                match $parsed_lexem.lexem {
+                    Lexem::Terminal(_) => panic!("Trying to get terminal id from non-terminal ParsedLexem"),
+                    Lexem::NonTerminal(id) => id,
+                }
+            };
+        }
+
+        let nb_non_terminal = self.non_terminal_lexems.len();
+
+        // Tabeau de booléen des non terminaux produisant le mot vid
+        let mut producers: Vec<bool> = vec![false; nb_non_terminal];
+
+        loop {
+
+            let mut changed = false;
+
+            for rule in &self.rules {
+
+                let start_lexem_id = non_terminal_id!(rule.start);
+
+                // Skip rules that starts with an empty word producer
+                if producers[start_lexem_id] {
+                    continue;
+                }
+
+                // Check if production is comprised of empty word producers only
+                let produces_empty_word = rule.production.iter()
+                    .all(|lexem| {
+                        match lexem.lexem {
+                            Lexem::Terminal(_) => false,
+                            Lexem::NonTerminal(id) => producers[id],
+                        }
+                    });
+
+                if produces_empty_word {
+                    changed = true;
+                    producers[start_lexem_id] = true;
+                }
+            }
+
+            if !changed {
+                break;
+            }
+
+        }
+        
+        self.empty_word_producers_computed = true;
+
+        // Récupère les non terminaux correspondant
+        self.empty_word_producers = self.non_terminal_lexems
+            .iter()
+            .filter(|entry| producers[non_terminal_id!(entry.1)])
+            .map(|entry| entry.1.clone())
+            .collect();
     }
 
 }

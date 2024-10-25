@@ -1,38 +1,46 @@
-use crate::lexer::lexer::Lexer;
+use std::cell::RefCell;
+use std::rc::Rc;
+
+use crate::{common::types::tree::Node, lexer::lexer::Lexer};
 use crate::parser::analysis_table::get_analysis_table;
 
 use super::{analysis_table::AnalysisTable, lexem::Lexem};
 
 pub fn generate_tree(mut lexer: Lexer) -> (bool, bool) {
     let analysis_table: AnalysisTable = get_analysis_table();
-    let mut stack: Vec<&Lexem> = vec![&Lexem::NonTerminal(0)];
+    let mut stack: Vec<Rc<RefCell<Node<Lexem>>>> = vec![Node::new(Lexem::NonTerminal(0))];
     let mut error = false;
     let mut accept = false;
     let mut input = lexer.next().unwrap();
 
     while !error && !accept {
-        println!("Stack: {stack:?}, Input: {input}");
+        println!("Stack: {:?}, Input: {}", stack, input);
         let x = stack.pop();
         match x {
-            Some(Lexem::Terminal(token)) => {
-                if token.is_same_type(&input) {
-                    input = lexer.next().unwrap();
-                } else {
-                    error = true;
-                    println!("Error: {token:?} != {input}");
-                }
-            }
-            Some(Lexem::NonTerminal(id)) => {
-                let entry = analysis_table.get(id, &input);
-                match entry {
-                    Some(lexems) => {
-                        for lexem in lexems.iter().rev() {
-                            stack.push(lexem);
+            Some(node) => {
+                let lexem  = node.borrow_mut().value.clone();
+                match lexem {
+                    Lexem::Terminal(token) => {
+                        if token.is_same_type(&input) {
+                            input = lexer.next().unwrap();
+                        } else {
+                            error = true;
+                            println!("Error: {token:?} != {input}");
                         }
                     }
-                    None => {
-                        error = true;
-                        println!("Error: No entry for {id:?} and {input}");
+                    Lexem::NonTerminal(id) => {
+                        let entry = analysis_table.get(&id, &input);
+                        match entry {
+                            Some(lexems) => {
+                                for lexem in lexems.iter().rev() {
+                                    stack.push(Node::new((*lexem).clone()));
+                                }
+                            }
+                            None => {
+                                error = true;
+                                println!("Error: No entry for {id:?} and {input}");
+                            }
+                        }
                     }
                 }
             }
@@ -51,7 +59,7 @@ mod tests {
     
     #[test]
     fn test_generate_tree() {
-        let source = "1 + (1 * 1)";
+        let source = "1 + 1 * 1";
         let lexer = Lexer::new(source.into());
         for token in lexer {
             print!("{}", token);

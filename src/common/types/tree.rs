@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+#[derive(Debug)]
 pub struct Node<T> {
     pub value: T,
     pub childs: Vec<Rc<RefCell<Node<T>>>>,

@@ -1,13 +1,20 @@
-use std::fmt::{Debug, Formatter, Result}; // Add Debug trait import
+use std::fmt::{Debug, Display, Formatter, Result}; // Add Debug trait import
 
 use crate::common::types::token::Token;
 
+#[derive(Clone)]
 pub enum Lexem {
     Terminal(Token),
     NonTerminal(usize),
 }
 
 impl Debug for Lexem {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "{}", self.debug())
+    }
+}
+
+impl Display for Lexem {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "{}", self.debug())
     }

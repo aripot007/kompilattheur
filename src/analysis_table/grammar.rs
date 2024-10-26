@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::{collections::{HashMap, HashSet}, process::Termination};
 use core::fmt::Display;
 
 use crate::{common::types::token::{IdToken, Token}, parser::lexem::Lexem};
@@ -16,6 +16,12 @@ pub struct ParsedLexem {
 impl Display for ParsedLexem {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.name)
+    }
+}
+
+impl Into<Lexem> for ParsedLexem {
+    fn into(self) -> Lexem {
+        self.lexem
     }
 }
 
@@ -499,6 +505,15 @@ impl Grammar {
 
         self.follows_computed = true;
         self.follows = follows;
+    }
+
+    /// Renvoie un HashSet des suivants d'un non terminal.
+    /// Si les suivants n'ont pas encore été calculés, panique
+    pub fn get_follows_unmut(&self, non_terminal: &ParsedLexem) -> &HashSet<Token> {
+        let Lexem::NonTerminal(id) = non_terminal.lexem else {
+            panic!("Trying to get follows of a terminal");
+        };
+        return &self.follows[id];
     }
 
 }

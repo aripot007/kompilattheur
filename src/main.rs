@@ -3,7 +3,7 @@ mod common;
 mod lexer;
 mod parser;
 mod analysis_table;
-use analysis_table::analysis_table_generator::generate_parsing_table;
+use analysis_table::analysis_table_generator::generate_analysis_table;
 use lexer::lexer::Lexer;
 use parser::generate_tree::generate_tree;
 use clap::Parser;
@@ -40,7 +40,7 @@ fn main() {
             None => "analysis_table.rs".to_string(),
         };
 
-        generate_parsing_table(&file_path, &output_file);
+        generate_analysis_table(&file_path, &output_file);
         return;
     }
 

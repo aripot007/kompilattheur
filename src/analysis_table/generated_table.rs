@@ -5,14 +5,20 @@
 /***************************************************/
 
 use super::analysis_table::AnalysisTable;
+use super::analysis_table_generator::generate_analysis_table;
 use crate::common::types::token::Token;
 use crate::parser::lexem::Lexem;
 use std::collections::HashMap;
 use std::mem::discriminant;
 
 pub fn get_analysis_table() -> AnalysisTable {
+
+    return generate_analysis_table("grammaire_ex.txt", "")
+
+    /*
     let analysis_table = AnalysisTable {
-        table: [
+        non_terminal_names: Vec::new(),
+        table: vec![
             HashMap::from([
                 (
                     discriminant(&Token::integer(0)),
@@ -75,4 +81,5 @@ pub fn get_analysis_table() -> AnalysisTable {
         ],
     };
     return analysis_table;
+    */
 }

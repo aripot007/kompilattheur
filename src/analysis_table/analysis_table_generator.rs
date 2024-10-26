@@ -1,6 +1,6 @@
 use std::{fs::{self, read_to_string, File}, io::{self, BufRead, BufReader, Read}, iter::Product};
 
-use crate::{analysis_table::grammar::ParsedLexem, parser::lexem::Lexem};
+use crate::{analysis_table::{analysis_table::AnalysisTable, grammar::ParsedLexem}, parser::lexem::Lexem};
 
 use super::grammar::{self, Grammar};
 
@@ -111,7 +111,7 @@ fn parse_grammar(input_file: &str) -> Grammar {
 }
 
 /// Génère une table d'analyse pour la grammaire contenue dans le fichier d'entrée
-pub fn generate_parsing_table(input_file: &str, output_file: &str) {
+pub fn generate_analysis_table(input_file: &str, output_file: &str) -> AnalysisTable{
     
     println!("Generate grammar from {} -> {}", input_file, output_file);
 
@@ -154,5 +154,7 @@ pub fn generate_parsing_table(input_file: &str, output_file: &str) {
         println!("S({}) : {:?}", i, f);
         i += 1;
     }
+
+    return AnalysisTable::from(&grammar);
 
 }

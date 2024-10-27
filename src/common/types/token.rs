@@ -72,9 +72,9 @@ impl Display for Token {
     
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Token::Identifier(_) => write!(f, "<Identifier, {}>", self.repr()),
-            Token::String(_) => write!(f, "<String, {}", self.repr()),
-            Token::Integer(_) => write!(f, "<Int, {}", self.repr()),
+            Token::Identifier(_) => write!(f, "< Identifier, {} >", self.repr()),
+            Token::String(_) => write!(f, "< String, {} >", self.repr()),
+            Token::Integer(_) => write!(f, "< Int, {} >", self.repr()),
             _ => write!(f, "<{}>", self.repr()),
         }
         

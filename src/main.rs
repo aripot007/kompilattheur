@@ -9,8 +9,10 @@ use analysis_table::AnalysisTable;
 use clap::{CommandFactory, Parser};
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs};
 use lexer::lexer::Lexer;
-use parser::generate_tree::generate_tree;
 use std::fs::File;
+use common::types::tree::Node;
+use parser::{generate_tree::generate_tree, lexem::Lexem};
+use std::{cell::RefCell, rc::Rc};
 
 fn main() {
 
@@ -43,6 +45,7 @@ fn compile(args: CompileArgs) {
     }
 
     print!("\n");
+
     let lexer = Lexer::new(reader::new(&file_path));
 
     let table = match &args.alternative_grammar {
@@ -50,7 +53,9 @@ fn compile(args: CompileArgs) {
         None => analysis_table::get_analysis_table(),
     };
 
-    generate_tree(lexer, &table);
+    let (tree, accept, error): (Rc<RefCell<Node<Lexem>>>, bool, bool) = generate_tree(lexer, &table);
+    println!("Mermaid tree: {}, Accepted: {}, Error: {}", tree.borrow().generate_mermaid(), accept, error);
+
 }
 
 fn generate_analysis_table(args: GenerateTableArgs) {

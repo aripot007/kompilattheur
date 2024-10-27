@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Args, Parser, Subcommand, ValueEnum};
+use clap_complete::Shell;
 
 #[derive(Debug, Parser)]
 #[command(args_conflicts_with_subcommands = true)]
@@ -22,6 +23,12 @@ pub enum Commands {
 
     /// Affiche la table d'analyse de la grammaire du compilateur au format markdown
     PrintAnalysisTable(PrintTableArgs),
+
+    /// Génère le fichier d'autocomplétion
+    GenerateAutocompletion {
+        #[arg()]
+        shell: Shell,
+    },
 }
 
 #[derive(Debug, Args)]

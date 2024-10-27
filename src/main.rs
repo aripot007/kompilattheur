@@ -4,9 +4,9 @@ mod lexer;
 mod parser;
 mod analysis_table;
 mod cli;
-use std::io::{stdout, Write};
+use std::io::{self, stdout, Write};
 use analysis_table::AnalysisTable;
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs};
 use lexer::lexer::Lexer;
 use parser::generate_tree::generate_tree;
@@ -16,11 +16,15 @@ fn main() {
 
     let args = cli::Cli::parse();
 
-    dbg!(&args);
-
     match args.command {
         Some(Commands::GenerateAnalysisTable(generate_args)) => generate_analysis_table(generate_args),
         Some(Commands::PrintAnalysisTable(print_args)) => print_analysis_table(print_args),
+        Some(Commands::GenerateAutocompletion {shell}) => {
+            let mut cmd = cli::Cli::command();
+            let name = cmd.get_name().to_string();
+            clap_complete::generate(shell, &mut cmd, name, &mut io::stdout());
+            return;
+        },
         None => compile(args.compile),
     }
 

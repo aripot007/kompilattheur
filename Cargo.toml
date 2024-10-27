@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
 indoc = "2"
+clap_complete = "4.5.35"

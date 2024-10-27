@@ -1,5 +1,6 @@
 mod markdown;
 mod plaintext;
+mod rust;
 use super::analysis_table::AnalysisTable;
 use std::{collections::HashMap, mem::Discriminant};
 use crate::common::types::token::Token;

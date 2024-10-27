@@ -3,7 +3,7 @@ use std::fmt::Display;
 
 #[derive(Clone, Hash, Debug)]
 pub struct NumToken {
-    value: u64,
+    pub value: u64,
 }
 
 impl PartialEq for NumToken {

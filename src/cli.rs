@@ -42,30 +42,45 @@ pub struct GenerateTableArgs {
     /// Change le format d'affichage de la table
     #[arg(long, short, require_equals = true, num_args = 0..=1, value_enum, default_value_t=TableFormat::Plaintext, requires("print_table"))]
     pub format: TableFormat,
+
+    /// Ajoute des commentaires
+    #[arg(long, action, alias("comments"))]
+    pub with_comments: bool,
 }
 
 
 #[derive(Debug, Args)]
+#[command(flatten_help = true)]
 pub struct PrintTableArgs {
 
     /// Utilise la grammaire contenue dans ce fichier à la place de celle du compilateur
     #[arg(long, short)]
     pub grammar_file: Option<PathBuf>,
 
-    /// Change le format d'affichage de la table
-    #[arg(long, short, require_equals = true, num_args = 0..=1, value_enum, default_value_t=TableFormat::Plaintext)]
-    pub format: TableFormat,
-
     /// Un fichier dans lequel écrire la table, au lieu de la sortie standard
     #[arg(name="output", short, long)]
     pub output_file: Option<PathBuf>,
+
+    #[arg(long, short, num_args = 0..=1, value_enum, default_value_t=TableFormat::Plaintext)]
+    pub format: TableFormat,
+
+    /// Ajoute des commentaires
+    #[arg(long, action, alias("comments"))]
+    pub with_comments: bool,
 
 }
 
 #[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TableFormat {
+
+    #[value(alias("plain"))]
     Plaintext,
+
+    #[value(alias("md"))]
     Markdown,
+
+    #[value(alias("rs"))]
+    Rust,
 }
 
 

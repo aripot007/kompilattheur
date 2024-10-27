@@ -52,31 +52,38 @@ fn generate_analysis_table(args: GenerateTableArgs) {
         Err(e) => panic!("Error opening file {:?} : {}", &args.output_file, e),
     };
     
-    write!(file, "{}", table).expect("Error writing to file");
+    write!(file, "{}", table.display_rust(args.with_comments)).expect("Error writing to file");
 
     if args.print_table {
-        _print_analysis_table(&table, None, args.format);
+        let print_args = PrintTableArgs {
+            output_file: None,
+            grammar_file: None,
+            format: args.format,
+            with_comments: args.with_comments
+        };
+        _print_analysis_table(&table, print_args);
     }
     
 }
 
 fn print_analysis_table(args: PrintTableArgs) {
-    let table = match args.grammar_file {
+    let table = match &args.grammar_file {
         Some(file) => analysis_table_generator::generate_analysis_table(&file),
         None => analysis_table::generated_table::get_analysis_table(),
     };
 
-   _print_analysis_table(&table, args.output_file, args.format);
+   _print_analysis_table(&table, args);
 }
 
-fn _print_analysis_table(table: &AnalysisTable, output_file: Option<PathBuf>, format: cli::TableFormat) {
-    let mut out_handle: Box<dyn std::io::Write> = match output_file {
+fn _print_analysis_table(table: &AnalysisTable, args: PrintTableArgs) {
+    let mut out_handle: Box<dyn std::io::Write> = match args.output_file {
         Some(file) => Box::new(File::create(file).expect("Error opening output file")),
         None => Box::new(stdout()),
     };
 
-    match format {
+    match args.format {
         cli::TableFormat::Plaintext => write!(out_handle, "{}", table.display_plain()),
         cli::TableFormat::Markdown => write!(out_handle, "{}", table.display_markdown()),
+        cli::TableFormat::Rust => write!(out_handle, "{}", table.display_rust(false)),
     }.expect("Error while printing table");
 }

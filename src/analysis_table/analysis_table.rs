@@ -32,10 +32,13 @@ impl AnalysisTable {
         };
 
         // Convert ParsedLexem to Lexem
-        let production: Vec<Lexem> = production.iter().map(|l| l.lexem.clone()).collect();
+        let production_vec: Vec<Lexem> = production.iter().map(|l| l.lexem.clone()).collect();
 
-        match self.table[*left_lexem_id].insert(discriminant(token), production) {
-            Some(prod) => todo!(),
+        match self.table[*left_lexem_id].insert(discriminant(token), production_vec) {
+            Some(prod) => {
+                let p2: Vec<Lexem> = production.iter().map(|l| l.lexem.clone()).collect();
+                panic!("Grammar is not LL(1) : conflicting rules on stack=[{left_non_terminal}] read=[{token}] : {prod:?} / {p2:?}")
+            },
             None => (),
         };
 

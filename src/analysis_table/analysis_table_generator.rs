@@ -113,8 +113,6 @@ fn parse_grammar(input_file: &str) -> Grammar {
 /// Génère une table d'analyse pour la grammaire contenue dans le fichier d'entrée
 pub fn generate_analysis_table(input_file: &str, output_file: &str) -> AnalysisTable{
     
-    println!("Generate grammar from {} -> {}", input_file, output_file);
-
     let mut grammar = parse_grammar(input_file);
 
     println!("Non terminaux : ");

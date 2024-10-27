@@ -40,7 +40,8 @@ fn main() {
             None => "analysis_table.rs".to_string(),
         };
 
-        generate_analysis_table(&file_path, &output_file);
+        let table = generate_analysis_table(&file_path, &output_file);
+        println!("{}", table);
         return;
     }
 

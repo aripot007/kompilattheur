@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::fmt;
 use indoc::writedoc;
 
-use crate::common::types::token::{NumToken, Token};
+use crate::common::types::token::Token;
 use crate::parser::lexem::Lexem;
 
 use super::generic_token_repr;

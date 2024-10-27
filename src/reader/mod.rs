@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 use std::fs::File;
 use std::io;
 use std::io::prelude::Read;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 pub struct Reader {
     bytes: Box<dyn Iterator<Item = Result<u8, io::Error>>>,

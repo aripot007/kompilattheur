@@ -4,7 +4,7 @@ mod lexer;
 mod parser;
 mod analysis_table;
 mod cli;
-use std::{fmt::Display, io::Write, path::PathBuf};
+use std::{io::Write, path::PathBuf};
 use analysis_table::analysis_table_generator;
 use clap::Parser;
 use cli::{Commands, CompileArgs, GenerateTableArgs};

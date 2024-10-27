@@ -55,6 +55,7 @@ pub struct Grammar {
     next_non_terminal_id: usize,
 
     /// Non terminaux produisant le mot vide
+    #[allow(dead_code)]
     empty_word_producers: Vec<ParsedLexem>,
 
     /// Tableau contenant true pour les non terminaux produisant le mot vide

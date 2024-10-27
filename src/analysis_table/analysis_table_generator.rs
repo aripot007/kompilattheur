@@ -1,6 +1,6 @@
 use std::{fs, path::Path};
 
-use crate::{analysis_table::analysis_table::AnalysisTable, parser::lexem::Lexem};
+use crate::analysis_table::AnalysisTable;
 
 use super::grammar::Grammar;
 
@@ -72,7 +72,6 @@ fn parse_grammar(input_file: &Path) -> Grammar {
     for ruleset in file_without_comments.split(";") {
 
         if ruleset.len() == 0 {
-            println!("Skipping empty ruleset {}", i);
             continue;
         }
 
@@ -103,52 +102,18 @@ fn parse_grammar(input_file: &Path) -> Grammar {
         i += 1;
     }
 
+    // Precompute empty word producers, firsts and follows
+    grammar.empty_word_producers();
+    grammar.firsts();
+    grammar.follows();
+
     return grammar;
 }
 
 /// Génère une table d'analyse pour la grammaire contenue dans le fichier d'entrée
 pub fn generate_analysis_table(input_file: &Path) -> AnalysisTable{
     
-    let mut grammar = parse_grammar(input_file);
-
-    println!("Non terminaux : ");
-
-    for (name, lexem) in grammar.non_terminal_lexems.iter() {
-        let Lexem::NonTerminal(id) = lexem.lexem else {
-            panic!();
-        };
-        println!("{} ({})", name, id);
-    }
-
-    println!("Producteurs de mot vide : ");
-
-    let producers = grammar.empty_word_producers();
-
-    for p in producers {
-        print!("{} ", p);
-    }
-    println!("");
-
-    println!("Premiers : ");
-
-    let firsts = grammar.firsts();
-
-    let mut i = 0;
-    for f in firsts {
-        println!("P({}) : {:?}", i, f);
-        i += 1;
-    }
-
-    println!("Suivants : ");
-    
-    let follows = grammar.follows();
-
-    let mut i = 0;
-    for f in follows {
-        println!("S({}) : {:?}", i, f);
-        i += 1;
-    }
-
+    let grammar = parse_grammar(input_file);
     return AnalysisTable::from(&grammar);
 
 }

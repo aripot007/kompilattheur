@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use clap::{Args, Parser, Subcommand};
+use clap::{Args, Parser, Subcommand, ValueEnum};
 
 #[derive(Debug, Parser)]
 #[command(args_conflicts_with_subcommands = true)]
@@ -21,12 +21,7 @@ pub enum Commands {
     GenerateAnalysisTable(GenerateTableArgs),
 
     /// Affiche la table d'analyse de la grammaire du compilateur au format markdown
-    PrintAnalysisTable {
-
-        /// Utilise la grammaire contenue dans ce fichier à la place de celle du compilateur
-        #[arg(long, short)]
-        grammar_file: Option<PathBuf>,
-    },
+    PrintAnalysisTable(PrintTableArgs),
 }
 
 #[derive(Debug, Args)]
@@ -40,10 +35,39 @@ pub struct GenerateTableArgs {
     #[arg(name="output", short, long, default_value="generated_table.rs")]
     pub output_file: PathBuf,
 
-    /// Affiche également la table générée au format markdown
+    /// Affiche également la table générée
     #[arg(short, long, action)]
     pub print_table: bool,
+
+    /// Change le format d'affichage de la table
+    #[arg(long, short, require_equals = true, num_args = 0..=1, value_enum, default_value_t=TableFormat::Plaintext, requires("print_table"))]
+    pub format: TableFormat,
 }
+
+
+#[derive(Debug, Args)]
+pub struct PrintTableArgs {
+
+    /// Utilise la grammaire contenue dans ce fichier à la place de celle du compilateur
+    #[arg(long, short)]
+    pub grammar_file: Option<PathBuf>,
+
+    /// Change le format d'affichage de la table
+    #[arg(long, short, require_equals = true, num_args = 0..=1, value_enum, default_value_t=TableFormat::Plaintext)]
+    pub format: TableFormat,
+
+    /// Un fichier dans lequel écrire la table, au lieu de la sortie standard
+    #[arg(name="output", short, long)]
+    pub output_file: Option<PathBuf>,
+
+}
+
+#[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TableFormat {
+    Plaintext,
+    Markdown,
+}
+
 
 #[derive(Debug, Args)]
 pub struct CompileArgs {

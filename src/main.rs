@@ -5,7 +5,7 @@ mod parser;
 mod analysis_table;
 mod cli;
 use std::io::{self, stdout, Write};
-use analysis_table::{get_analysis_table, setup_grammar, AnalysisTable};
+use analysis_table::{get_analysis_table, setup_analysis_table, AnalysisTable};
 use clap::{CommandFactory, Parser};
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs};
 use lexer::lexer::Lexer;
@@ -48,7 +48,7 @@ fn compile(args: CompileArgs) {
 
     let lexer = Lexer::new(reader::new(&file_path));
 
-    setup_grammar(args.alternative_grammar.as_deref());
+    setup_analysis_table(args.alternative_grammar.as_deref());
 
     let table = get_analysis_table();
     let (tree, accept, error): (Rc<RefCell<Node<Lexem>>>, bool, bool) = generate_tree(lexer, &table);
@@ -81,7 +81,7 @@ fn generate_analysis_table(args: GenerateTableArgs) {
 
 fn print_analysis_table(args: PrintTableArgs) {
     
-    setup_grammar(args.grammar_file.as_deref());
+    setup_analysis_table(args.grammar_file.as_deref());
 
    _print_analysis_table(&get_analysis_table(), args);
 }

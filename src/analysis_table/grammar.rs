@@ -159,6 +159,7 @@ impl Grammar {
             "if" => terminal!("if", Token::If),
             "else" => terminal!("else", Token::Else),
             "for" => terminal!("for", Token::For),
+            "in" => terminal!("in", Token::In),
             "def" => terminal!("def", Token::Def),
             "return" => terminal!("return", Token::Return),
             "print" => terminal!("print", Token::Print),

@@ -1,4 +1,4 @@
-use std::{fs::{self, read_to_string, File}, io::{self, BufRead, BufReader, Read}, iter::Product};
+use std::{fs::{self, read_to_string, File}, io::{self, BufRead, BufReader, Read}, iter::Product, path::{Path, PathBuf}};
 
 use crate::{analysis_table::{analysis_table::AnalysisTable, grammar::ParsedLexem}, parser::lexem::Lexem};
 
@@ -53,13 +53,13 @@ fn parse_all_lexem_names(names_str: &str) -> Vec<String> {
 }
 
 /// Parse une grammaire
-fn parse_grammar(input_file: &str) -> Grammar {
+fn parse_grammar(input_file: &Path) -> Grammar {
 
     let mut grammar = Grammar::new();
 
     let f = match File::open(input_file) {
         Ok(f) => f,
-        Err(e) => panic!("Erreur lors de l'ouverture du fichier {} : {}", input_file, e),
+        Err(e) => panic!("Erreur lors de l'ouverture du fichier {:?} : {}", input_file, e),
     };
 
     let reader = fs::read_to_string(input_file).unwrap();
@@ -111,7 +111,7 @@ fn parse_grammar(input_file: &str) -> Grammar {
 }
 
 /// Génère une table d'analyse pour la grammaire contenue dans le fichier d'entrée
-pub fn generate_analysis_table(input_file: &str) -> AnalysisTable{
+pub fn generate_analysis_table(input_file: &Path) -> AnalysisTable{
     
     let mut grammar = parse_grammar(input_file);
 

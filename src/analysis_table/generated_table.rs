@@ -10,10 +10,11 @@ use crate::common::types::token::Token;
 use crate::parser::lexem::Lexem;
 use std::collections::HashMap;
 use std::mem::discriminant;
+use std::path::PathBuf;
 
 pub fn get_analysis_table() -> AnalysisTable {
 
-    return generate_analysis_table("grammaire.txt")
+    return generate_analysis_table(&PathBuf::from("grammaire.txt"))
 
     /*
     let analysis_table = AnalysisTable {

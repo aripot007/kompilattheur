@@ -1,8 +1,8 @@
-use std::{fs::{self, read_to_string, File}, io::{self, BufRead, BufReader, Read}, iter::Product, path::{Path, PathBuf}};
+use std::{fs, path::Path};
 
-use crate::{analysis_table::{analysis_table::AnalysisTable, grammar::ParsedLexem}, parser::lexem::Lexem};
+use crate::{analysis_table::analysis_table::AnalysisTable, parser::lexem::Lexem};
 
-use super::grammar::{self, Grammar};
+use super::grammar::Grammar;
 
 /// Parse the first lexem name of a string
 fn parse_lexem_name(name: &str) -> &str{
@@ -57,12 +57,10 @@ fn parse_grammar(input_file: &Path) -> Grammar {
 
     let mut grammar = Grammar::new();
 
-    let f = match File::open(input_file) {
-        Ok(f) => f,
-        Err(e) => panic!("Erreur lors de l'ouverture du fichier {:?} : {}", input_file, e),
+    let reader = match fs::read_to_string(input_file) {
+        Ok(s) => s,
+        Err(e) =>  panic!("Erreur lors de l'ouverture du fichier {:?} : {}", input_file, e),
     };
-
-    let reader = fs::read_to_string(input_file).unwrap();
 
     let file_without_comments: String = reader
         .lines()
@@ -94,14 +92,12 @@ fn parse_grammar(input_file: &Path) -> Grammar {
         let mut products = products.to_string();
         products.remove(0);
 
-        let mut rule_nb = 0;
         for prod in products.split("|") {
 
             let produced_lexems = parse_all_lexem_names(prod);
 
             grammar.create_rule(start, produced_lexems);
 
-            rule_nb += 1;
         }
 
         i += 1;

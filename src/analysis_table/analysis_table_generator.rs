@@ -111,7 +111,7 @@ fn parse_grammar(input_file: &str) -> Grammar {
 }
 
 /// Génère une table d'analyse pour la grammaire contenue dans le fichier d'entrée
-pub fn generate_analysis_table(input_file: &str, output_file: &str) -> AnalysisTable{
+pub fn generate_analysis_table(input_file: &str) -> AnalysisTable{
     
     let mut grammar = parse_grammar(input_file);
 

@@ -13,7 +13,7 @@ use std::mem::discriminant;
 
 pub fn get_analysis_table() -> AnalysisTable {
 
-    return generate_analysis_table("grammaire_ex.txt", "")
+    return generate_analysis_table("grammaire.txt")
 
     /*
     let analysis_table = AnalysisTable {

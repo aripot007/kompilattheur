@@ -1,9 +1,7 @@
-use std::{collections::HashMap, fmt, mem::Discriminant};
-use crate::common::types::token::Token;
-use crate::parser::lexem::Lexem;
+use std::fmt;
+use crate::analysis_table::formatters::construct_string_table;
 
 use super::super::analysis_table::AnalysisTable;
-use super::generic_token_repr;
 
 impl AnalysisTable {
     /// Formate la table d'analyse dans un format lisible en texte clair
@@ -14,57 +12,24 @@ impl AnalysisTable {
 
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 
-                // Map discriminants to an index to keep correct order in the table rows
-                let mut discriminant_ids: HashMap<Discriminant<Token>, usize> = HashMap::new();
-        
-                let mut next_id = 0;
-                for d in self.0.discriminant_tokens.keys() {
-                    if !discriminant_ids.contains_key(d) {
-                        discriminant_ids.insert(d.clone(), next_id);
-                        next_id += 1;
-                    }
-                }
-        
-                let nb_discriminants = next_id;
-        
-                // Construct strings in cell while keeping track of the max len for each column
-                let mut column_sizes: Vec<usize> = vec![0; nb_discriminants];
-                let mut discriminant_names: Vec<String> = vec![String::new(); nb_discriminants];
-        
+                let (str_table, discriminant_names) = construct_string_table(&self.0);
+                
+                let nb_discriminants = discriminant_names.len();
+
                 // Initialize column size with non terminal name
-                for (discr, token) in self.0.discriminant_tokens.iter() {
+                let mut column_sizes: Vec<usize> = discriminant_names.iter()
+                                                    .map(String::len)
+                                                    .collect();
         
-                    let name = generic_token_repr!(token);
-        
-                    let discr_id = discriminant_ids[discr];
-                    column_sizes[discr_id] = name.len();
-                    discriminant_names[discr_id] = name;
-                }
-        
-                // Fill table while keeping track of column max len
+                // Compute column sizes
                 let nb_non_terminals = self.0.table.len();
-                let mut str_table: Vec<Vec<String>> = vec![vec![String::new(); nb_discriminants]; nb_non_terminals];
         
-                for i in 0 .. nb_non_terminals {
-                    for (discr, word) in &self.0.table[i] {
+                for row in &str_table {
+                    for (col, word) in row.iter().enumerate() {
         
-                        let discr_id = discriminant_ids[discr];
-        
-                        // Compute word string
-                        let word_str: String = word.iter()
-                            .map(|lexem| {
-                                match lexem {
-                                    Lexem::NonTerminal(id) => self.0.non_terminal_names[*id].clone(),
-                                    Lexem::Terminal(token) => generic_token_repr!(token),
-                                }
-                            })
-                            .collect();
-        
-                        if word_str.len() > column_sizes[discr_id] {
-                            column_sizes[discr_id] = word_str.len();
+                        if word.len() > column_sizes[col] {
+                            column_sizes[col] = word.len();
                         }
-        
-                        str_table[i][discr_id] = word_str;
                     }
                 }
         

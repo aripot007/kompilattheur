@@ -5,7 +5,7 @@ mod parser;
 mod analysis_table;
 mod cli;
 use std::io::{self, stdout, Write};
-use analysis_table::AnalysisTable;
+use analysis_table::{get_analysis_table, setup_grammar, AnalysisTable};
 use clap::{CommandFactory, Parser};
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs};
 use lexer::lexer::Lexer;
@@ -48,11 +48,9 @@ fn compile(args: CompileArgs) {
 
     let lexer = Lexer::new(reader::new(&file_path));
 
-    let table = match &args.alternative_grammar {
-        Some(file) => analysis_table::generate_analysis_table(&file),
-        None => analysis_table::get_analysis_table(),
-    };
+    setup_grammar(args.alternative_grammar.as_deref());
 
+    let table = get_analysis_table();
     let (tree, accept, error): (Rc<RefCell<Node<Lexem>>>, bool, bool) = generate_tree(lexer, &table);
     println!("Mermaid tree: {}, Accepted: {}, Error: {}", tree.borrow().generate_mermaid(), accept, error);
 
@@ -82,12 +80,10 @@ fn generate_analysis_table(args: GenerateTableArgs) {
 }
 
 fn print_analysis_table(args: PrintTableArgs) {
-    let table = match &args.grammar_file {
-        Some(file) => analysis_table::generate_analysis_table(&file),
-        None => analysis_table::get_analysis_table(),
-    };
+    
+    setup_grammar(args.grammar_file.as_deref());
 
-   _print_analysis_table(&table, args);
+   _print_analysis_table(&get_analysis_table(), args);
 }
 
 fn _print_analysis_table(table: &AnalysisTable, args: PrintTableArgs) {

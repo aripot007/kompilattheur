@@ -45,6 +45,12 @@ impl AnalysisTable {
         // Save the token associated to the discriminant
         self.discriminant_tokens.insert(discriminant(token), token.clone());
     }
+
+    /// Renvoie le nom d'un lexem non terminal
+    pub fn get_non_terminal_name(&self, id: usize) -> &String {
+        return &self.non_terminal_names[id];
+    }
+
 }
 
 impl From<&Grammar> for AnalysisTable {

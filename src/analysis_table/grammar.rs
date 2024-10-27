@@ -66,11 +66,13 @@ pub struct Grammar {
     /// Liste des premiers pour les non terminaux
     firsts: Vec<HashSet<Token>>,
 
+    /// Permet de savoir si la liste des premiers a été calculée
     firsts_computed: bool,
 
     /// Liste des suivants pour les non terminaux
     follows: Vec<HashSet<Token>>,
 
+    /// Permet de savoir si la liste des suivants a été calculée
     follows_computed: bool,
 
 }
@@ -95,6 +97,7 @@ macro_rules! non_terminal_id {
 
 impl Grammar {
 
+    /// Crée une nouvelle grammaire vide
     pub fn new() -> Self {
         return Grammar {
             rules: Vec::new(),
@@ -184,6 +187,8 @@ impl Grammar {
 
     /// Ajoute une règle à la grammaire en utilisant les lexems 
     /// déjà parsés ou en en créant des nouveaux si besoin
+    /// 
+    /// Les producteurs de mot vide, premiers et suivants doivent être recalculés après l'appel à cette fonction
     pub fn create_rule(&mut self, start: &str, products: Vec<String>) {
         let r = Rule {
             id: self.rules.len(),
@@ -191,8 +196,13 @@ impl Grammar {
             production: products.iter().map(|l| self.get_lexem(l)).collect(),
         };
         self.rules.push(r);
+
+        self.empty_word_producers_computed = false;
+        self.firsts_computed = false;
+        self.follows_computed = false;
     }
 
+    /// Renvois tous les non-terminaux produisant le mod vide, en les calculant si besoin.
     pub fn empty_word_producers(&mut self) -> &Vec<ParsedLexem> {
 
         if !self.empty_word_producers_computed {
@@ -203,7 +213,7 @@ impl Grammar {
     }
 
     /// Calcule la liste des non-terminaux produisant le mot vide
-    fn compute_empty_word_producers(&mut self) {
+    pub fn compute_empty_word_producers(&mut self) {
 
         let nb_non_terminal = self.non_terminal_lexems.len();
 
@@ -264,18 +274,6 @@ impl Grammar {
         &self.firsts
     }
 
-    /// Renvoie les premiers pour un non terminal
-    pub fn get_firsts(&mut self, lexem: &Lexem) -> &HashSet<Token> {
-        if !self.firsts_computed {
-            self.compute_firsts();
-        }
-
-        match lexem {
-            Lexem::Terminal(_) => panic!("Trying to get firsts for a terminal"),
-            Lexem::NonTerminal(id) => &self.firsts[*id],
-        }
-    }
-
     /// Renvoie les premiers pour un non terminal, sans les calculer si besoin
     /// Panique si les premiers n'ont pas déjà été calculés
     pub fn get_firsts_unmut(&self, lexem: &Lexem) -> &HashSet<Token> {
@@ -287,28 +285,6 @@ impl Grammar {
             Lexem::Terminal(_) => panic!("Trying to get firsts for a terminal"),
             Lexem::NonTerminal(id) => &self.firsts[*id],
         }
-    }
-
-    /// Calcule Premier(word) avec word un mot composé de terminaux et de non terminaux
-    pub fn get_word_firsts(&mut self, word: &[ParsedLexem]) -> HashSet<Token> {
-
-        let mut firsts: HashSet<Token> = HashSet::new();
-
-        for lexem in word {
-
-            if let Lexem::Terminal(token) = &lexem.lexem {
-                firsts.insert(token.clone());
-                break;
-
-            } else {
-                firsts.extend(self.get_firsts(&lexem.lexem).iter().map(|t| t.clone()));
-                if !self.produces_empty_word(&lexem.lexem) {
-                    break;
-                }
-            }
-        }
-
-        return firsts;
     }
 
     /// Calcule Premier(word) avec word un mot composé de terminaux et de non terminaux
@@ -334,7 +310,8 @@ impl Grammar {
         return firsts;
     }
 
-    fn compute_firsts(&mut self) {
+    /// Calcule les premiers pour tous les non terminaux de la grammaire
+    pub fn compute_firsts(&mut self) {
 
         // Initialise des ensembles vides pour les premiers de chaque non terminal
         let mut firsts: Vec<HashSet<Token>> = vec![HashSet::new(); self.non_terminal_lexems.len()];
@@ -382,18 +359,6 @@ impl Grammar {
         self.firsts_computed = true;
     }
 
-    /// Détermine si un Lexem peut produire le mot vide.
-    /// Calcule les producteurs de mot vide si ils n'ont pas été calculés
-    pub fn produces_empty_word(&mut self, lexem: &Lexem) -> bool {
-        if !self.empty_word_producers_computed {
-            self.compute_empty_word_producers();
-        }
-        match lexem {
-            Lexem::Terminal(_) => false,
-            Lexem::NonTerminal(id) => *self.empty_word_producers_ids.get(*id).unwrap_or(&false),
-        }
-    }
-
     /// Détermine si un Lexem peut produire le mot vide, sans calculer les producteurs de
     /// mot vide. Si les producteurs de mot vide n'ont pas été calculés, panique.
     pub fn produces_empty_word_unmut(&self, lexem: &Lexem) -> bool {
@@ -404,15 +369,6 @@ impl Grammar {
             Lexem::Terminal(_) => false,
             Lexem::NonTerminal(id) => *self.empty_word_producers_ids.get(*id).unwrap_or(&false),
         }
-    }
-
-    /// Détermine si un mot peut produire le mot vide.
-    /// Calcule les producteurs de mot vide si ils n'ont pas été calculés
-    pub fn word_produces_empty_word(&mut self, word: &[ParsedLexem]) -> bool {
-        if !self.empty_word_producers_computed {
-            self.compute_empty_word_producers();
-        }
-        self.word_produces_empty_word_unmut(word)
     }
 
     /// Détermine si un mot peut produire le mot vide, sans calculer les producteurs de
@@ -433,6 +389,7 @@ impl Grammar {
         return true;
     }
 
+    /// Renvoie les suivants de la grammaire
     pub fn follows(&mut self) -> &Vec<HashSet<Token>> {
         if !self.follows_computed {
             self.compute_follows();
@@ -440,7 +397,8 @@ impl Grammar {
         &self.follows
     }
 
-    fn compute_follows(&mut self) {
+    /// Calcule les suivants pour tous les non terminaux de la grammaire
+    pub fn compute_follows(&mut self) {
 
         // Initialise des ensembles vides pour les suivants de chaque non terminal
         let mut follows: Vec<HashSet<Token>> = vec![HashSet::new(); self.non_terminal_lexems.len()];

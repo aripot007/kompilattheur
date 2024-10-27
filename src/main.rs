@@ -5,7 +5,7 @@ mod parser;
 mod analysis_table;
 mod cli;
 use std::io::{stdout, Write};
-use analysis_table::{analysis_table::AnalysisTable, analysis_table_generator};
+use analysis_table::AnalysisTable;
 use clap::Parser;
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs};
 use lexer::lexer::Lexer;
@@ -42,8 +42,8 @@ fn compile(args: CompileArgs) {
     let lexer = Lexer::new(reader::new(&file_path));
 
     let table = match &args.alternative_grammar {
-        Some(file) => analysis_table_generator::generate_analysis_table(&file),
-        None => analysis_table::generated_table::get_analysis_table(),
+        Some(file) => analysis_table::generate_analysis_table(&file),
+        None => analysis_table::get_analysis_table(),
     };
 
     generate_tree(lexer, &table);
@@ -51,7 +51,7 @@ fn compile(args: CompileArgs) {
 
 fn generate_analysis_table(args: GenerateTableArgs) {
 
-    let table = analysis_table_generator::generate_analysis_table(&args.grammar_file);
+    let table = analysis_table::generate_analysis_table(&args.grammar_file);
 
     let mut file = match File::create(&args.output_file) {
         Ok(f) => f,
@@ -74,8 +74,8 @@ fn generate_analysis_table(args: GenerateTableArgs) {
 
 fn print_analysis_table(args: PrintTableArgs) {
     let table = match &args.grammar_file {
-        Some(file) => analysis_table_generator::generate_analysis_table(&file),
-        None => analysis_table::generated_table::get_analysis_table(),
+        Some(file) => analysis_table::generate_analysis_table(&file),
+        None => analysis_table::get_analysis_table(),
     };
 
    _print_analysis_table(&table, args);

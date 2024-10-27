@@ -1,6 +1,6 @@
 use crate::lexer::lexer::Lexer;
 use super::lexem::Lexem;
-use crate::analysis_table::analysis_table::AnalysisTable;
+use crate::analysis_table::AnalysisTable;
 
 pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (bool, bool) {
     let mut stack: Vec<&Lexem> = vec![&Lexem::NonTerminal(0)];
@@ -46,7 +46,7 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (bool,
 mod tests {
 
 
-    use crate::analysis_table::analysis_table_generator::generate_analysis_table;
+    use crate::analysis_table::generate_analysis_table;
     use std::path::PathBuf;
 
     use super::*;

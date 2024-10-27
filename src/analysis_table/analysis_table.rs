@@ -10,7 +10,7 @@ pub struct AnalysisTable {
     /// La table d'analyse. Pour chaque non terminal, contient une HashMap des tokens lu et de la production de la règle correspondante
     pub table: Vec<HashMap<Discriminant<Token>, Vec<Lexem>>>,
     
-    pub non_terminal_names: Vec<String>,
+    pub(super) non_terminal_names: Vec<String>,
 
     // Permet de map un discriminant à un token pour le debug
     pub(super) discriminant_tokens: HashMap<Discriminant<Token>, Token>,

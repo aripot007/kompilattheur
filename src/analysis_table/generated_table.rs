@@ -6,10 +6,6 @@
 
 use super::analysis_table::AnalysisTable;
 use super::analysis_table_generator::generate_analysis_table;
-use crate::common::types::token::Token;
-use crate::parser::lexem::Lexem;
-use std::collections::HashMap;
-use std::mem::discriminant;
 use std::path::PathBuf;
 
 pub fn get_analysis_table() -> AnalysisTable {

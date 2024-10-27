@@ -1,4 +1,4 @@
-use std::{collections::{HashMap, HashSet}, process::Termination};
+use std::collections::{HashMap, HashSet};
 use core::fmt::Display;
 
 use crate::{common::types::token::{IdToken, Token}, parser::lexem::Lexem};

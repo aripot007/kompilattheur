@@ -4,7 +4,7 @@ mod lexer;
 mod parser;
 mod analysis_table;
 mod cli;
-use std::{io::{stdout, Write}, path::PathBuf};
+use std::io::{stdout, Write};
 use analysis_table::{analysis_table::AnalysisTable, analysis_table_generator};
 use clap::Parser;
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs};
@@ -40,7 +40,13 @@ fn compile(args: CompileArgs) {
 
     print!("\n");
     let lexer = Lexer::new(reader::new(&file_path));
-    generate_tree(lexer);
+
+    let table = match &args.alternative_grammar {
+        Some(file) => analysis_table_generator::generate_analysis_table(&file),
+        None => analysis_table::generated_table::get_analysis_table(),
+    };
+
+    generate_tree(lexer, &table);
 }
 
 fn generate_analysis_table(args: GenerateTableArgs) {

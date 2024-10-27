@@ -1,10 +1,8 @@
 use crate::lexer::lexer::Lexer;
-use crate::analysis_table::generated_table::get_analysis_table;
 use super::lexem::Lexem;
 use crate::analysis_table::analysis_table::AnalysisTable;
 
-pub fn generate_tree(mut lexer: Lexer) -> (bool, bool) {
-    let analysis_table: AnalysisTable = get_analysis_table();
+pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (bool, bool) {
     let mut stack: Vec<&Lexem> = vec![&Lexem::NonTerminal(0)];
     let mut error = false;
     let mut accept = false;
@@ -47,6 +45,10 @@ pub fn generate_tree(mut lexer: Lexer) -> (bool, bool) {
 #[cfg(test)]
 mod tests {
 
+
+    use crate::analysis_table::analysis_table_generator::generate_analysis_table;
+    use std::path::PathBuf;
+
     use super::*;
     
     #[test]
@@ -58,7 +60,7 @@ mod tests {
         }
         print!("\n");
         let lexer = Lexer::new(source.into());
-        let (accept, error) = generate_tree(lexer);
+        let (accept, error) = generate_tree(lexer, &generate_analysis_table(&PathBuf::from("grammaire_ex.txt")));
         assert_eq!(accept, true);
         assert_eq!(error, false);
     }

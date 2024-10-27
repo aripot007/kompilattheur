@@ -8,34 +8,17 @@ use clap::{Args, Parser, Subcommand};
 pub struct Cli {
 
     #[command(subcommand)]
-    command: Option<Commands>,
-
-    /// Utilise une autre grammaire que celle inclue dans le compilateur
-    #[arg(long, short='g')]
-    alternative_grammar: Option<PathBuf>,
+    pub command: Option<Commands>,
 
     #[command(flatten)]
-    compile: CompileArgs,
+    pub compile: CompileArgs,
 }
 
-#[derive(Debug, Subcommand, Clone)]
-enum Commands {
+#[derive(Debug, Subcommand)]
+pub enum Commands {
 
     /// Génère la table d'analyse de la grammaire passée en paramètres
-    GenerateAnalysisTable {
-
-        /// Le fichier contenant la grammmaire
-        #[arg()]
-        grammar_file: PathBuf,
-
-        /// Le fichier de sortie
-        #[arg(name="output", short, long, default_value="generated_table.rs")]
-        output_file: Option<PathBuf>,
-
-        /// Affiche également la table générée au format markdown
-        #[arg(short, long, action)]
-        print: bool,
-    },
+    GenerateAnalysisTable(GenerateTableArgs),
 
     /// Affiche la table d'analyse de la grammaire du compilateur au format markdown
     PrintAnalysisTable {
@@ -46,16 +29,34 @@ enum Commands {
     },
 }
 
-#[derive(Debug, Args, Clone)]
-#[command(flatten_help = true)]
-struct CompileArgs {
+#[derive(Debug, Args)]
+pub struct GenerateTableArgs {
 
-    /// Le fichier à compiler
+    /// Le fichier contenant la grammmaire
     #[arg()]
-    file: Option<PathBuf>,
+    pub grammar_file: PathBuf,
 
     /// Le fichier de sortie
-    #[arg(name="output", short, long, default_value="p.out")]
-    output_file: Option<PathBuf>,
+    #[arg(name="output", short, long, default_value="generated_table.rs")]
+    pub output_file: PathBuf,
 
+    /// Affiche également la table générée au format markdown
+    #[arg(short, long, action)]
+    pub print_table: bool,
+}
+
+#[derive(Debug, Args)]
+pub struct CompileArgs {
+
+    /// Utilise une autre grammaire que celle inclue dans le compilateur
+    #[arg(long, short='g')]
+    pub alternative_grammar: Option<PathBuf>,
+    
+    /// Le fichier à compiler
+    #[arg()]
+    pub file: Option<PathBuf>,
+    
+    /// Le fichier de sortie
+    #[arg(name="output", short, long, default_value="p.out")]
+    pub output_file: PathBuf,
 }

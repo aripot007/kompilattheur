@@ -4,8 +4,10 @@ mod lexer;
 mod parser;
 mod analysis_table;
 mod cli;
-use analysis_table::analysis_table_generator::generate_analysis_table;
+use std::path::PathBuf;
+use analysis_table::analysis_table_generator;
 use clap::Parser;
+use cli::{Commands, CompileArgs, GenerateTableArgs};
 use lexer::lexer::Lexer;
 use parser::generate_tree::generate_tree;
 
@@ -15,29 +17,40 @@ fn main() {
 
     dbg!(&args);
 
-    /*
-    let file_path = args.file;
-
-    if args.generate_alanysis_table {
-
-        let output_file = match args.output_file {
-            Some(path) => path,
-            None => "analysis_table.rs".to_string(),
-        };
-
-        let table = generate_analysis_table(&file_path);
-        println!("{}", table);
-        return;
+    match args.command {
+        Some(Commands::GenerateAnalysisTable(generate_args)) => generate_analysis_table(generate_args),
+        Some(Commands::PrintAnalysisTable { grammar_file }) => print_analysis_table(grammar_file),
+        None => compile(args.compile),
     }
 
-    let lexer = Lexer::new(reader::new(file_path.clone()));
+}
+
+fn compile(args: CompileArgs) {
+
+    let Some(file_path) = args.file else {
+        eprintln!("Input file required");
+        return;
+    };
+
+    let lexer = Lexer::new(reader::new(&file_path));
     for token in lexer {
         print!("{} ", token);
     }
 
     print!("\n");
-    let lexer = Lexer::new(reader::new(file_path));
+    let lexer = Lexer::new(reader::new(&file_path));
     generate_tree(lexer);
-    */
 }
 
+fn generate_analysis_table(args: GenerateTableArgs) {
+
+}
+
+fn print_analysis_table(grammar_file: Option<PathBuf>) {
+    let grammar = match grammar_file {
+        Some(file) => analysis_table_generator::generate_analysis_table(&file),
+        None => analysis_table::generated_table::get_analysis_table(),
+    };
+
+    println!("{}", grammar);
+}

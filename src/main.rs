@@ -2,6 +2,7 @@ mod reader;
 mod common;
 mod lexer;
 mod parser;
+mod cli;
 mod analysis_table;
 use analysis_table::analysis_table_generator::generate_analysis_table;
 use lexer::lexer::Lexer;

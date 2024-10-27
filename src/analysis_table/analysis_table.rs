@@ -95,7 +95,7 @@ impl From<&Grammar> for AnalysisTable {
 /// let t = Token::Add;
 /// assert_eq!(t.repr(), generic_token_repr!(t));
 /// assert_eq!("<string>", generic_token_repr!(Token::String("Hello")));
-/// assert_eq!("<integer>", generic_token_repr!(Token::integer(42))));
+/// assert_eq!("<integer>", generic_token_repr!(Token::integer(42)));
 /// assert_eq!("<ident>", generic_token_repr!(Token::Identifier(IdToken {42})));
 /// ```
 macro_rules! generic_token_repr {

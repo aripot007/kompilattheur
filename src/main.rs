@@ -4,12 +4,13 @@ mod lexer;
 mod parser;
 mod analysis_table;
 mod cli;
-use std::path::PathBuf;
+use std::{fmt::Display, io::Write, path::PathBuf};
 use analysis_table::analysis_table_generator;
 use clap::Parser;
 use cli::{Commands, CompileArgs, GenerateTableArgs};
 use lexer::lexer::Lexer;
 use parser::generate_tree::generate_tree;
+use std::fs::File;
 
 fn main() {
 
@@ -44,6 +45,19 @@ fn compile(args: CompileArgs) {
 
 fn generate_analysis_table(args: GenerateTableArgs) {
 
+    let grammar = analysis_table_generator::generate_analysis_table(&args.grammar_file);
+
+    if args.print_table {
+        println!("{}", grammar);
+    }
+
+    let mut file = match File::create(&args.output_file) {
+        Ok(f) => f,
+        Err(e) => panic!("Error opening file {:?} : {}", &args.output_file, e),
+    };
+    
+    write!(file, "{}", grammar).expect("Error writing to file");
+    
 }
 
 fn print_analysis_table(grammar_file: Option<PathBuf>) {

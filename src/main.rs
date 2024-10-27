@@ -9,28 +9,10 @@ use lexer::lexer::Lexer;
 use parser::generate_tree::generate_tree;
 use clap::Parser;
 
-/// MiniPython Compiler
-#[derive(Parser)]
-#[command(version)]
-struct Args {
-
-    /// Génère une table d'analyse à partir du fichier d'entrée
-    #[arg(long="generate-analysis-table", action)]
-    generate_alanysis_table: bool,
-
-    /// Le fichier à compiler
-    #[arg(default_value="test_programs/hello_world.smolpp")]
-    file: String,
-
-    /// Fichier de sortie
-    #[arg(short, long="output")]
-    output_file: Option<String>,
-
-}
 
 fn main() {
 
-    let args = Args::parse();
+    let args = cli::Args::parse();
 
     let file_path = args.file;
 

@@ -2,18 +2,20 @@ mod reader;
 mod common;
 mod lexer;
 mod parser;
-mod cli;
 mod analysis_table;
+mod cli;
 use analysis_table::analysis_table_generator::generate_analysis_table;
+use clap::Parser;
 use lexer::lexer::Lexer;
 use parser::generate_tree::generate_tree;
-use clap::Parser;
-
 
 fn main() {
 
-    let args = cli::Args::parse();
+    let args = cli::Cli::parse();
 
+    dbg!(&args);
+
+    /*
     let file_path = args.file;
 
     if args.generate_alanysis_table {
@@ -36,5 +38,6 @@ fn main() {
     print!("\n");
     let lexer = Lexer::new(reader::new(file_path));
     generate_tree(lexer);
+    */
 }
 

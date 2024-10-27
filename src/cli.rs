@@ -1,20 +1,61 @@
-use clap::Parser;
+use std::path::PathBuf;
 
-/// MiniPython Compiler
-#[derive(Parser)]
-#[command(version)]
-pub struct Args {
+use clap::{Args, Parser, Subcommand};
 
-    /// Génère une table d'analyse à partir du fichier d'entrée
-    #[arg(long="generate-analysis-table", action)]
-    pub generate_alanysis_table: bool,
+#[derive(Debug, Parser)]
+#[command(args_conflicts_with_subcommands = true)]
+#[command(flatten_help = true)]
+pub struct Cli {
+
+    #[command(subcommand)]
+    command: Option<Commands>,
+
+    /// Utilise une autre grammaire que celle inclue dans le compilateur
+    #[arg(long, short='g')]
+    alternative_grammar: Option<PathBuf>,
+
+    #[command(flatten)]
+    compile: CompileArgs,
+}
+
+#[derive(Debug, Subcommand, Clone)]
+enum Commands {
+
+    /// Génère la table d'analyse de la grammaire passée en paramètres
+    GenerateAnalysisTable {
+
+        /// Le fichier contenant la grammmaire
+        #[arg()]
+        grammar_file: PathBuf,
+
+        /// Le fichier de sortie
+        #[arg(name="output", short, long, default_value="generated_table.rs")]
+        output_file: Option<PathBuf>,
+
+        /// Affiche également la table générée au format markdown
+        #[arg(short, long, action)]
+        print: bool,
+    },
+
+    /// Affiche la table d'analyse de la grammaire du compilateur au format markdown
+    PrintAnalysisTable {
+
+        /// Utilise la grammaire contenue dans ce fichier à la place de celle du compilateur
+        #[arg(long, short)]
+        grammar_file: Option<PathBuf>,
+    },
+}
+
+#[derive(Debug, Args, Clone)]
+#[command(flatten_help = true)]
+struct CompileArgs {
 
     /// Le fichier à compiler
-    #[arg(default_value="test_programs/hello_world.smolpp")]
-    pub file: String,
+    #[arg()]
+    file: Option<PathBuf>,
 
-    /// Fichier de sortie
-    #[arg(short, long="output")]
-    pub output_file: Option<String>,
+    /// Le fichier de sortie
+    #[arg(name="output", short, long, default_value="p.out")]
+    output_file: Option<PathBuf>,
 
 }

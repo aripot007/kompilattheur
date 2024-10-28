@@ -230,9 +230,9 @@ impl Lexer {
                     DiagnosticGravity::Error,
                     "IntOverflow :".to_string(),
                     self.line_num,
-                    self.line_num+1,
-                    10,
-                    10,
+                    self.line_num,
+                    self.char_num,
+                    self.char_num+1,
                     "Integer cannot be represented on a 64 bit integer".to_string(),
                 )
                 .display();

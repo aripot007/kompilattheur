@@ -41,7 +41,7 @@ fn compile(args: CompileArgs) {
 
     let lexer = Lexer::new(reader::new(&file_path));
     for token in lexer {
-        print!("{} ", token);
+        print!("{} ", token.element);
     }
 
     print!("\n");

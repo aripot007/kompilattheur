@@ -1,7 +1,7 @@
-use crate::reader;
+use crate::{common::types::FileElement, reader};
 
 use super::token_table::TokenTable;
-use crate::common::types::Token;
+use crate::common::types::{Token, IdToken};
 
 pub fn get_operator_token(op: &str) -> Option<Token> {
     match op {
@@ -79,6 +79,7 @@ fn init_token_table() -> TokenTable {
 
 }
 
+
 impl Lexer {
 
     pub fn new(mut reader: reader::Reader) -> Lexer {
@@ -96,6 +97,18 @@ impl Lexer {
             emit_begin: false,
             token_table: init_token_table(),
         };
+    }
+
+    fn construct_file_elem(&self, token: Token) -> FileElement<Token> {
+        FileElement {
+            line: self.line_num,
+            start_char: self.char_num,
+            len: match token {
+                Token::Identifier(IdToken{id}) => self.token_table.get_ident_name(id).len(),
+                _ => token.repr().len()
+            },
+            element: token,
+        }
     }
 
     fn syntax_error(&self, err: &str) {
@@ -146,7 +159,7 @@ impl Lexer {
         S'il faut émettre des tokens END, met à jour `end_token_count`
         avec le nombre de tokens END restant à émettre.
      */
-    fn parse_indentation(&mut self, indentation_number: u64){
+    fn parse_indentation(&mut self, indentation_number: u64) {
 
         let top: u64 = *self.indentation_stack.last().unwrap_or(&0);
         
@@ -180,14 +193,14 @@ impl Lexer {
     }
 
     // Parse un integer a partir du caractère courant
-    fn parse_integer(&mut self) -> Token {
+    fn parse_integer(&mut self) -> FileElement<Token> {
 
         let mut number: u64 = 0;
 
         match self.peek {
             Some('0') => {
                 self.read_next_char();
-                return Token::integer(0);
+                return self.construct_file_elem(Token::integer(0));
             },
             Some(c) if c.is_digit(10) => {},
             _ => panic!("trying to use parse_integer while not on a digit"),
@@ -216,12 +229,12 @@ impl Lexer {
             self.read_next_char();
         }
 
-        return Token::integer(number);
+        return self.construct_file_elem(Token::integer(number));
     }
 
     // Parse un identifier à partir du caractère courant
     // Ne vérifie pas que le premier caractère n'est pas un chiffre
-    fn parse_identifier(&mut self) -> Token {
+    fn parse_identifier(&mut self) -> FileElement<Token> {
 
         let mut identifier = String::new();
 
@@ -230,13 +243,15 @@ impl Lexer {
             self.read_next_char();
         }
 
-        return self.token_table.get_token(identifier);
+        let token = self.token_table.get_token(identifier);
+
+        return self.construct_file_elem(token);
 
     }
 
     // Parse un string à partir du caractère courant.
     // Ne vérifie pas que le caractère courant est un '"'
-    fn parse_string(&mut self) -> Token {
+    fn parse_string(&mut self) -> FileElement<Token> {
 
         let mut text = String::new();
 
@@ -264,27 +279,36 @@ impl Lexer {
             self.read_next_char();
         }
 
-        return Token::String(text);
+        return self.construct_file_elem(Token::String(text));
     }
 }
 
 
 impl Iterator for Lexer {
-    // TODO: Change to token type
-    type Item = Token;
+
+    type Item = FileElement<Token>;
 
     fn next(&mut self) -> Option<Self::Item> {
+
+        macro_rules! operator_file_elem {
+            ($s: expr) => {
+               match get_operator_token($s) {
+                    None => None,
+                    Some(token) => Some(self.construct_file_elem(token)),
+               } 
+            };
+        }
 
         // Handle BEGIN and END tokens
 
         if self.emit_begin {
             self.emit_begin = false;
-            return Some(Token::Begin);
+            return Some(self.construct_file_elem(Token::Begin));
         }
 
         if self.end_token_count > 0 {
             self.end_token_count -= 1;
-            return Some(Token::End);
+            return Some(self.construct_file_elem(Token::End));
         }
 
         // Already at the end of the file
@@ -293,7 +317,7 @@ impl Iterator for Lexer {
                 return None;
             } else {
                 self.emmitted_eof = true;
-                return Some(Token::EOF);
+                return Some(self.construct_file_elem(Token::EOF));
             }
         }
 
@@ -303,7 +327,7 @@ impl Iterator for Lexer {
         // Handle BEGIN and END tokens if indentation changes on a new line
         if new_line {
             self.parse_indentation(nb_indentation);
-            return Some(Token::Newline);
+            return Some(self.construct_file_elem(Token::Newline));
         }
 
         match self.peek {
@@ -322,7 +346,7 @@ impl Iterator for Lexer {
                 match self.read_next_char() {
                     Some('=') => {
                         self.read_next_char();
-                        return get_operator_token("!=")
+                        return operator_file_elem!("!=")
                     },
                     _ => self.syntax_error("Invalid token"),
                 }
@@ -333,7 +357,7 @@ impl Iterator for Lexer {
                 match self.read_next_char() {
                     Some('/') => {
                         self.read_next_char();
-                        return get_operator_token("//");
+                        return operator_file_elem!("//");
                     },
                     _ => self.syntax_error("Invalid token"),
                 }
@@ -344,9 +368,9 @@ impl Iterator for Lexer {
                 match self.read_next_char() {
                     Some('=') => {
                         self.read_next_char();
-                        return get_operator_token(format!("{}=",c).as_str())
+                        return operator_file_elem!(format!("{}=",c).as_str())
                     },
-                    _ => return get_operator_token(c.to_string().as_str()),
+                    _ => return operator_file_elem!(c.to_string().as_str()),
                 }
             }
 
@@ -354,13 +378,13 @@ impl Iterator for Lexer {
             Some(c) => {
                 self.read_next_char();
                 match get_operator_token(c.to_string().as_str()) {
-                    Some(token) => return Some(token),
+                    Some(token) => return Some(self.construct_file_elem(token)),
                     None => self.syntax_error("Invalid token"),
                 }
             },
             None => {
                 self.emmitted_eof = true;
-                return Some(Token::EOF);
+                return Some(self.construct_file_elem(Token::EOF));
             }
         }
 
@@ -376,7 +400,10 @@ mod tests {
     #[test]
     fn test_eof() {
         let mut lexer = Lexer::new(Reader::from(""));
-        assert!(lexer.next() == Some(Token::EOF));
+        let n = lexer.next();
+        assert_ne!(None, n);
+        let t = n.unwrap().element;
+        assert!(t == Token::EOF);
         assert!(lexer.next() == None);
     }
 

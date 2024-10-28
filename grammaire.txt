@@ -42,7 +42,7 @@
 
 "<stmt>"          : "<simple_stmt>" "NEWLINE"
                   | "if" "<expr>" ":" "<suite>" "<stmt_if>"
-                  | "for" " <ident>" "in" "<expr>" ":" "<suite>";
+                  | "for" "<ident>" "in" "<expr>" ":" "<suite>";
 
 "<stmt_if>"       : "else" ":" "<suite>"
                   | ;
@@ -121,7 +121,7 @@
 
 "<factor>"        : "<const>"
                   | "[""<expr_list>""]"
-                  | " <ident>" "<factor_ident>"
+                  | "<ident>" "<factor_ident>"
                   | "(""<expr>"")";
 
 "<factor_no_ident>"        : "<const>"

@@ -1,2 +1,5 @@
-pub mod lexem;
-pub mod generate_tree;
+mod lexem;
+mod generate_tree;
+
+pub use lexem::Lexem;
+pub use generate_tree::generate_tree;

@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use core::fmt::Display;
 
-use crate::{common::types::{IdToken, Token}, parser::lexem::Lexem};
+use crate::{common::types::{IdToken, Token}, parser::Lexem};
 
 /// Représente un lexem qui a été prsé de la grammaire
 #[derive(Clone, Debug, PartialEq, Eq)]

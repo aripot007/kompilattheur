@@ -11,7 +11,7 @@ use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs};
 use lexer::Lexer;
 use std::fs::File;
 use common::types::Node;
-use parser::{generate_tree::generate_tree, lexem::Lexem};
+use parser::{generate_tree, Lexem};
 use std::{cell::RefCell, rc::Rc};
 
 fn main() {

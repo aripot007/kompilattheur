@@ -1,5 +1,5 @@
 use crate::common::types::Token;
-use crate::parser::lexem::Lexem;
+use crate::parser::Lexem;
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::mem::{discriminant, Discriminant};

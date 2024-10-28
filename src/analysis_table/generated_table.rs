@@ -5,7 +5,7 @@
 /***************************************************/
 
 use crate::common::types::{IdToken, NumToken, Token};
-use crate::parser::lexem::Lexem;
+use crate::parser::Lexem;
 use super::analysis_table::AnalysisTable;
 use std::collections::HashMap;
 use std::mem::{discriminant, Discriminant};

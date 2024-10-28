@@ -4,7 +4,7 @@ mod rust;
 use super::analysis_table::AnalysisTable;
 use std::{collections::HashMap, mem::Discriminant};
 use crate::common::types::Token;
-use crate::parser::lexem::Lexem;
+use crate::parser::Lexem;
 
 /// Renvoie la représentation générique d'un token, ie le nom sans les informations du token.
 /// 

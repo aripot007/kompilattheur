@@ -3,7 +3,7 @@ use std::fmt;
 use indoc::writedoc;
 
 use crate::common::types::Token;
-use crate::parser::lexem::Lexem;
+use crate::parser::Lexem;
 use super::generic_token_repr;
 use super::super::analysis_table::AnalysisTable;
 
@@ -41,7 +41,7 @@ impl AnalysisTable {
                     /***************************************************/
 
                     use crate::common::types::{{IdToken, NumToken, Token}};
-                    use crate::parser::lexem::Lexem;
+                    use crate::parser::Lexem;
                     use super::analysis_table::AnalysisTable;
                     use std::collections::HashMap;
                     use std::mem::{{discriminant, Discriminant}};

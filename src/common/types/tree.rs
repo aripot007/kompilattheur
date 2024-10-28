@@ -7,7 +7,7 @@ pub struct Node<T> {
     pub childs: Vec<Rc<RefCell<Node<T>>>>,
 }
 
-impl<T: std::fmt::Display> Node<T> {
+impl<T: std::fmt::Display + ToString> Node<T> {
     pub fn new(value: T) -> Rc<RefCell<Node<T>>> {
         Rc::new(RefCell::new(Node {
             value,
@@ -40,7 +40,7 @@ impl<T: std::fmt::Display> Node<T> {
         result.push_str("flowchart TD\n");
 
         let mut counter: usize = 0;
-        result.push_str(&format!("{}[\"{}\"]\n", counter, self.value));
+        result.push_str(&format!("{}[\"{}\"]\n", counter, self.value.to_string().replace("<", "#60;").replace(">", "#62;")));
 
         fn generate_child<T: std::fmt::Display>(node: &Node<T>, counter: &mut usize) -> String {
             let mut result = String::new();
@@ -48,7 +48,7 @@ impl<T: std::fmt::Display> Node<T> {
             for child in node.get_children() {
                 let child_borrowed = &*child.borrow();
                 *counter += 1;
-                result.push_str(&format!("{}[\"{}\"]\n", counter, child.borrow().value));
+                result.push_str(&format!("{}[\"{}\"]\n", counter, child.borrow().value.to_string().replace("<", "#60;").replace(">", "#62;")));
                 result.push_str(&format!("{} --> {}\n", nb, counter));
                 result.push_str(&generate_child(child_borrowed, counter));
             }

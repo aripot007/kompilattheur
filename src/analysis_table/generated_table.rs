@@ -13,178 +13,108 @@ use std::mem::{discriminant, Discriminant};
 pub fn get_analysis_table() -> AnalysisTable {
 
     let non_terminal_names: Vec<String> = vec![
-        String::from("< file >"),
-        String::from("< newline_opt >"),
-        String::from("< defs >"),
-        String::from("< stmt >"),
-        String::from("< opt_stmts >"),
-        String::from("< def >"),
-        String::from("< ident_list >"),
-        String::from("< suite >"),
-        String::from("< simple_stmt >"),
-        String::from("< expr >"),
-        String::from("< simple_state_ident >"),
-        String::from("< expr_no_ident_no_access >"),
-        String::from("< expr_no_ident_no_access2 >"),
-        String::from("< expr_access2_eq >"),
-        String::from("< factor_ident >"),
-        String::from("< expr2_no_access >"),
-        String::from("< simple_stmt_expr >"),
-        String::from("< stmt_if >"),
+        String::from("<file>"),
+        String::from("<newline_opt>"),
+        String::from("<defs>"),
+        String::from("<stmt>"),
+        String::from("<opt_stmts>"),
+        String::from("<def>"),
+        String::from("<ident_list>"),
+        String::from("<suite>"),
+        String::from("<simple_stmt>"),
+        String::from("<expr>"),
+        String::from("<simple_state_ident>"),
+        String::from("<expr_no_ident_no_access>"),
+        String::from("<expr_no_ident_no_access2>"),
+        String::from("<expr_access2_eq>"),
+        String::from("<factor_ident>"),
+        String::from("<expr2_no_access>"),
+        String::from("<simple_stmt_expr>"),
+        String::from("<stmt_if>"),
         String::from(" <ident>"),
-        String::from("< expr_and >"),
-        String::from("< expr2 >"),
-        String::from("< expr_not >"),
-        String::from("< expr_and2 >"),
-        String::from("< expr_cmp >"),
-        String::from("< expr_add >"),
-        String::from("< expr_cmp2 >"),
-        String::from("< expr_mult >"),
-        String::from("< expr_add2 >"),
-        String::from("< expr_neg >"),
-        String::from("< expr_mult2 >"),
-        String::from("< expr_access >"),
-        String::from("< factor >"),
-        String::from("< expr_access2 >"),
-        String::from("< expr_and_no_ident_no_access >"),
-        String::from("< expr_and_no_access >"),
-        String::from("< expr_not_no_access >"),
-        String::from("< expr_and2_no_access >"),
-        String::from("< expr_not_no_ident_no_access >"),
-        String::from("< expr_cmp_no_access >"),
-        String::from("< expr_cmp_no_ident_no_access >"),
-        String::from("< expr_add_no_access >"),
-        String::from("< expr_cmp2_no_access >"),
-        String::from("< expr_add_no_ident_no_access >"),
-        String::from("< expr_mult_no_access >"),
-        String::from("< expr_add2_no_access >"),
-        String::from("< expr_mult_no_ident_no_access >"),
-        String::from("< expr_neg_no_access >"),
-        String::from("< expr_mult2_no_access >"),
-        String::from("< expr_neg_no_ident_no_access >"),
-        String::from("< expr_access_no_access >"),
-        String::from("< factor_no_ident >"),
-        String::from("< const >"),
-        String::from("< expr_list >"),
-        String::from("< expr_list_suite >"),
-        String::from("< expr_list_expr >"),
-        String::from("< ident_list_suite >"),
-        String::from("< ident_list_ident >"),
+        String::from("<expr_and>"),
+        String::from("<expr2>"),
+        String::from("<expr_not>"),
+        String::from("<expr_and2>"),
+        String::from("<expr_cmp>"),
+        String::from("<expr_add>"),
+        String::from("<expr_cmp2>"),
+        String::from("<expr_mult>"),
+        String::from("<expr_add2>"),
+        String::from("<expr_neg>"),
+        String::from("<expr_mult2>"),
+        String::from("<expr_access>"),
+        String::from("<factor>"),
+        String::from("<expr_access2>"),
+        String::from("<expr_and_no_ident_no_access>"),
+        String::from("<expr_and_no_access>"),
+        String::from("<expr_not_no_access>"),
+        String::from("<expr_and2_no_access>"),
+        String::from("<expr_not_no_ident_no_access>"),
+        String::from("<expr_cmp_no_access>"),
+        String::from("<expr_cmp_no_ident_no_access>"),
+        String::from("<expr_add_no_access>"),
+        String::from("<expr_cmp2_no_access>"),
+        String::from("<expr_add_no_ident_no_access>"),
+        String::from("<expr_mult_no_access>"),
+        String::from("<expr_add2_no_access>"),
+        String::from("<expr_mult_no_ident_no_access>"),
+        String::from("<expr_neg_no_access>"),
+        String::from("<expr_mult2_no_access>"),
+        String::from("<expr_neg_no_ident_no_access>"),
+        String::from("<expr_access_no_access>"),
+        String::from("<factor_no_ident>"),
+        String::from("<const>"),
+        String::from("<expr_list>"),
+        String::from("<expr_list_suite>"),
+        String::from("<expr_list_expr>"),
+        String::from("<ident_list_suite>"),
+        String::from("<ident_list_ident>"),
     ];
 
     let discriminant_tokens: HashMap<Discriminant<Token>, Token> = HashMap::from([
-        (discriminant(&Token::Or), Token::Or),
-        (discriminant(&Token::Print), Token::Print),
-        (discriminant(&Token::Add), Token::Add),
-        (discriminant(&Token::OpenParenthesis), Token::OpenParenthesis),
         (discriminant(&Token::EOF), Token::EOF),
-        (discriminant(&Token::Not), Token::Not),
-        (discriminant(&Token::Identifier(IdToken {id: 0})), Token::Identifier(IdToken {id: 0})),
-        (discriminant(&Token::Equal), Token::Equal),
-        (discriminant(&Token::True), Token::True),
-        (discriminant(&Token::And), Token::And),
-        (discriminant(&Token::Else), Token::Else),
-        (discriminant(&Token::Greater), Token::Greater),
-        (discriminant(&Token::Return), Token::Return),
         (discriminant(&Token::Div), Token::Div),
-        (discriminant(&Token::Less), Token::Less),
-        (discriminant(&Token::Mod), Token::Mod),
-        (discriminant(&Token::Mult), Token::Mult),
-        (discriminant(&Token::GreaterEq), Token::GreaterEq),
-        (discriminant(&Token::CloseBracket), Token::CloseBracket),
         (discriminant(&Token::For), Token::For),
-        (discriminant(&Token::Def), Token::Def),
-        (discriminant(&Token::Newline), Token::Newline),
-        (discriminant(&Token::Sep), Token::Sep),
         (discriminant(&Token::LessEq), Token::LessEq),
-        (discriminant(&Token::None), Token::None),
-        (discriminant(&Token::False), Token::False),
-        (discriminant(&Token::NotEqual), Token::NotEqual),
-        (discriminant(&Token::String(String::from(""))), Token::String(String::from(""))),
-        (discriminant(&Token::Sub), Token::Sub),
-        (discriminant(&Token::End), Token::End),
-        (discriminant(&Token::CloseParenthesis), Token::CloseParenthesis),
-        (discriminant(&Token::OpenBracket), Token::OpenBracket),
-        (discriminant(&Token::Integer(NumToken {value: 0})), Token::Integer(NumToken {value: 0})),
-        (discriminant(&Token::Comma), Token::Comma),
+        (discriminant(&Token::Def), Token::Def),
         (discriminant(&Token::If), Token::If),
+        (discriminant(&Token::End), Token::End),
         (discriminant(&Token::Assign), Token::Assign),
+        (discriminant(&Token::Mult), Token::Mult),
+        (discriminant(&Token::Add), Token::Add),
+        (discriminant(&Token::Or), Token::Or),
+        (discriminant(&Token::Else), Token::Else),
+        (discriminant(&Token::False), Token::False),
+        (discriminant(&Token::Less), Token::Less),
+        (discriminant(&Token::Identifier(IdToken {id: 0})), Token::Identifier(IdToken {id: 0})),
+        (discriminant(&Token::String(String::from(""))), Token::String(String::from(""))),
+        (discriminant(&Token::Equal), Token::Equal),
+        (discriminant(&Token::NotEqual), Token::NotEqual),
+        (discriminant(&Token::None), Token::None),
+        (discriminant(&Token::Print), Token::Print),
+        (discriminant(&Token::And), Token::And),
+        (discriminant(&Token::CloseBracket), Token::CloseBracket),
+        (discriminant(&Token::OpenParenthesis), Token::OpenParenthesis),
+        (discriminant(&Token::CloseParenthesis), Token::CloseParenthesis),
+        (discriminant(&Token::Integer(NumToken {value: 0})), Token::Integer(NumToken {value: 0})),
+        (discriminant(&Token::Greater), Token::Greater),
+        (discriminant(&Token::Not), Token::Not),
+        (discriminant(&Token::Return), Token::Return),
+        (discriminant(&Token::True), Token::True),
+        (discriminant(&Token::Sep), Token::Sep),
+        (discriminant(&Token::Sub), Token::Sub),
+        (discriminant(&Token::Mod), Token::Mod),
+        (discriminant(&Token::Comma), Token::Comma),
+        (discriminant(&Token::Newline), Token::Newline),
+        (discriminant(&Token::OpenBracket), Token::OpenBracket),
+        (discriminant(&Token::GreaterEq), Token::GreaterEq),
     ]);
 
     let table: Vec<HashMap<Discriminant<Token>, Vec<Lexem>>> = vec![
         HashMap::from([
             (
-                discriminant(&Token::For),
-                vec![
-                    Lexem::NonTerminal(1),
-                    Lexem::NonTerminal(2),
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                    Lexem::Terminal(Token::EOF),
-                ]
-            ),
-            (
-                discriminant(&Token::True),
-                vec![
-                    Lexem::NonTerminal(1),
-                    Lexem::NonTerminal(2),
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                    Lexem::Terminal(Token::EOF),
-                ]
-            ),
-            (
-                discriminant(&Token::None),
-                vec![
-                    Lexem::NonTerminal(1),
-                    Lexem::NonTerminal(2),
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                    Lexem::Terminal(Token::EOF),
-                ]
-            ),
-            (
-                discriminant(&Token::If),
-                vec![
-                    Lexem::NonTerminal(1),
-                    Lexem::NonTerminal(2),
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                    Lexem::Terminal(Token::EOF),
-                ]
-            ),
-            (
-                discriminant(&Token::Newline),
-                vec![
-                    Lexem::NonTerminal(1),
-                    Lexem::NonTerminal(2),
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                    Lexem::Terminal(Token::EOF),
-                ]
-            ),
-            (
-                discriminant(&Token::Print),
-                vec![
-                    Lexem::NonTerminal(1),
-                    Lexem::NonTerminal(2),
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                    Lexem::Terminal(Token::EOF),
-                ]
-            ),
-            (
-                discriminant(&Token::Not),
-                vec![
-                    Lexem::NonTerminal(1),
-                    Lexem::NonTerminal(2),
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                    Lexem::Terminal(Token::EOF),
-                ]
-            ),
-            (
-                discriminant(&Token::False),
+                discriminant(&Token::String(String::from(""))),
                 vec![
                     Lexem::NonTerminal(1),
                     Lexem::NonTerminal(2),
@@ -195,26 +125,6 @@ pub fn get_analysis_table() -> AnalysisTable {
             ),
             (
                 discriminant(&Token::Sub),
-                vec![
-                    Lexem::NonTerminal(1),
-                    Lexem::NonTerminal(2),
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                    Lexem::Terminal(Token::EOF),
-                ]
-            ),
-            (
-                discriminant(&Token::Integer(NumToken {value: 0})),
-                vec![
-                    Lexem::NonTerminal(1),
-                    Lexem::NonTerminal(2),
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                    Lexem::Terminal(Token::EOF),
-                ]
-            ),
-            (
-                discriminant(&Token::OpenParenthesis),
                 vec![
                     Lexem::NonTerminal(1),
                     Lexem::NonTerminal(2),
@@ -244,7 +154,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Print),
                 vec![
                     Lexem::NonTerminal(1),
                     Lexem::NonTerminal(2),
@@ -264,7 +174,97 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::String(String::from(""))),
+                discriminant(&Token::OpenParenthesis),
+                vec![
+                    Lexem::NonTerminal(1),
+                    Lexem::NonTerminal(2),
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                    Lexem::Terminal(Token::EOF),
+                ]
+            ),
+            (
+                discriminant(&Token::True),
+                vec![
+                    Lexem::NonTerminal(1),
+                    Lexem::NonTerminal(2),
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                    Lexem::Terminal(Token::EOF),
+                ]
+            ),
+            (
+                discriminant(&Token::False),
+                vec![
+                    Lexem::NonTerminal(1),
+                    Lexem::NonTerminal(2),
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                    Lexem::Terminal(Token::EOF),
+                ]
+            ),
+            (
+                discriminant(&Token::Integer(NumToken {value: 0})),
+                vec![
+                    Lexem::NonTerminal(1),
+                    Lexem::NonTerminal(2),
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                    Lexem::Terminal(Token::EOF),
+                ]
+            ),
+            (
+                discriminant(&Token::Newline),
+                vec![
+                    Lexem::NonTerminal(1),
+                    Lexem::NonTerminal(2),
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                    Lexem::Terminal(Token::EOF),
+                ]
+            ),
+            (
+                discriminant(&Token::For),
+                vec![
+                    Lexem::NonTerminal(1),
+                    Lexem::NonTerminal(2),
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                    Lexem::Terminal(Token::EOF),
+                ]
+            ),
+            (
+                discriminant(&Token::Identifier(IdToken {id: 0})),
+                vec![
+                    Lexem::NonTerminal(1),
+                    Lexem::NonTerminal(2),
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                    Lexem::Terminal(Token::EOF),
+                ]
+            ),
+            (
+                discriminant(&Token::Not),
+                vec![
+                    Lexem::NonTerminal(1),
+                    Lexem::NonTerminal(2),
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                    Lexem::Terminal(Token::EOF),
+                ]
+            ),
+            (
+                discriminant(&Token::None),
+                vec![
+                    Lexem::NonTerminal(1),
+                    Lexem::NonTerminal(2),
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                    Lexem::Terminal(Token::EOF),
+                ]
+            ),
+            (
+                discriminant(&Token::If),
                 vec![
                     Lexem::NonTerminal(1),
                     Lexem::NonTerminal(2),
@@ -276,7 +276,37 @@ pub fn get_analysis_table() -> AnalysisTable {
         ]),
         HashMap::from([
             (
-                discriminant(&Token::For),
+                discriminant(&Token::String(String::from(""))),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Sub),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::OpenBracket),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Def),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Print),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::OpenParenthesis),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Return),
                 vec![
                 ]
             ),
@@ -286,12 +316,12 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::None),
+                discriminant(&Token::False),
                 vec![
                 ]
             ),
             (
-                discriminant(&Token::If),
+                discriminant(&Token::Integer(NumToken {value: 0})),
                 vec![
                 ]
             ),
@@ -302,42 +332,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Print),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Not),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::False),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Sub),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Integer(NumToken {value: 0})),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::OpenParenthesis),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Def),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::OpenBracket),
+                discriminant(&Token::For),
                 vec![
                 ]
             ),
@@ -347,24 +342,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Return),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::String(String::from(""))),
-                vec![
-                ]
-            ),
-        ]),
-        HashMap::from([
-            (
-                discriminant(&Token::For),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::True),
+                discriminant(&Token::Not),
                 vec![
                 ]
             ),
@@ -378,18 +356,10 @@ pub fn get_analysis_table() -> AnalysisTable {
                 vec![
                 ]
             ),
+        ]),
+        HashMap::from([
             (
-                discriminant(&Token::Print),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Not),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::False),
+                discriminant(&Token::String(String::from(""))),
                 vec![
                 ]
             ),
@@ -399,12 +369,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Integer(NumToken {value: 0})),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::OpenParenthesis),
+                discriminant(&Token::OpenBracket),
                 vec![
                 ]
             ),
@@ -416,12 +381,12 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::OpenBracket),
+                discriminant(&Token::Print),
                 vec![
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::OpenParenthesis),
                 vec![
                 ]
             ),
@@ -431,14 +396,63 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::String(String::from(""))),
+                discriminant(&Token::True),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::False),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Integer(NumToken {value: 0})),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::For),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Identifier(IdToken {id: 0})),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Not),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::None),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::If),
                 vec![
                 ]
             ),
         ]),
         HashMap::from([
             (
-                discriminant(&Token::Not),
+                discriminant(&Token::String(String::from(""))),
+                vec![
+                    Lexem::NonTerminal(8),
+                    Lexem::Terminal(Token::Newline),
+                ]
+            ),
+            (
+                discriminant(&Token::None),
+                vec![
+                    Lexem::NonTerminal(8),
+                    Lexem::Terminal(Token::Newline),
+                ]
+            ),
+            (
+                discriminant(&Token::Return),
                 vec![
                     Lexem::NonTerminal(8),
                     Lexem::Terminal(Token::Newline),
@@ -446,6 +460,13 @@ pub fn get_analysis_table() -> AnalysisTable {
             ),
             (
                 discriminant(&Token::Sub),
+                vec![
+                    Lexem::NonTerminal(8),
+                    Lexem::Terminal(Token::Newline),
+                ]
+            ),
+            (
+                discriminant(&Token::True),
                 vec![
                     Lexem::NonTerminal(8),
                     Lexem::Terminal(Token::Newline),
@@ -466,46 +487,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::For),
-                vec![
-                    Lexem::Terminal(Token::For),
-                    Lexem::NonTerminal(18),
-                    Lexem::Terminal(Token::In),
-                    Lexem::NonTerminal(9),
-                    Lexem::Terminal(Token::Sep),
-                    Lexem::NonTerminal(7),
-                ]
-            ),
-            (
-                discriminant(&Token::True),
-                vec![
-                    Lexem::NonTerminal(8),
-                    Lexem::Terminal(Token::Newline),
-                ]
-            ),
-            (
                 discriminant(&Token::OpenBracket),
-                vec![
-                    Lexem::NonTerminal(8),
-                    Lexem::Terminal(Token::Newline),
-                ]
-            ),
-            (
-                discriminant(&Token::None),
-                vec![
-                    Lexem::NonTerminal(8),
-                    Lexem::Terminal(Token::Newline),
-                ]
-            ),
-            (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
-                vec![
-                    Lexem::NonTerminal(8),
-                    Lexem::Terminal(Token::Newline),
-                ]
-            ),
-            (
-                discriminant(&Token::OpenParenthesis),
                 vec![
                     Lexem::NonTerminal(8),
                     Lexem::Terminal(Token::Newline),
@@ -522,21 +504,39 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
+                discriminant(&Token::For),
+                vec![
+                    Lexem::Terminal(Token::For),
+                    Lexem::NonTerminal(18),
+                    Lexem::Terminal(Token::In),
+                    Lexem::NonTerminal(9),
+                    Lexem::Terminal(Token::Sep),
+                    Lexem::NonTerminal(7),
+                ]
+            ),
+            (
+                discriminant(&Token::Identifier(IdToken {id: 0})),
+                vec![
+                    Lexem::NonTerminal(8),
+                    Lexem::Terminal(Token::Newline),
+                ]
+            ),
+            (
+                discriminant(&Token::Not),
+                vec![
+                    Lexem::NonTerminal(8),
+                    Lexem::Terminal(Token::Newline),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenParenthesis),
+                vec![
+                    Lexem::NonTerminal(8),
+                    Lexem::Terminal(Token::Newline),
+                ]
+            ),
+            (
                 discriminant(&Token::Print),
-                vec![
-                    Lexem::NonTerminal(8),
-                    Lexem::Terminal(Token::Newline),
-                ]
-            ),
-            (
-                discriminant(&Token::Return),
-                vec![
-                    Lexem::NonTerminal(8),
-                    Lexem::Terminal(Token::Newline),
-                ]
-            ),
-            (
-                discriminant(&Token::String(String::from(""))),
                 vec![
                     Lexem::NonTerminal(8),
                     Lexem::Terminal(Token::Newline),
@@ -545,7 +545,52 @@ pub fn get_analysis_table() -> AnalysisTable {
         ]),
         HashMap::from([
             (
-                discriminant(&Token::For),
+                discriminant(&Token::String(String::from(""))),
+                vec![
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                ]
+            ),
+            (
+                discriminant(&Token::End),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Sub),
+                vec![
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenBracket),
+                vec![
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                ]
+            ),
+            (
+                discriminant(&Token::EOF),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Return),
+                vec![
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenParenthesis),
+                vec![
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                ]
+            ),
+            (
+                discriminant(&Token::Print),
                 vec![
                     Lexem::NonTerminal(3),
                     Lexem::NonTerminal(4),
@@ -553,6 +598,41 @@ pub fn get_analysis_table() -> AnalysisTable {
             ),
             (
                 discriminant(&Token::True),
+                vec![
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                ]
+            ),
+            (
+                discriminant(&Token::False),
+                vec![
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                ]
+            ),
+            (
+                discriminant(&Token::Integer(NumToken {value: 0})),
+                vec![
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                ]
+            ),
+            (
+                discriminant(&Token::For),
+                vec![
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                ]
+            ),
+            (
+                discriminant(&Token::Identifier(IdToken {id: 0})),
+                vec![
+                    Lexem::NonTerminal(3),
+                    Lexem::NonTerminal(4),
+                ]
+            ),
+            (
+                discriminant(&Token::Not),
                 vec![
                     Lexem::NonTerminal(3),
                     Lexem::NonTerminal(4),
@@ -567,86 +647,6 @@ pub fn get_analysis_table() -> AnalysisTable {
             ),
             (
                 discriminant(&Token::If),
-                vec![
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                ]
-            ),
-            (
-                discriminant(&Token::End),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Print),
-                vec![
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                ]
-            ),
-            (
-                discriminant(&Token::Not),
-                vec![
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                ]
-            ),
-            (
-                discriminant(&Token::False),
-                vec![
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                ]
-            ),
-            (
-                discriminant(&Token::Sub),
-                vec![
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                ]
-            ),
-            (
-                discriminant(&Token::Integer(NumToken {value: 0})),
-                vec![
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                ]
-            ),
-            (
-                discriminant(&Token::EOF),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::OpenParenthesis),
-                vec![
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                ]
-            ),
-            (
-                discriminant(&Token::OpenBracket),
-                vec![
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                ]
-            ),
-            (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
-                vec![
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                ]
-            ),
-            (
-                discriminant(&Token::Return),
-                vec![
-                    Lexem::NonTerminal(3),
-                    Lexem::NonTerminal(4),
-                ]
-            ),
-            (
-                discriminant(&Token::String(String::from(""))),
                 vec![
                     Lexem::NonTerminal(3),
                     Lexem::NonTerminal(4),
@@ -683,28 +683,21 @@ pub fn get_analysis_table() -> AnalysisTable {
         ]),
         HashMap::from([
             (
-                discriminant(&Token::Sub),
+                discriminant(&Token::String(String::from(""))),
                 vec![
                     Lexem::NonTerminal(8),
                     Lexem::Terminal(Token::Newline),
                 ]
             ),
             (
-                discriminant(&Token::False),
+                discriminant(&Token::OpenParenthesis),
                 vec![
                     Lexem::NonTerminal(8),
                     Lexem::Terminal(Token::Newline),
                 ]
             ),
             (
-                discriminant(&Token::Integer(NumToken {value: 0})),
-                vec![
-                    Lexem::NonTerminal(8),
-                    Lexem::Terminal(Token::Newline),
-                ]
-            ),
-            (
-                discriminant(&Token::Not),
+                discriminant(&Token::Print),
                 vec![
                     Lexem::NonTerminal(8),
                     Lexem::Terminal(Token::Newline),
@@ -718,28 +711,28 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
+                discriminant(&Token::False),
+                vec![
+                    Lexem::NonTerminal(8),
+                    Lexem::Terminal(Token::Newline),
+                ]
+            ),
+            (
+                discriminant(&Token::Sub),
+                vec![
+                    Lexem::NonTerminal(8),
+                    Lexem::Terminal(Token::Newline),
+                ]
+            ),
+            (
+                discriminant(&Token::Integer(NumToken {value: 0})),
+                vec![
+                    Lexem::NonTerminal(8),
+                    Lexem::Terminal(Token::Newline),
+                ]
+            ),
+            (
                 discriminant(&Token::OpenBracket),
-                vec![
-                    Lexem::NonTerminal(8),
-                    Lexem::Terminal(Token::Newline),
-                ]
-            ),
-            (
-                discriminant(&Token::None),
-                vec![
-                    Lexem::NonTerminal(8),
-                    Lexem::Terminal(Token::Newline),
-                ]
-            ),
-            (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
-                vec![
-                    Lexem::NonTerminal(8),
-                    Lexem::Terminal(Token::Newline),
-                ]
-            ),
-            (
-                discriminant(&Token::OpenParenthesis),
                 vec![
                     Lexem::NonTerminal(8),
                     Lexem::Terminal(Token::Newline),
@@ -756,7 +749,14 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Print),
+                discriminant(&Token::Identifier(IdToken {id: 0})),
+                vec![
+                    Lexem::NonTerminal(8),
+                    Lexem::Terminal(Token::Newline),
+                ]
+            ),
+            (
+                discriminant(&Token::Not),
                 vec![
                     Lexem::NonTerminal(8),
                     Lexem::Terminal(Token::Newline),
@@ -770,7 +770,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::String(String::from(""))),
+                discriminant(&Token::None),
                 vec![
                     Lexem::NonTerminal(8),
                     Lexem::Terminal(Token::Newline),
@@ -779,63 +779,7 @@ pub fn get_analysis_table() -> AnalysisTable {
         ]),
         HashMap::from([
             (
-                discriminant(&Token::Return),
-                vec![
-                    Lexem::Terminal(Token::Return),
-                    Lexem::NonTerminal(9),
-                ]
-            ),
-            (
-                discriminant(&Token::Integer(NumToken {value: 0})),
-                vec![
-                    Lexem::NonTerminal(11),
-                    Lexem::NonTerminal(12),
-                ]
-            ),
-            (
-                discriminant(&Token::Sub),
-                vec![
-                    Lexem::NonTerminal(11),
-                    Lexem::NonTerminal(12),
-                ]
-            ),
-            (
                 discriminant(&Token::String(String::from(""))),
-                vec![
-                    Lexem::NonTerminal(11),
-                    Lexem::NonTerminal(12),
-                ]
-            ),
-            (
-                discriminant(&Token::OpenParenthesis),
-                vec![
-                    Lexem::NonTerminal(11),
-                    Lexem::NonTerminal(12),
-                ]
-            ),
-            (
-                discriminant(&Token::OpenBracket),
-                vec![
-                    Lexem::NonTerminal(11),
-                    Lexem::NonTerminal(12),
-                ]
-            ),
-            (
-                discriminant(&Token::True),
-                vec![
-                    Lexem::NonTerminal(11),
-                    Lexem::NonTerminal(12),
-                ]
-            ),
-            (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
-                vec![
-                    Lexem::Terminal(Token::Identifier(IdToken {id: 0})),
-                    Lexem::NonTerminal(10),
-                ]
-            ),
-            (
-                discriminant(&Token::None),
                 vec![
                     Lexem::NonTerminal(11),
                     Lexem::NonTerminal(12),
@@ -858,7 +802,63 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
+                discriminant(&Token::True),
+                vec![
+                    Lexem::NonTerminal(11),
+                    Lexem::NonTerminal(12),
+                ]
+            ),
+            (
+                discriminant(&Token::Sub),
+                vec![
+                    Lexem::NonTerminal(11),
+                    Lexem::NonTerminal(12),
+                ]
+            ),
+            (
+                discriminant(&Token::Integer(NumToken {value: 0})),
+                vec![
+                    Lexem::NonTerminal(11),
+                    Lexem::NonTerminal(12),
+                ]
+            ),
+            (
                 discriminant(&Token::False),
+                vec![
+                    Lexem::NonTerminal(11),
+                    Lexem::NonTerminal(12),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenBracket),
+                vec![
+                    Lexem::NonTerminal(11),
+                    Lexem::NonTerminal(12),
+                ]
+            ),
+            (
+                discriminant(&Token::Identifier(IdToken {id: 0})),
+                vec![
+                    Lexem::Terminal(Token::Identifier(IdToken {id: 0})),
+                    Lexem::NonTerminal(10),
+                ]
+            ),
+            (
+                discriminant(&Token::Return),
+                vec![
+                    Lexem::Terminal(Token::Return),
+                    Lexem::NonTerminal(9),
+                ]
+            ),
+            (
+                discriminant(&Token::None),
+                vec![
+                    Lexem::NonTerminal(11),
+                    Lexem::NonTerminal(12),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenParenthesis),
                 vec![
                     Lexem::NonTerminal(11),
                     Lexem::NonTerminal(12),
@@ -867,28 +867,7 @@ pub fn get_analysis_table() -> AnalysisTable {
         ]),
         HashMap::from([
             (
-                discriminant(&Token::Sub),
-                vec![
-                    Lexem::NonTerminal(19),
-                    Lexem::NonTerminal(20),
-                ]
-            ),
-            (
-                discriminant(&Token::Integer(NumToken {value: 0})),
-                vec![
-                    Lexem::NonTerminal(19),
-                    Lexem::NonTerminal(20),
-                ]
-            ),
-            (
-                discriminant(&Token::False),
-                vec![
-                    Lexem::NonTerminal(19),
-                    Lexem::NonTerminal(20),
-                ]
-            ),
-            (
-                discriminant(&Token::OpenParenthesis),
+                discriminant(&Token::String(String::from(""))),
                 vec![
                     Lexem::NonTerminal(19),
                     Lexem::NonTerminal(20),
@@ -902,7 +881,21 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::None),
+                discriminant(&Token::False),
+                vec![
+                    Lexem::NonTerminal(19),
+                    Lexem::NonTerminal(20),
+                ]
+            ),
+            (
+                discriminant(&Token::Integer(NumToken {value: 0})),
+                vec![
+                    Lexem::NonTerminal(19),
+                    Lexem::NonTerminal(20),
+                ]
+            ),
+            (
+                discriminant(&Token::Sub),
                 vec![
                     Lexem::NonTerminal(19),
                     Lexem::NonTerminal(20),
@@ -923,7 +916,14 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::String(String::from(""))),
+                discriminant(&Token::OpenParenthesis),
+                vec![
+                    Lexem::NonTerminal(19),
+                    Lexem::NonTerminal(20),
+                ]
+            ),
+            (
+                discriminant(&Token::None),
                 vec![
                     Lexem::NonTerminal(19),
                     Lexem::NonTerminal(20),
@@ -932,7 +932,7 @@ pub fn get_analysis_table() -> AnalysisTable {
         ]),
         HashMap::from([
             (
-                discriminant(&Token::Or),
+                discriminant(&Token::Newline),
                 vec![
                     Lexem::NonTerminal(14),
                     Lexem::NonTerminal(15),
@@ -940,7 +940,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Newline),
+                discriminant(&Token::Or),
                 vec![
                     Lexem::NonTerminal(14),
                     Lexem::NonTerminal(15),
@@ -955,7 +955,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::OpenBracket),
+                discriminant(&Token::OpenParenthesis),
                 vec![
                     Lexem::NonTerminal(14),
                     Lexem::NonTerminal(15),
@@ -963,7 +963,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::OpenParenthesis),
+                discriminant(&Token::OpenBracket),
                 vec![
                     Lexem::NonTerminal(14),
                     Lexem::NonTerminal(15),
@@ -973,21 +973,7 @@ pub fn get_analysis_table() -> AnalysisTable {
         ]),
         HashMap::from([
             (
-                discriminant(&Token::False),
-                vec![
-                    Lexem::NonTerminal(33),
-                    Lexem::NonTerminal(15),
-                ]
-            ),
-            (
-                discriminant(&Token::Integer(NumToken {value: 0})),
-                vec![
-                    Lexem::NonTerminal(33),
-                    Lexem::NonTerminal(15),
-                ]
-            ),
-            (
-                discriminant(&Token::Sub),
+                discriminant(&Token::String(String::from(""))),
                 vec![
                     Lexem::NonTerminal(33),
                     Lexem::NonTerminal(15),
@@ -1001,14 +987,21 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::OpenParenthesis),
+                discriminant(&Token::Sub),
                 vec![
                     Lexem::NonTerminal(33),
                     Lexem::NonTerminal(15),
                 ]
             ),
             (
-                discriminant(&Token::None),
+                discriminant(&Token::Integer(NumToken {value: 0})),
+                vec![
+                    Lexem::NonTerminal(33),
+                    Lexem::NonTerminal(15),
+                ]
+            ),
+            (
+                discriminant(&Token::False),
                 vec![
                     Lexem::NonTerminal(33),
                     Lexem::NonTerminal(15),
@@ -1029,7 +1022,14 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::String(String::from(""))),
+                discriminant(&Token::None),
+                vec![
+                    Lexem::NonTerminal(33),
+                    Lexem::NonTerminal(15),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenParenthesis),
                 vec![
                     Lexem::NonTerminal(33),
                     Lexem::NonTerminal(15),
@@ -1037,6 +1037,11 @@ pub fn get_analysis_table() -> AnalysisTable {
             ),
         ]),
         HashMap::from([
+            (
+                discriminant(&Token::Newline),
+                vec![
+                ]
+            ),
             (
                 discriminant(&Token::OpenBracket),
                 vec![
@@ -1046,11 +1051,6 @@ pub fn get_analysis_table() -> AnalysisTable {
                     Lexem::NonTerminal(13),
                     Lexem::Terminal(Token::Assign),
                     Lexem::NonTerminal(9),
-                ]
-            ),
-            (
-                discriminant(&Token::Newline),
-                vec![
                 ]
             ),
         ]),
@@ -1072,52 +1072,17 @@ pub fn get_analysis_table() -> AnalysisTable {
         ]),
         HashMap::from([
             (
-                discriminant(&Token::And),
+                discriminant(&Token::Less),
                 vec![
                 ]
             ),
             (
-                discriminant(&Token::Div),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Equal),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::LessEq),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Or),
+                discriminant(&Token::GreaterEq),
                 vec![
                 ]
             ),
             (
                 discriminant(&Token::Greater),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Mod),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Newline),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::CloseParenthesis),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::NotEqual),
                 vec![
                 ]
             ),
@@ -1132,7 +1097,22 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::GreaterEq),
+                discriminant(&Token::Div),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::OpenBracket),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Mod),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Sep),
                 vec![
                 ]
             ),
@@ -1145,7 +1125,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::OpenBracket),
+                discriminant(&Token::Add),
                 vec![
                 ]
             ),
@@ -1155,27 +1135,55 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
+                discriminant(&Token::LessEq),
+                vec![
+                ]
+            ),
+            (
                 discriminant(&Token::Mult),
                 vec![
                 ]
             ),
             (
-                discriminant(&Token::Less),
+                discriminant(&Token::CloseParenthesis),
                 vec![
                 ]
             ),
             (
-                discriminant(&Token::Sep),
+                discriminant(&Token::Newline),
                 vec![
                 ]
             ),
             (
-                discriminant(&Token::Add),
+                discriminant(&Token::Equal),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::And),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Or),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::NotEqual),
                 vec![
                 ]
             ),
         ]),
         HashMap::from([
+            (
+                discriminant(&Token::Or),
+                vec![
+                    Lexem::Terminal(Token::Or),
+                    Lexem::NonTerminal(34),
+                    Lexem::NonTerminal(15),
+                ]
+            ),
             (
                 discriminant(&Token::Newline),
                 vec![
@@ -1186,16 +1194,13 @@ pub fn get_analysis_table() -> AnalysisTable {
                 vec![
                 ]
             ),
-            (
-                discriminant(&Token::Or),
-                vec![
-                    Lexem::Terminal(Token::Or),
-                    Lexem::NonTerminal(34),
-                    Lexem::NonTerminal(15),
-                ]
-            ),
         ]),
         HashMap::from([
+            (
+                discriminant(&Token::Newline),
+                vec![
+                ]
+            ),
             (
                 discriminant(&Token::OpenBracket),
                 vec![
@@ -1207,75 +1212,20 @@ pub fn get_analysis_table() -> AnalysisTable {
                     Lexem::NonTerminal(9),
                 ]
             ),
-            (
-                discriminant(&Token::Newline),
-                vec![
-                ]
-            ),
         ]),
         HashMap::from([
-            (
-                discriminant(&Token::For),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::True),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::None),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::If),
-                vec![
-                ]
-            ),
             (
                 discriminant(&Token::End),
                 vec![
                 ]
             ),
             (
-                discriminant(&Token::Print),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Not),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::False),
+                discriminant(&Token::String(String::from(""))),
                 vec![
                 ]
             ),
             (
                 discriminant(&Token::Sub),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Integer(NumToken {value: 0})),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::EOF),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::OpenParenthesis),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::OpenBracket),
                 vec![
                 ]
             ),
@@ -1288,7 +1238,12 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::OpenBracket),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::EOF),
                 vec![
                 ]
             ),
@@ -1298,30 +1253,61 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::String(String::from(""))),
+                discriminant(&Token::OpenParenthesis),
                 vec![
                 ]
             ),
-        ]),
-        HashMap::from([
-        ]),
-        HashMap::from([
             (
-                discriminant(&Token::String(String::from(""))),
+                discriminant(&Token::Print),
                 vec![
-                    Lexem::NonTerminal(21),
-                    Lexem::NonTerminal(22),
                 ]
             ),
             (
-                discriminant(&Token::Sub),
+                discriminant(&Token::True),
                 vec![
-                    Lexem::NonTerminal(21),
-                    Lexem::NonTerminal(22),
+                ]
+            ),
+            (
+                discriminant(&Token::False),
+                vec![
                 ]
             ),
             (
                 discriminant(&Token::Integer(NumToken {value: 0})),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::For),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Identifier(IdToken {id: 0})),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Not),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::If),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::None),
+                vec![
+                ]
+            ),
+        ]),
+        HashMap::from([
+        ]),
+        HashMap::from([
+            (
+                discriminant(&Token::String(String::from(""))),
                 vec![
                     Lexem::NonTerminal(21),
                     Lexem::NonTerminal(22),
@@ -1335,21 +1321,28 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
+                discriminant(&Token::False),
+                vec![
+                    Lexem::NonTerminal(21),
+                    Lexem::NonTerminal(22),
+                ]
+            ),
+            (
+                discriminant(&Token::Integer(NumToken {value: 0})),
+                vec![
+                    Lexem::NonTerminal(21),
+                    Lexem::NonTerminal(22),
+                ]
+            ),
+            (
+                discriminant(&Token::Sub),
+                vec![
+                    Lexem::NonTerminal(21),
+                    Lexem::NonTerminal(22),
+                ]
+            ),
+            (
                 discriminant(&Token::OpenBracket),
-                vec![
-                    Lexem::NonTerminal(21),
-                    Lexem::NonTerminal(22),
-                ]
-            ),
-            (
-                discriminant(&Token::None),
-                vec![
-                    Lexem::NonTerminal(21),
-                    Lexem::NonTerminal(22),
-                ]
-            ),
-            (
-                discriminant(&Token::OpenParenthesis),
                 vec![
                     Lexem::NonTerminal(21),
                     Lexem::NonTerminal(22),
@@ -1363,7 +1356,14 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::False),
+                discriminant(&Token::OpenParenthesis),
+                vec![
+                    Lexem::NonTerminal(21),
+                    Lexem::NonTerminal(22),
+                ]
+            ),
+            (
+                discriminant(&Token::None),
                 vec![
                     Lexem::NonTerminal(21),
                     Lexem::NonTerminal(22),
@@ -1371,16 +1371,6 @@ pub fn get_analysis_table() -> AnalysisTable {
             ),
         ]),
         HashMap::from([
-            (
-                discriminant(&Token::Sep),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::CloseBracket),
-                vec![
-                ]
-            ),
             (
                 discriminant(&Token::Newline),
                 vec![
@@ -1397,6 +1387,11 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
+                discriminant(&Token::Sep),
+                vec![
+                ]
+            ),
+            (
                 discriminant(&Token::Or),
                 vec![
                     Lexem::Terminal(Token::Or),
@@ -1404,10 +1399,27 @@ pub fn get_analysis_table() -> AnalysisTable {
                     Lexem::NonTerminal(20),
                 ]
             ),
+            (
+                discriminant(&Token::CloseBracket),
+                vec![
+                ]
+            ),
         ]),
         HashMap::from([
             (
+                discriminant(&Token::String(String::from(""))),
+                vec![
+                    Lexem::NonTerminal(23),
+                ]
+            ),
+            (
                 discriminant(&Token::Sub),
+                vec![
+                    Lexem::NonTerminal(23),
+                ]
+            ),
+            (
+                discriminant(&Token::True),
                 vec![
                     Lexem::NonTerminal(23),
                 ]
@@ -1425,25 +1437,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::OpenParenthesis),
-                vec![
-                    Lexem::NonTerminal(23),
-                ]
-            ),
-            (
                 discriminant(&Token::OpenBracket),
-                vec![
-                    Lexem::NonTerminal(23),
-                ]
-            ),
-            (
-                discriminant(&Token::None),
-                vec![
-                    Lexem::NonTerminal(23),
-                ]
-            ),
-            (
-                discriminant(&Token::True),
                 vec![
                     Lexem::NonTerminal(23),
                 ]
@@ -1456,7 +1450,13 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::String(String::from(""))),
+                discriminant(&Token::None),
+                vec![
+                    Lexem::NonTerminal(23),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenParenthesis),
                 vec![
                     Lexem::NonTerminal(23),
                 ]
@@ -1464,7 +1464,12 @@ pub fn get_analysis_table() -> AnalysisTable {
         ]),
         HashMap::from([
             (
-                discriminant(&Token::Sep),
+                discriminant(&Token::Comma),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Newline),
                 vec![
                 ]
             ),
@@ -1477,160 +1482,12 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::CloseBracket),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Newline),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Comma),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::CloseParenthesis),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Or),
-                vec![
-                ]
-            ),
-        ]),
-        HashMap::from([
-            (
-                discriminant(&Token::Sub),
-                vec![
-                    Lexem::NonTerminal(24),
-                    Lexem::NonTerminal(25),
-                ]
-            ),
-            (
-                discriminant(&Token::Integer(NumToken {value: 0})),
-                vec![
-                    Lexem::NonTerminal(24),
-                    Lexem::NonTerminal(25),
-                ]
-            ),
-            (
-                discriminant(&Token::String(String::from(""))),
-                vec![
-                    Lexem::NonTerminal(24),
-                    Lexem::NonTerminal(25),
-                ]
-            ),
-            (
-                discriminant(&Token::True),
-                vec![
-                    Lexem::NonTerminal(24),
-                    Lexem::NonTerminal(25),
-                ]
-            ),
-            (
-                discriminant(&Token::OpenBracket),
-                vec![
-                    Lexem::NonTerminal(24),
-                    Lexem::NonTerminal(25),
-                ]
-            ),
-            (
-                discriminant(&Token::None),
-                vec![
-                    Lexem::NonTerminal(24),
-                    Lexem::NonTerminal(25),
-                ]
-            ),
-            (
-                discriminant(&Token::OpenParenthesis),
-                vec![
-                    Lexem::NonTerminal(24),
-                    Lexem::NonTerminal(25),
-                ]
-            ),
-            (
-                discriminant(&Token::False),
-                vec![
-                    Lexem::NonTerminal(24),
-                    Lexem::NonTerminal(25),
-                ]
-            ),
-        ]),
-        HashMap::from([
-            (
-                discriminant(&Token::Sub),
-                vec![
-                    Lexem::NonTerminal(26),
-                    Lexem::NonTerminal(27),
-                ]
-            ),
-            (
-                discriminant(&Token::Integer(NumToken {value: 0})),
-                vec![
-                    Lexem::NonTerminal(26),
-                    Lexem::NonTerminal(27),
-                ]
-            ),
-            (
-                discriminant(&Token::False),
-                vec![
-                    Lexem::NonTerminal(26),
-                    Lexem::NonTerminal(27),
-                ]
-            ),
-            (
-                discriminant(&Token::OpenParenthesis),
-                vec![
-                    Lexem::NonTerminal(26),
-                    Lexem::NonTerminal(27),
-                ]
-            ),
-            (
-                discriminant(&Token::OpenBracket),
-                vec![
-                    Lexem::NonTerminal(26),
-                    Lexem::NonTerminal(27),
-                ]
-            ),
-            (
-                discriminant(&Token::None),
-                vec![
-                    Lexem::NonTerminal(26),
-                    Lexem::NonTerminal(27),
-                ]
-            ),
-            (
-                discriminant(&Token::True),
-                vec![
-                    Lexem::NonTerminal(26),
-                    Lexem::NonTerminal(27),
-                ]
-            ),
-            (
-                discriminant(&Token::String(String::from(""))),
-                vec![
-                    Lexem::NonTerminal(26),
-                    Lexem::NonTerminal(27),
-                ]
-            ),
-        ]),
-        HashMap::from([
-            (
                 discriminant(&Token::Sep),
                 vec![
                 ]
             ),
             (
-                discriminant(&Token::And),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::CloseParenthesis),
+                discriminant(&Token::Or),
                 vec![
                 ]
             ),
@@ -1640,35 +1497,132 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Comma),
+                discriminant(&Token::CloseParenthesis),
                 vec![
                 ]
             ),
+        ]),
+        HashMap::from([
             (
-                discriminant(&Token::Equal),
+                discriminant(&Token::String(String::from(""))),
                 vec![
-                    Lexem::Terminal(Token::Equal),
                     Lexem::NonTerminal(24),
                     Lexem::NonTerminal(25),
                 ]
             ),
+            (
+                discriminant(&Token::True),
+                vec![
+                    Lexem::NonTerminal(24),
+                    Lexem::NonTerminal(25),
+                ]
+            ),
+            (
+                discriminant(&Token::Sub),
+                vec![
+                    Lexem::NonTerminal(24),
+                    Lexem::NonTerminal(25),
+                ]
+            ),
+            (
+                discriminant(&Token::Integer(NumToken {value: 0})),
+                vec![
+                    Lexem::NonTerminal(24),
+                    Lexem::NonTerminal(25),
+                ]
+            ),
+            (
+                discriminant(&Token::False),
+                vec![
+                    Lexem::NonTerminal(24),
+                    Lexem::NonTerminal(25),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenBracket),
+                vec![
+                    Lexem::NonTerminal(24),
+                    Lexem::NonTerminal(25),
+                ]
+            ),
+            (
+                discriminant(&Token::None),
+                vec![
+                    Lexem::NonTerminal(24),
+                    Lexem::NonTerminal(25),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenParenthesis),
+                vec![
+                    Lexem::NonTerminal(24),
+                    Lexem::NonTerminal(25),
+                ]
+            ),
+        ]),
+        HashMap::from([
+            (
+                discriminant(&Token::String(String::from(""))),
+                vec![
+                    Lexem::NonTerminal(26),
+                    Lexem::NonTerminal(27),
+                ]
+            ),
+            (
+                discriminant(&Token::False),
+                vec![
+                    Lexem::NonTerminal(26),
+                    Lexem::NonTerminal(27),
+                ]
+            ),
+            (
+                discriminant(&Token::True),
+                vec![
+                    Lexem::NonTerminal(26),
+                    Lexem::NonTerminal(27),
+                ]
+            ),
+            (
+                discriminant(&Token::Integer(NumToken {value: 0})),
+                vec![
+                    Lexem::NonTerminal(26),
+                    Lexem::NonTerminal(27),
+                ]
+            ),
+            (
+                discriminant(&Token::Sub),
+                vec![
+                    Lexem::NonTerminal(26),
+                    Lexem::NonTerminal(27),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenBracket),
+                vec![
+                    Lexem::NonTerminal(26),
+                    Lexem::NonTerminal(27),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenParenthesis),
+                vec![
+                    Lexem::NonTerminal(26),
+                    Lexem::NonTerminal(27),
+                ]
+            ),
+            (
+                discriminant(&Token::None),
+                vec![
+                    Lexem::NonTerminal(26),
+                    Lexem::NonTerminal(27),
+                ]
+            ),
+        ]),
+        HashMap::from([
             (
                 discriminant(&Token::LessEq),
                 vec![
                     Lexem::Terminal(Token::LessEq),
-                    Lexem::NonTerminal(24),
-                    Lexem::NonTerminal(25),
-                ]
-            ),
-            (
-                discriminant(&Token::Or),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Greater),
-                vec![
-                    Lexem::Terminal(Token::Greater),
                     Lexem::NonTerminal(24),
                     Lexem::NonTerminal(25),
                 ]
@@ -1682,14 +1636,45 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
+                discriminant(&Token::GreaterEq),
+                vec![
+                    Lexem::Terminal(Token::GreaterEq),
+                    Lexem::NonTerminal(24),
+                    Lexem::NonTerminal(25),
+                ]
+            ),
+            (
+                discriminant(&Token::Greater),
+                vec![
+                    Lexem::Terminal(Token::Greater),
+                    Lexem::NonTerminal(24),
+                    Lexem::NonTerminal(25),
+                ]
+            ),
+            (
+                discriminant(&Token::Comma),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::CloseParenthesis),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::CloseBracket),
+                vec![
+                ]
+            ),
+            (
                 discriminant(&Token::Newline),
                 vec![
                 ]
             ),
             (
-                discriminant(&Token::GreaterEq),
+                discriminant(&Token::Equal),
                 vec![
-                    Lexem::Terminal(Token::GreaterEq),
+                    Lexem::Terminal(Token::Equal),
                     Lexem::NonTerminal(24),
                     Lexem::NonTerminal(25),
                 ]
@@ -1702,6 +1687,21 @@ pub fn get_analysis_table() -> AnalysisTable {
                     Lexem::NonTerminal(25),
                 ]
             ),
+            (
+                discriminant(&Token::Or),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::And),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Sep),
+                vec![
+                ]
+            ),
         ]),
         HashMap::from([
             (
@@ -1712,21 +1712,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Integer(NumToken {value: 0})),
-                vec![
-                    Lexem::NonTerminal(28),
-                    Lexem::NonTerminal(29),
-                ]
-            ),
-            (
                 discriminant(&Token::Sub),
-                vec![
-                    Lexem::NonTerminal(28),
-                    Lexem::NonTerminal(29),
-                ]
-            ),
-            (
-                discriminant(&Token::OpenParenthesis),
                 vec![
                     Lexem::NonTerminal(28),
                     Lexem::NonTerminal(29),
@@ -1740,7 +1726,14 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::None),
+                discriminant(&Token::False),
+                vec![
+                    Lexem::NonTerminal(28),
+                    Lexem::NonTerminal(29),
+                ]
+            ),
+            (
+                discriminant(&Token::Integer(NumToken {value: 0})),
                 vec![
                     Lexem::NonTerminal(28),
                     Lexem::NonTerminal(29),
@@ -1754,7 +1747,14 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::False),
+                discriminant(&Token::None),
+                vec![
+                    Lexem::NonTerminal(28),
+                    Lexem::NonTerminal(29),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenParenthesis),
                 vec![
                     Lexem::NonTerminal(28),
                     Lexem::NonTerminal(29),
@@ -1763,42 +1763,12 @@ pub fn get_analysis_table() -> AnalysisTable {
         ]),
         HashMap::from([
             (
-                discriminant(&Token::And),
+                discriminant(&Token::Less),
                 vec![
                 ]
             ),
             (
-                discriminant(&Token::Equal),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::LessEq),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Or),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Greater),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Newline),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::CloseParenthesis),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::NotEqual),
+                discriminant(&Token::GreaterEq),
                 vec![
                 ]
             ),
@@ -1811,22 +1781,12 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::GreaterEq),
+                discriminant(&Token::Greater),
                 vec![
                 ]
             ),
             (
                 discriminant(&Token::CloseBracket),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Comma),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Less),
                 vec![
                 ]
             ),
@@ -1843,8 +1803,60 @@ pub fn get_analysis_table() -> AnalysisTable {
                     Lexem::NonTerminal(27),
                 ]
             ),
+            (
+                discriminant(&Token::LessEq),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Comma),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::CloseParenthesis),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Newline),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::And),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Equal),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Or),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::NotEqual),
+                vec![
+                ]
+            ),
         ]),
         HashMap::from([
+            (
+                discriminant(&Token::String(String::from(""))),
+                vec![
+                    Lexem::NonTerminal(30),
+                ]
+            ),
+            (
+                discriminant(&Token::True),
+                vec![
+                    Lexem::NonTerminal(30),
+                ]
+            ),
             (
                 discriminant(&Token::Sub),
                 vec![
@@ -1865,12 +1877,6 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::True),
-                vec![
-                    Lexem::NonTerminal(30),
-                ]
-            ),
-            (
                 discriminant(&Token::OpenBracket),
                 vec![
                     Lexem::NonTerminal(30),
@@ -1888,16 +1894,15 @@ pub fn get_analysis_table() -> AnalysisTable {
                     Lexem::NonTerminal(30),
                 ]
             ),
-            (
-                discriminant(&Token::String(String::from(""))),
-                vec![
-                    Lexem::NonTerminal(30),
-                ]
-            ),
         ]),
         HashMap::from([
             (
-                discriminant(&Token::And),
+                discriminant(&Token::Less),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::GreaterEq),
                 vec![
                 ]
             ),
@@ -1910,45 +1915,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Equal),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::LessEq),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Or),
-                vec![
-                ]
-            ),
-            (
                 discriminant(&Token::Greater),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Mod),
-                vec![
-                    Lexem::Terminal(Token::Mod),
-                    Lexem::NonTerminal(28),
-                    Lexem::NonTerminal(29),
-                ]
-            ),
-            (
-                discriminant(&Token::Newline),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::CloseParenthesis),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::NotEqual),
                 vec![
                 ]
             ),
@@ -1963,26 +1930,11 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::GreaterEq),
+                discriminant(&Token::Mod),
                 vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Comma),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Mult),
-                vec![
-                    Lexem::Terminal(Token::Mult),
+                    Lexem::Terminal(Token::Mod),
                     Lexem::NonTerminal(28),
                     Lexem::NonTerminal(29),
-                ]
-            ),
-            (
-                discriminant(&Token::Less),
-                vec![
                 ]
             ),
             (
@@ -1995,43 +1947,56 @@ pub fn get_analysis_table() -> AnalysisTable {
                 vec![
                 ]
             ),
+            (
+                discriminant(&Token::Comma),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::LessEq),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Mult),
+                vec![
+                    Lexem::Terminal(Token::Mult),
+                    Lexem::NonTerminal(28),
+                    Lexem::NonTerminal(29),
+                ]
+            ),
+            (
+                discriminant(&Token::CloseParenthesis),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Newline),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Equal),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::And),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Or),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::NotEqual),
+                vec![
+                ]
+            ),
         ]),
         HashMap::from([
-            (
-                discriminant(&Token::False),
-                vec![
-                    Lexem::NonTerminal(31),
-                    Lexem::NonTerminal(32),
-                ]
-            ),
-            (
-                discriminant(&Token::Integer(NumToken {value: 0})),
-                vec![
-                    Lexem::NonTerminal(31),
-                    Lexem::NonTerminal(32),
-                ]
-            ),
-            (
-                discriminant(&Token::None),
-                vec![
-                    Lexem::NonTerminal(31),
-                    Lexem::NonTerminal(32),
-                ]
-            ),
-            (
-                discriminant(&Token::True),
-                vec![
-                    Lexem::NonTerminal(31),
-                    Lexem::NonTerminal(32),
-                ]
-            ),
-            (
-                discriminant(&Token::OpenParenthesis),
-                vec![
-                    Lexem::NonTerminal(31),
-                    Lexem::NonTerminal(32),
-                ]
-            ),
             (
                 discriminant(&Token::OpenBracket),
                 vec![
@@ -2046,22 +2011,45 @@ pub fn get_analysis_table() -> AnalysisTable {
                     Lexem::NonTerminal(32),
                 ]
             ),
-        ]),
-        HashMap::from([
+            (
+                discriminant(&Token::True),
+                vec![
+                    Lexem::NonTerminal(31),
+                    Lexem::NonTerminal(32),
+                ]
+            ),
             (
                 discriminant(&Token::False),
                 vec![
-                    Lexem::NonTerminal(51),
+                    Lexem::NonTerminal(31),
+                    Lexem::NonTerminal(32),
                 ]
             ),
             (
                 discriminant(&Token::Integer(NumToken {value: 0})),
                 vec![
-                    Lexem::NonTerminal(51),
+                    Lexem::NonTerminal(31),
+                    Lexem::NonTerminal(32),
                 ]
             ),
             (
                 discriminant(&Token::None),
+                vec![
+                    Lexem::NonTerminal(31),
+                    Lexem::NonTerminal(32),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenParenthesis),
+                vec![
+                    Lexem::NonTerminal(31),
+                    Lexem::NonTerminal(32),
+                ]
+            ),
+        ]),
+        HashMap::from([
+            (
+                discriminant(&Token::String(String::from(""))),
                 vec![
                     Lexem::NonTerminal(51),
                 ]
@@ -2075,7 +2063,25 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
+                discriminant(&Token::False),
+                vec![
+                    Lexem::NonTerminal(51),
+                ]
+            ),
+            (
                 discriminant(&Token::True),
+                vec![
+                    Lexem::NonTerminal(51),
+                ]
+            ),
+            (
+                discriminant(&Token::Integer(NumToken {value: 0})),
+                vec![
+                    Lexem::NonTerminal(51),
+                ]
+            ),
+            (
+                discriminant(&Token::None),
                 vec![
                     Lexem::NonTerminal(51),
                 ]
@@ -2088,61 +2094,20 @@ pub fn get_analysis_table() -> AnalysisTable {
                     Lexem::Terminal(Token::CloseBracket),
                 ]
             ),
-            (
-                discriminant(&Token::String(String::from(""))),
-                vec![
-                    Lexem::NonTerminal(51),
-                ]
-            ),
         ]),
         HashMap::from([
             (
-                discriminant(&Token::And),
+                discriminant(&Token::Less),
                 vec![
                 ]
             ),
             (
-                discriminant(&Token::Div),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Equal),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::LessEq),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Or),
+                discriminant(&Token::GreaterEq),
                 vec![
                 ]
             ),
             (
                 discriminant(&Token::Greater),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Mod),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Newline),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::CloseParenthesis),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::NotEqual),
                 vec![
                 ]
             ),
@@ -2157,12 +2122,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::GreaterEq),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Comma),
+                discriminant(&Token::Div),
                 vec![
                 ]
             ),
@@ -2176,12 +2136,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Mult),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Less),
+                discriminant(&Token::Mod),
                 vec![
                 ]
             ),
@@ -2195,10 +2150,55 @@ pub fn get_analysis_table() -> AnalysisTable {
                 vec![
                 ]
             ),
+            (
+                discriminant(&Token::Comma),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::LessEq),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Mult),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::CloseParenthesis),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Newline),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Equal),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::And),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Or),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::NotEqual),
+                vec![
+                ]
+            ),
         ]),
         HashMap::from([
             (
-                discriminant(&Token::Sub),
+                discriminant(&Token::String(String::from(""))),
                 vec![
                     Lexem::NonTerminal(37),
                     Lexem::NonTerminal(36),
@@ -2212,6 +2212,13 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
+                discriminant(&Token::True),
+                vec![
+                    Lexem::NonTerminal(37),
+                    Lexem::NonTerminal(36),
+                ]
+            ),
+            (
                 discriminant(&Token::Integer(NumToken {value: 0})),
                 vec![
                     Lexem::NonTerminal(37),
@@ -2219,14 +2226,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::OpenParenthesis),
-                vec![
-                    Lexem::NonTerminal(37),
-                    Lexem::NonTerminal(36),
-                ]
-            ),
-            (
-                discriminant(&Token::True),
+                discriminant(&Token::Sub),
                 vec![
                     Lexem::NonTerminal(37),
                     Lexem::NonTerminal(36),
@@ -2240,35 +2240,28 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
+                discriminant(&Token::Not),
+                vec![
+                    Lexem::NonTerminal(37),
+                    Lexem::NonTerminal(36),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenParenthesis),
+                vec![
+                    Lexem::NonTerminal(37),
+                    Lexem::NonTerminal(36),
+                ]
+            ),
+            (
                 discriminant(&Token::None),
                 vec![
                     Lexem::NonTerminal(37),
                     Lexem::NonTerminal(36),
                 ]
             ),
-            (
-                discriminant(&Token::Not),
-                vec![
-                    Lexem::NonTerminal(37),
-                    Lexem::NonTerminal(36),
-                ]
-            ),
-            (
-                discriminant(&Token::String(String::from(""))),
-                vec![
-                    Lexem::NonTerminal(37),
-                    Lexem::NonTerminal(36),
-                ]
-            ),
         ]),
         HashMap::from([
-            (
-                discriminant(&Token::Sub),
-                vec![
-                    Lexem::NonTerminal(35),
-                    Lexem::NonTerminal(36),
-                ]
-            ),
             (
                 discriminant(&Token::Not),
                 vec![
@@ -2276,14 +2269,15 @@ pub fn get_analysis_table() -> AnalysisTable {
                     Lexem::NonTerminal(36),
                 ]
             ),
-        ]),
-        HashMap::from([
             (
                 discriminant(&Token::Sub),
                 vec![
-                    Lexem::NonTerminal(38),
+                    Lexem::NonTerminal(35),
+                    Lexem::NonTerminal(36),
                 ]
             ),
+        ]),
+        HashMap::from([
             (
                 discriminant(&Token::Not),
                 vec![
@@ -2291,8 +2285,19 @@ pub fn get_analysis_table() -> AnalysisTable {
                     Lexem::NonTerminal(38),
                 ]
             ),
+            (
+                discriminant(&Token::Sub),
+                vec![
+                    Lexem::NonTerminal(38),
+                ]
+            ),
         ]),
         HashMap::from([
+            (
+                discriminant(&Token::Newline),
+                vec![
+                ]
+            ),
             (
                 discriminant(&Token::And),
                 vec![
@@ -2302,17 +2307,12 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Newline),
+                discriminant(&Token::Or),
                 vec![
                 ]
             ),
             (
                 discriminant(&Token::OpenBracket),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Or),
                 vec![
                 ]
             ),
@@ -2325,13 +2325,19 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Integer(NumToken {value: 0})),
+                discriminant(&Token::False),
                 vec![
                     Lexem::NonTerminal(39),
                 ]
             ),
             (
                 discriminant(&Token::Sub),
+                vec![
+                    Lexem::NonTerminal(39),
+                ]
+            ),
+            (
+                discriminant(&Token::Integer(NumToken {value: 0})),
                 vec![
                     Lexem::NonTerminal(39),
                 ]
@@ -2349,9 +2355,10 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::OpenParenthesis),
+                discriminant(&Token::Not),
                 vec![
-                    Lexem::NonTerminal(39),
+                    Lexem::Terminal(Token::Not),
+                    Lexem::NonTerminal(38),
                 ]
             ),
             (
@@ -2361,14 +2368,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Not),
-                vec![
-                    Lexem::Terminal(Token::Not),
-                    Lexem::NonTerminal(38),
-                ]
-            ),
-            (
-                discriminant(&Token::False),
+                discriminant(&Token::OpenParenthesis),
                 vec![
                     Lexem::NonTerminal(39),
                 ]
@@ -2385,13 +2385,6 @@ pub fn get_analysis_table() -> AnalysisTable {
         ]),
         HashMap::from([
             (
-                discriminant(&Token::Sub),
-                vec![
-                    Lexem::NonTerminal(42),
-                    Lexem::NonTerminal(41),
-                ]
-            ),
-            (
                 discriminant(&Token::String(String::from(""))),
                 vec![
                     Lexem::NonTerminal(42),
@@ -2399,7 +2392,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Integer(NumToken {value: 0})),
+                discriminant(&Token::False),
                 vec![
                     Lexem::NonTerminal(42),
                     Lexem::NonTerminal(41),
@@ -2413,14 +2406,21 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::OpenBracket),
+                discriminant(&Token::Integer(NumToken {value: 0})),
                 vec![
                     Lexem::NonTerminal(42),
                     Lexem::NonTerminal(41),
                 ]
             ),
             (
-                discriminant(&Token::None),
+                discriminant(&Token::Sub),
+                vec![
+                    Lexem::NonTerminal(42),
+                    Lexem::NonTerminal(41),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenBracket),
                 vec![
                     Lexem::NonTerminal(42),
                     Lexem::NonTerminal(41),
@@ -2434,7 +2434,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::False),
+                discriminant(&Token::None),
                 vec![
                     Lexem::NonTerminal(42),
                     Lexem::NonTerminal(41),
@@ -2452,40 +2452,9 @@ pub fn get_analysis_table() -> AnalysisTable {
         ]),
         HashMap::from([
             (
-                discriminant(&Token::And),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Equal),
-                vec![
-                    Lexem::Terminal(Token::Equal),
-                    Lexem::NonTerminal(40),
-                    Lexem::NonTerminal(41),
-                ]
-            ),
-            (
                 discriminant(&Token::LessEq),
                 vec![
                     Lexem::Terminal(Token::LessEq),
-                    Lexem::NonTerminal(40),
-                    Lexem::NonTerminal(41),
-                ]
-            ),
-            (
-                discriminant(&Token::Or),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::OpenBracket),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Greater),
-                vec![
-                    Lexem::Terminal(Token::Greater),
                     Lexem::NonTerminal(40),
                     Lexem::NonTerminal(41),
                 ]
@@ -2499,14 +2468,35 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
+                discriminant(&Token::GreaterEq),
+                vec![
+                    Lexem::Terminal(Token::GreaterEq),
+                    Lexem::NonTerminal(40),
+                    Lexem::NonTerminal(41),
+                ]
+            ),
+            (
+                discriminant(&Token::Greater),
+                vec![
+                    Lexem::Terminal(Token::Greater),
+                    Lexem::NonTerminal(40),
+                    Lexem::NonTerminal(41),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenBracket),
+                vec![
+                ]
+            ),
+            (
                 discriminant(&Token::Newline),
                 vec![
                 ]
             ),
             (
-                discriminant(&Token::GreaterEq),
+                discriminant(&Token::Equal),
                 vec![
-                    Lexem::Terminal(Token::GreaterEq),
+                    Lexem::Terminal(Token::Equal),
                     Lexem::NonTerminal(40),
                     Lexem::NonTerminal(41),
                 ]
@@ -2519,24 +2509,20 @@ pub fn get_analysis_table() -> AnalysisTable {
                     Lexem::NonTerminal(41),
                 ]
             ),
+            (
+                discriminant(&Token::And),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Or),
+                vec![
+                ]
+            ),
         ]),
         HashMap::from([
             (
-                discriminant(&Token::Sub),
-                vec![
-                    Lexem::NonTerminal(45),
-                    Lexem::NonTerminal(44),
-                ]
-            ),
-            (
-                discriminant(&Token::Integer(NumToken {value: 0})),
-                vec![
-                    Lexem::NonTerminal(45),
-                    Lexem::NonTerminal(44),
-                ]
-            ),
-            (
-                discriminant(&Token::False),
+                discriminant(&Token::String(String::from(""))),
                 vec![
                     Lexem::NonTerminal(45),
                     Lexem::NonTerminal(44),
@@ -2550,14 +2536,21 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::OpenParenthesis),
+                discriminant(&Token::False),
                 vec![
                     Lexem::NonTerminal(45),
                     Lexem::NonTerminal(44),
                 ]
             ),
             (
-                discriminant(&Token::None),
+                discriminant(&Token::Integer(NumToken {value: 0})),
+                vec![
+                    Lexem::NonTerminal(45),
+                    Lexem::NonTerminal(44),
+                ]
+            ),
+            (
+                discriminant(&Token::Sub),
                 vec![
                     Lexem::NonTerminal(45),
                     Lexem::NonTerminal(44),
@@ -2571,7 +2564,14 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::String(String::from(""))),
+                discriminant(&Token::None),
+                vec![
+                    Lexem::NonTerminal(45),
+                    Lexem::NonTerminal(44),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenParenthesis),
                 vec![
                     Lexem::NonTerminal(45),
                     Lexem::NonTerminal(44),
@@ -2589,40 +2589,12 @@ pub fn get_analysis_table() -> AnalysisTable {
         ]),
         HashMap::from([
             (
-                discriminant(&Token::Sub),
-                vec![
-                    Lexem::Terminal(Token::Sub),
-                    Lexem::NonTerminal(43),
-                    Lexem::NonTerminal(44),
-                ]
-            ),
-            (
-                discriminant(&Token::And),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::NotEqual),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Equal),
-                vec![
-                ]
-            ),
-            (
                 discriminant(&Token::LessEq),
                 vec![
                 ]
             ),
             (
-                discriminant(&Token::Or),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::OpenBracket),
+                discriminant(&Token::GreaterEq),
                 vec![
                 ]
             ),
@@ -2637,12 +2609,40 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
+                discriminant(&Token::Sub),
+                vec![
+                    Lexem::Terminal(Token::Sub),
+                    Lexem::NonTerminal(43),
+                    Lexem::NonTerminal(44),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenBracket),
+                vec![
+                ]
+            ),
+            (
                 discriminant(&Token::Newline),
                 vec![
                 ]
             ),
             (
-                discriminant(&Token::GreaterEq),
+                discriminant(&Token::Equal),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::And),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Or),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::NotEqual),
                 vec![
                 ]
             ),
@@ -2657,21 +2657,7 @@ pub fn get_analysis_table() -> AnalysisTable {
         ]),
         HashMap::from([
             (
-                discriminant(&Token::Sub),
-                vec![
-                    Lexem::NonTerminal(48),
-                    Lexem::NonTerminal(47),
-                ]
-            ),
-            (
-                discriminant(&Token::Integer(NumToken {value: 0})),
-                vec![
-                    Lexem::NonTerminal(48),
-                    Lexem::NonTerminal(47),
-                ]
-            ),
-            (
-                discriminant(&Token::False),
+                discriminant(&Token::String(String::from(""))),
                 vec![
                     Lexem::NonTerminal(48),
                     Lexem::NonTerminal(47),
@@ -2685,14 +2671,21 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::OpenParenthesis),
+                discriminant(&Token::False),
                 vec![
                     Lexem::NonTerminal(48),
                     Lexem::NonTerminal(47),
                 ]
             ),
             (
-                discriminant(&Token::None),
+                discriminant(&Token::Integer(NumToken {value: 0})),
+                vec![
+                    Lexem::NonTerminal(48),
+                    Lexem::NonTerminal(47),
+                ]
+            ),
+            (
+                discriminant(&Token::Sub),
                 vec![
                     Lexem::NonTerminal(48),
                     Lexem::NonTerminal(47),
@@ -2706,7 +2699,14 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::String(String::from(""))),
+                discriminant(&Token::None),
+                vec![
+                    Lexem::NonTerminal(48),
+                    Lexem::NonTerminal(47),
+                ]
+            ),
+            (
+                discriminant(&Token::OpenParenthesis),
                 vec![
                     Lexem::NonTerminal(48),
                     Lexem::NonTerminal(47),
@@ -2724,7 +2724,12 @@ pub fn get_analysis_table() -> AnalysisTable {
         ]),
         HashMap::from([
             (
-                discriminant(&Token::And),
+                discriminant(&Token::Less),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::GreaterEq),
                 vec![
                 ]
             ),
@@ -2737,22 +2742,17 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Equal),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::LessEq),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Or),
+                discriminant(&Token::Sub),
                 vec![
                 ]
             ),
             (
                 discriminant(&Token::Greater),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::OpenBracket),
                 vec![
                 ]
             ),
@@ -2765,27 +2765,12 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Newline),
+                discriminant(&Token::Add),
                 vec![
                 ]
             ),
             (
-                discriminant(&Token::GreaterEq),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::NotEqual),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::Sub),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::OpenBracket),
+                discriminant(&Token::LessEq),
                 vec![
                 ]
             ),
@@ -2798,17 +2783,38 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Less),
+                discriminant(&Token::Newline),
                 vec![
                 ]
             ),
             (
-                discriminant(&Token::Add),
+                discriminant(&Token::Equal),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::And),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::NotEqual),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::Or),
                 vec![
                 ]
             ),
         ]),
         HashMap::from([
+            (
+                discriminant(&Token::String(String::from(""))),
+                vec![
+                    Lexem::NonTerminal(50),
+                ]
+            ),
             (
                 discriminant(&Token::Sub),
                 vec![
@@ -2817,13 +2823,13 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Integer(NumToken {value: 0})),
+                discriminant(&Token::False),
                 vec![
                     Lexem::NonTerminal(50),
                 ]
             ),
             (
-                discriminant(&Token::False),
+                discriminant(&Token::Integer(NumToken {value: 0})),
                 vec![
                     Lexem::NonTerminal(50),
                 ]
@@ -2852,28 +2858,10 @@ pub fn get_analysis_table() -> AnalysisTable {
                     Lexem::NonTerminal(50),
                 ]
             ),
-            (
-                discriminant(&Token::String(String::from(""))),
-                vec![
-                    Lexem::NonTerminal(50),
-                ]
-            ),
         ]),
         HashMap::from([
         ]),
         HashMap::from([
-            (
-                discriminant(&Token::None),
-                vec![
-                    Lexem::NonTerminal(51),
-                ]
-            ),
-            (
-                discriminant(&Token::Integer(NumToken {value: 0})),
-                vec![
-                    Lexem::NonTerminal(51),
-                ]
-            ),
             (
                 discriminant(&Token::String(String::from(""))),
                 vec![
@@ -2895,6 +2883,24 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
+                discriminant(&Token::False),
+                vec![
+                    Lexem::NonTerminal(51),
+                ]
+            ),
+            (
+                discriminant(&Token::Integer(NumToken {value: 0})),
+                vec![
+                    Lexem::NonTerminal(51),
+                ]
+            ),
+            (
+                discriminant(&Token::None),
+                vec![
+                    Lexem::NonTerminal(51),
+                ]
+            ),
+            (
                 discriminant(&Token::OpenBracket),
                 vec![
                     Lexem::Terminal(Token::OpenBracket),
@@ -2902,14 +2908,20 @@ pub fn get_analysis_table() -> AnalysisTable {
                     Lexem::Terminal(Token::CloseBracket),
                 ]
             ),
-            (
-                discriminant(&Token::False),
-                vec![
-                    Lexem::NonTerminal(51),
-                ]
-            ),
         ]),
         HashMap::from([
+            (
+                discriminant(&Token::String(String::from(""))),
+                vec![
+                    Lexem::Terminal(Token::String(String::from(""))),
+                ]
+            ),
+            (
+                discriminant(&Token::True),
+                vec![
+                    Lexem::Terminal(Token::True),
+                ]
+            ),
             (
                 discriminant(&Token::False),
                 vec![
@@ -2928,20 +2940,27 @@ pub fn get_analysis_table() -> AnalysisTable {
                     Lexem::Terminal(Token::None),
                 ]
             ),
-            (
-                discriminant(&Token::True),
-                vec![
-                    Lexem::Terminal(Token::True),
-                ]
-            ),
+        ]),
+        HashMap::from([
             (
                 discriminant(&Token::String(String::from(""))),
                 vec![
-                    Lexem::Terminal(Token::String(String::from(""))),
+                    Lexem::NonTerminal(9),
+                    Lexem::NonTerminal(53),
                 ]
             ),
-        ]),
-        HashMap::from([
+            (
+                discriminant(&Token::CloseParenthesis),
+                vec![
+                ]
+            ),
+            (
+                discriminant(&Token::False),
+                vec![
+                    Lexem::NonTerminal(9),
+                    Lexem::NonTerminal(53),
+                ]
+            ),
             (
                 discriminant(&Token::Sub),
                 vec![
@@ -2957,24 +2976,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::String(String::from(""))),
-                vec![
-                    Lexem::NonTerminal(9),
-                    Lexem::NonTerminal(53),
-                ]
-            ),
-            (
-                discriminant(&Token::CloseParenthesis),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::CloseBracket),
-                vec![
-                ]
-            ),
-            (
-                discriminant(&Token::OpenParenthesis),
+                discriminant(&Token::True),
                 vec![
                     Lexem::NonTerminal(9),
                     Lexem::NonTerminal(53),
@@ -2988,17 +2990,8 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::None),
+                discriminant(&Token::CloseBracket),
                 vec![
-                    Lexem::NonTerminal(9),
-                    Lexem::NonTerminal(53),
-                ]
-            ),
-            (
-                discriminant(&Token::True),
-                vec![
-                    Lexem::NonTerminal(9),
-                    Lexem::NonTerminal(53),
                 ]
             ),
             (
@@ -3009,7 +3002,14 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::False),
+                discriminant(&Token::OpenParenthesis),
+                vec![
+                    Lexem::NonTerminal(9),
+                    Lexem::NonTerminal(53),
+                ]
+            ),
+            (
+                discriminant(&Token::None),
                 vec![
                     Lexem::NonTerminal(9),
                     Lexem::NonTerminal(53),
@@ -3025,33 +3025,26 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::CloseParenthesis),
+                discriminant(&Token::CloseBracket),
                 vec![
                 ]
             ),
             (
-                discriminant(&Token::CloseBracket),
+                discriminant(&Token::CloseParenthesis),
                 vec![
                 ]
             ),
         ]),
         HashMap::from([
             (
-                discriminant(&Token::Sub),
-                vec![
-                    Lexem::NonTerminal(9),
-                    Lexem::NonTerminal(53),
-                ]
-            ),
-            (
-                discriminant(&Token::Integer(NumToken {value: 0})),
-                vec![
-                    Lexem::NonTerminal(9),
-                    Lexem::NonTerminal(53),
-                ]
-            ),
-            (
                 discriminant(&Token::String(String::from(""))),
+                vec![
+                    Lexem::NonTerminal(9),
+                    Lexem::NonTerminal(53),
+                ]
+            ),
+            (
+                discriminant(&Token::False),
                 vec![
                     Lexem::NonTerminal(9),
                     Lexem::NonTerminal(53),
@@ -3065,7 +3058,28 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
+                discriminant(&Token::Integer(NumToken {value: 0})),
+                vec![
+                    Lexem::NonTerminal(9),
+                    Lexem::NonTerminal(53),
+                ]
+            ),
+            (
+                discriminant(&Token::Sub),
+                vec![
+                    Lexem::NonTerminal(9),
+                    Lexem::NonTerminal(53),
+                ]
+            ),
+            (
                 discriminant(&Token::OpenBracket),
+                vec![
+                    Lexem::NonTerminal(9),
+                    Lexem::NonTerminal(53),
+                ]
+            ),
+            (
+                discriminant(&Token::Not),
                 vec![
                     Lexem::NonTerminal(9),
                     Lexem::NonTerminal(53),
@@ -3080,20 +3094,6 @@ pub fn get_analysis_table() -> AnalysisTable {
             ),
             (
                 discriminant(&Token::OpenParenthesis),
-                vec![
-                    Lexem::NonTerminal(9),
-                    Lexem::NonTerminal(53),
-                ]
-            ),
-            (
-                discriminant(&Token::Not),
-                vec![
-                    Lexem::NonTerminal(9),
-                    Lexem::NonTerminal(53),
-                ]
-            ),
-            (
-                discriminant(&Token::False),
                 vec![
                     Lexem::NonTerminal(9),
                     Lexem::NonTerminal(53),

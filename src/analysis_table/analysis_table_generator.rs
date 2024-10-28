@@ -123,7 +123,7 @@ pub fn generate_analysis_table(input_file: &Path) -> AnalysisTable{
 mod tests {
 
     use std::path::PathBuf;
-    use crate::{analysis_table::grammar::{ParsedLexem, Rule}, common::types::token::Token};
+    use crate::{analysis_table::grammar::{ParsedLexem, Rule}, common::types::Token};
 
     use super::{parse_all_lexem_names, parse_grammar, parse_lexem_name};
 

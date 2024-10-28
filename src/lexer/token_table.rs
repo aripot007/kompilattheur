@@ -1,4 +1,4 @@
-use crate::common::types::token::{Token, IdToken};
+use crate::common::types::{Token, IdToken};
 use std::collections::HashMap;
 
 pub struct TokenTable {

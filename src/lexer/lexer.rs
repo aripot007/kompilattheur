@@ -1,7 +1,7 @@
 use crate::reader;
 
 use super::token_table::TokenTable;
-use crate::common::types::token::Token;
+use crate::common::types::Token;
 
 pub fn get_operator_token(op: &str) -> Option<Token> {
     match op {
@@ -371,7 +371,7 @@ impl Iterator for Lexer {
 #[cfg(test)]
 mod tests {
 
-    use crate::{common::types::token::Token, lexer::lexer::Lexer, reader::Reader};
+    use crate::{common::types::Token, lexer::lexer::Lexer, reader::Reader};
 
     #[test]
     fn test_eof() {

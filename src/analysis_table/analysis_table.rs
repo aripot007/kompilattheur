@@ -1,4 +1,4 @@
-use crate::common::types::token::Token;
+use crate::common::types::Token;
 use crate::parser::lexem::Lexem;
 use std::collections::HashMap;
 use std::fmt::Display;

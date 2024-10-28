@@ -29,8 +29,7 @@ macro_rules! generic_token_repr {
 pub (super) use generic_token_repr;
 
 /// Construct a `Vec<Vec<String>>` with the text that should be in each cell of the table.
-/// Also returns a `discriminant_id` HashMap that maps discriminants to their column id, and
-/// a `discriminants_names` Vec that maps a discriminant id to their display name.
+/// Also returns a `discriminants_names` Vec that maps a discriminant id to their display name.
 /// 
 /// ```text
 /// let table, discr_ids, discr_names = construct_string_table(&analysis_table);

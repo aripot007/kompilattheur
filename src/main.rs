@@ -8,7 +8,7 @@ use std::io::{self, stdout, Write};
 use analysis_table::{get_analysis_table, setup_analysis_table, AnalysisTable};
 use clap::{CommandFactory, Parser};
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs};
-use lexer::lexer::Lexer;
+use lexer::Lexer;
 use std::fs::File;
 use common::types::Node;
 use parser::{generate_tree::generate_tree, lexem::Lexem};

@@ -1,4 +1,4 @@
-use crate::lexer::lexer::Lexer;
+use crate::lexer::Lexer;
 use super::lexem::Lexem;
 use crate::analysis_table::AnalysisTable;
 use std::cell::RefCell;

@@ -1,2 +1,4 @@
-pub mod token_table;
-pub mod lexer;
+mod token_table;
+mod lexer;
+
+pub use lexer::Lexer;

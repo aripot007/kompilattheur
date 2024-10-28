@@ -11,138 +11,138 @@
 #
 #====================
 
-"<file>"          : "<newline_opt>" "<defs>" "<stmt>""<opt_stmts>" "EOF";
-"<newline_opt>"   : "NEWLINE"
+"< file >"          : "< newline_opt >" "< defs >" "< stmt >""< opt_stmts >" "EOF";
+"< newline_opt >"   : "NEWLINE"
                   | ;
-"<defs>"          : "<def>""<defs>"
+"< defs >"          : "< def >""< defs >"
                   | ;
-"<def>"           : "def" "<ident>" "(""<ident_list>"")" ":" "<suite>";
-"<suite>"         : "<simple_stmt>" "NEWLINE"
-                  | "NEWLINE" "BEGIN" "<stmt>""<opt_stmts>" "END";
+"< def >"           : "def" "<ident>" "(""< ident_list >"")" ":" "< suite >";
+"< suite >"         : "< simple_stmt >" "NEWLINE"
+                  | "NEWLINE" "BEGIN" "< stmt >""< opt_stmts >" "END";
 
-# CHANGE "<expr_no_ident>"; ---> "<expr_no_ident_no_access>";
+# CHANGE "< expr_no_ident >"; ---> "< expr_no_ident_no_access >";
 # WHAT WE DON'T ACCEPT BUT WE SHOULD ACCEPT IS access to a single expression: this case -> E[E][E]...[E]\n
-"<simple_stmt>"   : "return" "<expr>"
-                  | "print""(""<expr>"")"
-                  | "<ident>" "<simple_state_ident>"
-                  | "<expr_no_ident_no_access>" "<expr_no_ident_no_access2>";
+"< simple_stmt >"   : "return" "< expr >"
+                  | "print""(""< expr >"")"
+                  | "<ident>" "< simple_state_ident >"
+                  | "< expr_no_ident_no_access >" "< expr_no_ident_no_access2 >";
 
-"<expr_no_ident_no_access2>" : "[""<expr>""]" "<expr_access2_eq>" "=" "<expr>" 
+"< expr_no_ident_no_access2 >" : "[""< expr >""]" "< expr_access2_eq >" "=" "< expr >" 
                              | ;
 
-#POSSIBLE CHANGE (ROMAIN) "<factor_ident>" "<expr_mult2_no_access>" "<expr_add2_no_access>" "<expr_cmp2_no_access>" "<expr_and2_no_access>" "<expr2_no_access>" "<simple_stmt_expr>"
-"<simple_state_ident>" : "=" "<expr>"
-                       | "<factor_ident>" "<expr2_no_access>" "<simple_stmt_expr>";
+#POSSIBLE CHANGE (ROMAIN) "< factor_ident >" "< expr_mult2_no_access >" "< expr_add2_no_access >" "< expr_cmp2_no_access >" "< expr_and2_no_access >" "< expr2_no_access >" "< simple_stmt_expr >"
+"< simple_state_ident >" : "=" "< expr >"
+                       | "< factor_ident >" "< expr2_no_access >" "< simple_stmt_expr >";
 
-"<simple_stmt_expr>" : "[""<expr>""]" "<expr_access2_eq>" "=" "<expr>"
+"< simple_stmt_expr >" : "[""< expr >""]" "< expr_access2_eq >" "=" "< expr >"
                      | ;
 
-"<opt_stmts>"     : "<stmt>""<opt_stmts>"
+"< opt_stmts >"     : "< stmt >""< opt_stmts >"
                   | ;
 
-"<stmt>"          : "<simple_stmt>" "NEWLINE"
-                  | "if" "<expr>" ":" "<suite>" "<stmt_if>"
-                  | "for" "<ident>" "in" "<expr>" ":" "<suite>";
+"< stmt >"          : "< simple_stmt >" "NEWLINE"
+                  | "if" "< expr >" ":" "< suite >" "< stmt_if >"
+                  | "for" " <ident>" "in" "< expr >" ":" "< suite >";
 
-"<stmt_if>"       : "else" ":" "<suite>"
-                  | ;
-
-"<expr>"          : "<expr_and>""<expr2>";
-"<expr2>"         : "or" "<expr_and>""<expr2>"
-                  | ;
-"<expr_and>"      : "<expr_not>""<expr_and2>";
-"<expr_and2>"     : "and" "<expr_not>""<expr_and2>"
-                  | ;
-"<expr_not>"      : "not" "<expr_cmp>"
-                  | "<expr_cmp>";
-"<expr_cmp>"      : "<expr_add>""<expr_cmp2>";
-"<expr_cmp2>"     : "<" "<expr_add>""<expr_cmp2>"
-                  | "<=" "<expr_add>""<expr_cmp2>"
-                  | ">" "<expr_add>""<expr_cmp2>"
-                  | ">=" "<expr_add>""<expr_cmp2>"
-                  | "==" "<expr_add>""<expr_cmp2>"
-                  | "!=" "<expr_add>""<expr_cmp2>"
-                  | ;
-"<expr_add>"      : "<expr_mult>""<expr_add2>";
-"<expr_add2>"     : "+" "<expr_mult>""<expr_add2>"
-                  | "-" "<expr_mult>""<expr_add2>"
-                  | ;
-"<expr_mult>"     : "<expr_neg>""<expr_mult2>";
-"<expr_mult2>"    : "*" "<expr_neg>""<expr_mult2>"
-                  | "//" "<expr_neg>""<expr_mult2>"
-                  | "%" "<expr_neg>""<expr_mult2>"
-                  | ;
-"<expr_neg>"      : "-" "<expr_access>"
-                  | "<expr_access>";
-
-"<expr_access>"   : "<factor>" "<expr_access2>";
-
-"<expr_no_ident_no_access>" : "<expr_and_no_ident_no_access>""<expr2_no_access>";
-"<expr2_no_access>"         : "or" "<expr_and_no_access>""<expr2_no_access>"
-                  | ;
-"<expr_and_no_access>"      : "<expr_not_no_access>""<expr_and2_no_access>";
-"<expr_and_no_ident_no_access>" : "<expr_not_no_ident_no_access>""<expr_and2_no_access>";
-"<expr_and2_no_access>"     : "and" "<expr_not_no_access>""<expr_and2_no_access>"
-                  | ;
-"<expr_not_no_access>"      : "not" "<expr_cmp_no_access>"
-                  | "<expr_cmp_no_access>";
-"<expr_not_no_ident_no_access>" : "not" "<expr_cmp_no_access>"
-                  | "<expr_cmp_no_ident_no_access>";
-"<expr_cmp_no_access>"      : "<expr_add_no_access>""<expr_cmp2_no_access>";
-"<expr_cmp_no_ident_no_access>" : "<expr_add_no_ident_no_access>""<expr_cmp2_no_access>";
-"<expr_cmp2_no_access>"     : "<" "<expr_add_no_access>""<expr_cmp2_no_access>"
-                  | "<=" "<expr_add_no_access>""<expr_cmp2_no_access>"
-                  | ">" "<expr_add_no_access>""<expr_cmp2_no_access>"
-                  | ">=" "<expr_add_no_access>""<expr_cmp2_no_access>"
-                  | "==" "<expr_add_no_access>""<expr_cmp2_no_access>"
-                  | "!=" "<expr_add_no_access>""<expr_cmp2_no_access>"
-                  | ;
-"<expr_add_no_access>"      : "<expr_mult_no_access>""<expr_add2_no_access>";
-"<expr_add_no_ident_no_access>" : "<expr_mult_no_ident_no_access>""<expr_add2_no_access>";
-"<expr_add2_no_access>"     : "+" "<expr_mult_no_access>""<expr_add2_no_access>"
-                  | "-" "<expr_mult_no_access>""<expr_add2_no_access>"
-                  | ;
-"<expr_mult_no_access>"     : "<expr_neg_no_access>""<expr_mult2_no_access>";
-"<expr_mult_no_ident_no_access>" : "<expr_neg_no_ident_no_access>""<expr_mult2_no_access>";
-"<expr_mult2_no_access>"    : "*" "<expr_neg_no_access>""<expr_mult2_no_access>"
-                  | "//" "<expr_neg_no_access>""<expr_mult2_no_access>"
-                  | "%" "<expr_neg_no_access>""<expr_mult2_no_access>"
-                  | ;
-"<expr_neg_no_access>"      : "-" "<expr_access_no_access>"
-                  | "<expr_access_no_access>";
-"<expr_neg_no_ident_no_access>"      : "-" "<factor>"
-                  | "<factor_no_ident>";
-
-"<expr_access2>"  : "[" "<expr>" "]" "<expr_access2>"
+"< stmt_if >"       : "else" ":" "< suite >"
                   | ;
 
-"<expr_access2_eq>"  : "[" "<expr>" "]" "<expr_access2_eq>"
+"< expr >"          : "< expr_and >""< expr2 >";
+"< expr2 >"         : "or" "< expr_and >""< expr2 >"
+                  | ;
+"< expr_and >"      : "< expr_not >""< expr_and2 >";
+"< expr_and2 >"     : "and" "< expr_not >""< expr_and2 >"
+                  | ;
+"< expr_not >"      : "not" "< expr_cmp >"
+                  | "< expr_cmp >";
+"< expr_cmp >"      : "< expr_add >""< expr_cmp2 >";
+"< expr_cmp2 >"     : "<" "< expr_add >""< expr_cmp2 >"
+                  | "<=" "< expr_add >""< expr_cmp2 >"
+                  | ">" "< expr_add >""< expr_cmp2 >"
+                  | ">=" "< expr_add >""< expr_cmp2 >"
+                  | "==" "< expr_add >""< expr_cmp2 >"
+                  | "!=" "< expr_add >""< expr_cmp2 >"
+                  | ;
+"< expr_add >"      : "< expr_mult >""< expr_add2 >";
+"< expr_add2 >"     : "+" "< expr_mult >""< expr_add2 >"
+                  | "-" "< expr_mult >""< expr_add2 >"
+                  | ;
+"< expr_mult >"     : "< expr_neg >""< expr_mult2 >";
+"< expr_mult2 >"    : "*" "< expr_neg >""< expr_mult2 >"
+                  | "//" "< expr_neg >""< expr_mult2 >"
+                  | "%" "< expr_neg >""< expr_mult2 >"
+                  | ;
+"< expr_neg >"      : "-" "< expr_access >"
+                  | "< expr_access >";
+
+"< expr_access >"   : "< factor >" "< expr_access2 >";
+
+"< expr_no_ident_no_access >" : "< expr_and_no_ident_no_access >""< expr2_no_access >";
+"< expr2_no_access >"         : "or" "< expr_and_no_access >""< expr2_no_access >"
+                  | ;
+"< expr_and_no_access >"      : "< expr_not_no_access >""< expr_and2_no_access >";
+"< expr_and_no_ident_no_access >" : "< expr_not_no_ident_no_access >""< expr_and2_no_access >";
+"< expr_and2_no_access >"     : "and" "< expr_not_no_access >""< expr_and2_no_access >"
+                  | ;
+"< expr_not_no_access >"      : "not" "< expr_cmp_no_access >"
+                  | "< expr_cmp_no_access >";
+"< expr_not_no_ident_no_access >" : "not" "< expr_cmp_no_access >"
+                  | "< expr_cmp_no_ident_no_access >";
+"< expr_cmp_no_access >"      : "< expr_add_no_access >""< expr_cmp2_no_access >";
+"< expr_cmp_no_ident_no_access >" : "< expr_add_no_ident_no_access >""< expr_cmp2_no_access >";
+"< expr_cmp2_no_access >"     : "<" "< expr_add_no_access >""< expr_cmp2_no_access >"
+                  | "<=" "< expr_add_no_access >""< expr_cmp2_no_access >"
+                  | ">" "< expr_add_no_access >""< expr_cmp2_no_access >"
+                  | ">=" "< expr_add_no_access >""< expr_cmp2_no_access >"
+                  | "==" "< expr_add_no_access >""< expr_cmp2_no_access >"
+                  | "!=" "< expr_add_no_access >""< expr_cmp2_no_access >"
+                  | ;
+"< expr_add_no_access >"      : "< expr_mult_no_access >""< expr_add2_no_access >";
+"< expr_add_no_ident_no_access >" : "< expr_mult_no_ident_no_access >""< expr_add2_no_access >";
+"< expr_add2_no_access >"     : "+" "< expr_mult_no_access >""< expr_add2_no_access >"
+                  | "-" "< expr_mult_no_access >""< expr_add2_no_access >"
+                  | ;
+"< expr_mult_no_access >"     : "< expr_neg_no_access >""< expr_mult2_no_access >";
+"< expr_mult_no_ident_no_access >" : "< expr_neg_no_ident_no_access >""< expr_mult2_no_access >";
+"< expr_mult2_no_access >"    : "*" "< expr_neg_no_access >""< expr_mult2_no_access >"
+                  | "//" "< expr_neg_no_access >""< expr_mult2_no_access >"
+                  | "%" "< expr_neg_no_access >""< expr_mult2_no_access >"
+                  | ;
+"< expr_neg_no_access >"      : "-" "< expr_access_no_access >"
+                  | "< expr_access_no_access >";
+"< expr_neg_no_ident_no_access >"      : "-" "< factor >"
+                  | "< factor_no_ident >";
+
+"< expr_access2 >"  : "[" "< expr >" "]" "< expr_access2 >"
                   | ;
 
-"<factor>"        : "<const>"
-                  | "[""<expr_list>""]"
-                  | "<ident>" "<factor_ident>"
-                  | "(""<expr>"")";
-
-"<factor_no_ident>"        : "<const>"
-                  | "[""<expr_list>""]"
-                  | "(""<expr>"")";
-
-"<factor_ident>"  : "(""<expr_list>"")"
+"< expr_access2_eq >"  : "[" "< expr >" "]" "< expr_access2_eq >"
                   | ;
 
-"<const>"         : "<integer>" | "<string>" | "True" | "False" | "None";
+"< factor >"        : "< const >"
+                  | "[""< expr_list >""]"
+                  | " <ident>" "< factor_ident >"
+                  | "(""< expr >"")";
+
+"< factor_no_ident >"        : "< const >"
+                  | "[""< expr_list >""]"
+                  | "(""< expr >"")";
+
+"< factor_ident >"  : "(""< expr_list >"")"
+                  | ;
+
+"< const >"         : "<integer>" | "<string>" | "True" | "False" | "None";
 
 # Liste d'expressions séparées par des virgules
-"<expr_list>"         : "<expr>""<expr_list_suite>"
+"< expr_list >"         : "< expr >""< expr_list_suite >"
                       | ;
-"<expr_list_suite>"   : ",""<expr_list_expr>"
+"< expr_list_suite >"   : ",""< expr_list_expr >"
                       | ;
-"<expr_list_expr>"    : "<expr>""<expr_list_suite>";
+"< expr_list_expr >"    : "< expr >""< expr_list_suite >";
 
 # Liste d'identificateurs séparées par des virgules
-"<ident_list>"         : "<ident>""<ident_list_suite>"
+"< ident_list >"         : "<ident>""< ident_list_suite >"
                        | ;
-"<ident_list_suite>"   : ",""<ident_list_ident>"
+"< ident_list_suite >"   : ",""< ident_list_ident >"
                        | ;
-"<ident_list_ident>"   : "<ident>""<ident_list_suite>";
+"< ident_list_ident >"   : "<ident>""< ident_list_suite >";

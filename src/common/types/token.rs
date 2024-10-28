@@ -75,7 +75,7 @@ impl Display for Token {
             Token::Identifier(_) => write!(f, "< Identifier, {} >", self.repr()),
             Token::String(_) => write!(f, "< String, {} >", self.repr()),
             Token::Integer(_) => write!(f, "< Int, {} >", self.repr()),
-            _ => write!(f, "<{}>", self.repr()),
+            _ => write!(f, "< {} >", self.repr()),
         }
         
     }
@@ -116,7 +116,7 @@ impl Token {
         match self {
             Token::Integer(num_token) => num_token.value.to_string(),
             Token::Identifier(id_token) => id_token.id.to_string(),
-            Token::String(string) => format!("\"{}\"", string.escape_debug()),
+            Token::String(string) => format!("{}", string.escape_debug()),
             Token::Add => String::from("+"),
             Token::Sub => String::from("-"),
             Token::Mult => String::from("*"),

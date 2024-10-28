@@ -10,7 +10,7 @@ use clap::{CommandFactory, Parser};
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs};
 use lexer::lexer::Lexer;
 use std::fs::File;
-use common::types::tree::Node;
+use common::types::Node;
 use parser::{generate_tree::generate_tree, lexem::Lexem};
 use std::{cell::RefCell, rc::Rc};
 

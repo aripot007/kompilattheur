@@ -3,7 +3,7 @@ use super::lexem::Lexem;
 use crate::analysis_table::AnalysisTable;
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::common::types::{Token, tree::Node};
+use crate::common::types::{Token, Node};
 
 pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<RefCell<Node<Lexem>>>, bool, bool) {
     let tree: Rc<RefCell<Node<Lexem>>> = Node::new(Lexem::NonTerminal(0));

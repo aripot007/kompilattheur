@@ -1,4 +1,5 @@
 mod token;
-pub mod tree;
+mod tree;
 
 pub use token::{Token, IdToken, NumToken};
+pub use tree::Node;

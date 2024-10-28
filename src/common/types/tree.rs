@@ -10,18 +10,17 @@ pub struct Node<T> {
 
 macro_rules! escape_mermaid {
     ($s: expr) => {
-        $s.replace("<", "#lt;")
+        $s.replace("#", "#35;")
+            .replace("<", "#lt;")
             .replace(">", "#gt;")
             .replace("!", "#33;")
             .replace("\"", "#quot;")
-            .replace("#", "#35;")
             .replace("&", "#amp;")
             .replace("(", "#40;")
             .replace(")", "#41;")
             .replace("*", "#42;")
             .replace("+", "#plus;")
             .replace("-", "#minus;")
-            .replace(";", "#59;")
             .replace("[", "#91;")
             .replace("\\", "#92;")
             .replace("]", "#93;")

@@ -4,9 +4,20 @@ use indoc::writedoc;
 
 use crate::common::types::token::Token;
 use crate::parser::lexem::Lexem;
-
 use super::generic_token_repr;
 use super::super::analysis_table::AnalysisTable;
+
+/// Get the string of the rust code that constructs the given token
+macro_rules! token_constructor {
+    ($token: expr) => {
+        match &$token {
+            Token::Integer(n) => format!("Token::Integer(NumToken {{value: {}}})", n.value),
+            Token::String(s) => format!("Token::String(String::from(\"{}\"))", s.escape_debug()),
+            Token::Identifier(idt) => format!("Token::Identifier(IdToken {{id: {}}})", idt.id),
+            _ => format!("Token::{:?}", $token),
+        }
+    };
+}
 
 impl AnalysisTable {
     
@@ -16,18 +27,6 @@ impl AnalysisTable {
         struct RustAnalysisTable<'a> {
             table: &'a AnalysisTable,
             with_comments: bool,
-        }
-
-        /// Get the string of the rust code that constructs the given token
-        macro_rules! token_constructor {
-            ($token: expr) => {
-                match &$token {
-                    Token::Integer(n) => format!("Token::Integer(NumToken {{value: {}}})", n.value),
-                    Token::String(s) => format!("Token::String(String::from(\"{}\"))", s.escape_debug()),
-                    Token::Identifier(idt) => format!("Token::Identifier(IdToken {{id: {}}})", idt.id),
-                    _ => format!("Token::{:?}", $token),
-                }
-            };
         }
 
         impl<'a> fmt::Display for RustAnalysisTable<'a> {
@@ -144,4 +143,24 @@ impl AnalysisTable {
             with_comments,
         }
     }
+}
+
+
+#[cfg(test)]
+#[macro_use]
+mod tests {
+
+    use crate::common::types::token::{IdToken, NumToken};
+    use super::*;
+
+    #[test]
+    fn test_token_constructor_macro() {
+        assert_eq!("Token::Add", token_constructor!(Token::Add));
+        assert_eq!("Token::EOF", token_constructor!(Token::EOF));
+        assert_eq!("Token::Integer(NumToken {value: 42})", token_constructor!(Token::Integer(NumToken {value: 42})));
+        assert_eq!("Token::Identifier(IdToken {id: 12})", token_constructor!(Token::Identifier(IdToken {id: 12})));
+        assert_eq!("Token::String(String::from(\"Hello, World !\"))", token_constructor!(Token::String(String::from("Hello, World !"))));
+        assert_eq!("Token::String(String::from(\"Escape \\\" \\n \\\\ chars\"))", token_constructor!(Token::String(String::from("Escape \" \n \\ chars"))));
+    }
+
 }

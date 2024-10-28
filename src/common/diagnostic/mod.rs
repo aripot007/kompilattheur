@@ -60,7 +60,7 @@ impl Diagnostic {
                 );
             }
             DiagnosticGravity::Error => {
-                panic!(
+                println!(
                     "{} {} \n{}\n{} {}",
                     "Error :".truecolor(error_color.0,error_color.1,error_color.2).bold(),
                     format!("at line {}:{} :", self.start_line, self.start_column).bold(),

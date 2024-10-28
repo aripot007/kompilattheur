@@ -77,7 +77,7 @@ kompilattheur generate-autocompletion bash  > /usr/share/bash-completion/complet
 ```
 
 ```bash
-kompilattheur generate-autocompletion zsh  > > /usr/local/share/zsh/site-functions/_kompilattheur
+kompilattheur generate-autocompletion zsh  > /usr/local/share/zsh/site-functions/_kompilattheur
 ```
 
 Currently supported shells are `bash`, `elvish`, `fish`, `powershell` and `zsh`.
@@ -106,7 +106,7 @@ You can generate an analysis table for a grammar with the `generate-analysis-tab
 The grammar must be in a file that follows the [grammophone](https://mdaines.github.io/grammophone/#/) syntax.
 
 ```bash
-kompilattheur generate-analysis-table grammaire.txt -o analysis_table.rs
+kompilattheur generate-analysis-table grammaire.txt -o src/analysis_table/generated_table.rs
 ```
 
 Optionnaly, you can make the generator add comments to the file for easier debugging wiht the `--with-comments` option.

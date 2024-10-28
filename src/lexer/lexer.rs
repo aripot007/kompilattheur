@@ -1,6 +1,9 @@
+use colored::Colorize;
+
 use crate::reader;
 
 use super::token_table::TokenTable;
+use crate::common::diagnostic::*;
 use crate::common::types::token::Token;
 
 pub fn get_operator_token(op: &str) -> Option<Token> {
@@ -58,7 +61,6 @@ pub struct Lexer {
 }
 
 fn init_token_table() -> TokenTable {
-
     let mut table = TokenTable::new();
 
     table.reserve_word("True", Token::True);
@@ -76,21 +78,19 @@ fn init_token_table() -> TokenTable {
     table.reserve_word("print", Token::Print);
 
     return table;
-
 }
 
 impl Lexer {
-
     pub fn new(mut reader: reader::Reader) -> Lexer {
         // Initialise la pile d'indentation avec 0 pour avoir le niveau global
         let indentation_stack = Vec::from([0]);
         let peek = reader.next();
         return Lexer {
-            reader, 
-            indentation_stack, 
-            peek, 
-            emmitted_eof: false, 
-            line_num: 1, 
+            reader,
+            indentation_stack,
+            peek,
+            emmitted_eof: false,
+            line_num: 1,
             char_num: 1,
             end_token_count: 0,
             emit_begin: false,
@@ -98,15 +98,10 @@ impl Lexer {
         };
     }
 
-    fn syntax_error(&self, err: &str) {
-        panic!("Syntax Error l.{}:{} {}", self.line_num, self.char_num, err);
-    }
-
     // Lit les caractères correspondant à des espaces et à des commentaires
     // Si une nouvelle ligne est rencontrée, renvoie true, et le nombre d'espaces depuis le début de la
     // dernière ligne lue. Sinon, renvoie false et le nombre d'espaces lu.
     fn skip_whitespace_and_comments(&mut self) -> (bool, u64) {
-
         let mut nb_spaces = 0;
         let mut new_line = false;
 
@@ -117,23 +112,21 @@ impl Lexer {
                     nb_spaces = 0;
                     self.line_num += 1;
                     self.char_num = 0;
-                },
+                }
                 Some(' ') => nb_spaces += 1,
                 Some(c) if c.is_whitespace() => (),
-                Some('#') => {
-                    loop {
-                        match self.read_next_char() {
-                            Some('\n') | None => {
-                                new_line = true;
-                                nb_spaces = 0;
-                                self.line_num += 1;
-                                self.char_num = 0;
-                                break;
-                            },
-                            _ => (),
+                Some('#') => loop {
+                    match self.read_next_char() {
+                        Some('\n') | None => {
+                            new_line = true;
+                            nb_spaces = 0;
+                            self.line_num += 1;
+                            self.char_num = 0;
+                            break;
                         }
+                        _ => (),
                     }
-                }
+                },
                 _ => return (new_line, nb_spaces),
             }
             self.read_next_char();
@@ -141,22 +134,20 @@ impl Lexer {
     }
 
     /*
-        Permet de gérer l'émission des tokens BEGIN et END.
-        S'il faut émettre un token BEGIN, passe `self.emit_begin` à true.
-        S'il faut émettre des tokens END, met à jour `end_token_count`
-        avec le nombre de tokens END restant à émettre.
-     */
-    fn parse_indentation(&mut self, indentation_number: u64){
-
+       Permet de gérer l'émission des tokens BEGIN et END.
+       S'il faut émettre un token BEGIN, passe `self.emit_begin` à true.
+       S'il faut émettre des tokens END, met à jour `end_token_count`
+       avec le nombre de tokens END restant à émettre.
+    */
+    fn parse_indentation(&mut self, indentation_number: u64) {
         let top: u64 = *self.indentation_stack.last().unwrap_or(&0);
-        
+
         if indentation_number == top {
             return;
         } else if indentation_number > top {
             self.indentation_stack.push(indentation_number);
             self.emit_begin = true;
         } else {
-
             // Dépile jusqu'à trouver le bon numéro d'indentation
             loop {
                 match self.indentation_stack.pop() {
@@ -166,7 +157,16 @@ impl Lexer {
                         self.indentation_stack.push(indentation_number);
                         break;
                     }
-                    _ => self.syntax_error(format!("Indentation error (expected {})", indentation_number).as_str()),
+                    _ => Diagnostic::new(
+                        DiagnosticGravity::Error,
+                        "IdentationError :".to_string(),
+                        self.line_num,
+                        self.line_num,
+                        self.char_num,
+                        self.char_num,
+                        format!("Expected {})", indentation_number),
+                    )
+                    .display(),
                 }
             }
         }
@@ -181,23 +181,40 @@ impl Lexer {
 
     // Parse un integer a partir du caractère courant
     fn parse_integer(&mut self) -> Token {
-
         let mut number: u64 = 0;
 
         match self.peek {
             Some('0') => {
                 self.read_next_char();
                 return Token::integer(0);
-            },
-            Some(c) if c.is_digit(10) => {},
-            _ => panic!("trying to use parse_integer while not on a digit"),
+            }
+            Some(c) if c.is_digit(10) => {}
+            other => Diagnostic::new(
+                        DiagnosticGravity::Error, 
+                        "InvalidInteger".to_string(), 
+                        self.line_num,
+                        self.line_num,
+                        self.char_num,
+                        self.char_num,
+                        format!("Expected digit, found {:?}", other),
+                    )
+                    .display(),
         }
 
         while self.peek.is_some_and(|c| c.is_digit(10)) {
             let v: u64 = match self.peek.unwrap().to_digit(10) {
                 Some(v) => v.try_into().unwrap(),
                 None => {
-                    self.syntax_error("Could not convert digit to usize");
+                    Diagnostic::new(
+                        DiagnosticGravity::Error,
+                        "IntOverflow :".to_string(),
+                        self.line_num,
+                        self.line_num,
+                        self.char_num,
+                        self.char_num,
+                        "Integer cannot be represented on this machine".to_string(),
+                    )
+                    .display();
                     break;
                 }
             };
@@ -209,7 +226,16 @@ impl Lexer {
             let (n, of2) = n.overflowing_add(v);
 
             if of1 | of2 {
-                self.syntax_error("Integer cannot be represented on a 64 bit integer");
+                Diagnostic::new(
+                    DiagnosticGravity::Error,
+                    "IntOverflow :".to_string(),
+                    self.line_num,
+                    self.line_num+1,
+                    10,
+                    10,
+                    "Integer cannot be represented on a 64 bit integer".to_string(),
+                )
+                .display();
             }
             number = n;
 
@@ -222,29 +248,32 @@ impl Lexer {
     // Parse un identifier à partir du caractère courant
     // Ne vérifie pas que le premier caractère n'est pas un chiffre
     fn parse_identifier(&mut self) -> Token {
-
         let mut identifier = String::new();
 
-        while self.peek.is_some_and(|c| c.is_ascii_alphanumeric() || c == '_') {
+        while self
+            .peek
+            .is_some_and(|c| c.is_ascii_alphanumeric() || c == '_')
+        {
             identifier.push(self.peek.unwrap());
             self.read_next_char();
         }
 
         return self.token_table.get_token(identifier);
-
     }
 
     // Parse un string à partir du caractère courant.
     // Ne vérifie pas que le caractère courant est un '"'
     fn parse_string(&mut self) -> Token {
-
         let mut text = String::new();
 
         self.read_next_char();
 
         loop {
             match self.peek {
-                Some('"') => {self.read_next_char(); break;},
+                Some('"') => {
+                    self.read_next_char();
+                    break;
+                }
                 Some('\\') => {
                     self.read_next_char();
                     match self.peek {
@@ -252,12 +281,30 @@ impl Lexer {
                         Some('\\') => text.push('\\'),
                         Some('n') => text.push('\n'),
                         _ => {
-                            self.syntax_error("Invalid escape sequence");
+                            Diagnostic::new(
+                                DiagnosticGravity::Error,
+                                "InvalidEscapeSequence :".to_string(),
+                                self.line_num,
+                                self.line_num,
+                                self.char_num,
+                                self.char_num+1,
+                                "Expected after \\ : '\"', '\\' or 'n'".to_string(),
+                            )
+                            .display();
                             break;
                         }
                     }
-                },
-                Some('\n') => {self.syntax_error("Unterminated string");},
+                }
+                Some('\n') => Diagnostic::new(
+                    DiagnosticGravity::Error,
+                    "UnterminatedString :".to_string(),
+                    self.line_num,
+                    self.line_num,
+                    self.char_num,
+                    self.char_num+1,
+                    "String must be terminated by '\"'".to_string(),
+                )
+                .display(),
                 Some(c) => text.push(c),
                 None => break,
             }
@@ -268,13 +315,11 @@ impl Lexer {
     }
 }
 
-
 impl Iterator for Lexer {
     // TODO: Change to token type
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-
         // Handle BEGIN and END tokens
 
         if self.emit_begin {
@@ -299,7 +344,7 @@ impl Iterator for Lexer {
 
         // Skip whitespace and comments
         let (new_line, nb_indentation) = self.skip_whitespace_and_comments();
-        
+
         // Handle BEGIN and END tokens if indentation changes on a new line
         if new_line {
             self.parse_indentation(nb_indentation);
@@ -307,7 +352,6 @@ impl Iterator for Lexer {
         }
 
         match self.peek {
-
             // <integer>
             Some(c) if c.is_digit(10) => return Some(self.parse_integer()),
 
@@ -318,46 +362,67 @@ impl Iterator for Lexer {
             Some('"') => return Some(self.parse_string()),
 
             // !=
-            Some('!') => {
-                match self.read_next_char() {
-                    Some('=') => {
-                        self.read_next_char();
-                        return get_operator_token("!=")
-                    },
-                    _ => self.syntax_error("Invalid token"),
+            Some('!') => match self.read_next_char() {
+                Some('=') => {
+                    self.read_next_char();
+                    return get_operator_token("!=");
                 }
-            }
+                other => Diagnostic::new(
+                    DiagnosticGravity::Error,
+                    "InvalidToken :".to_string(),
+                    self.line_num,
+                    self.line_num,
+                    self.char_num,
+                    self.char_num+1,
+                    format!("{} is invalid, did you meant {} ?",format!("={}", other.unwrap()).truecolor(255, 0, 0), "!=".truecolor(0, 255, 0)),
+                )
+                .display(),
+            },
 
             // //
-            Some('/') => {
-                match self.read_next_char() {
-                    Some('/') => {
-                        self.read_next_char();
-                        return get_operator_token("//");
-                    },
-                    _ => self.syntax_error("Invalid token"),
+            Some('/') => match self.read_next_char() {
+                Some('/') => {
+                    self.read_next_char();
+                    return get_operator_token("//");
                 }
-            }
+                other => Diagnostic::new(
+                    DiagnosticGravity::Error,
+                    "InvalidToken :".to_string(),
+                    self.line_num,
+                    self.line_num,
+                    self.char_num,
+                    self.char_num+1,
+                    format!("{} is invalid, did you meant {} ?",format!("/{}", other.unwrap()).truecolor(255, 0, 0), "//".truecolor(0, 255, 0)),
+                )
+                .display(),
+            },
 
             // <, >, =, <=, >=, ==
-            Some(c) if c == '<' || c == '>' || c == '=' => {
-                match self.read_next_char() {
-                    Some('=') => {
-                        self.read_next_char();
-                        return get_operator_token(format!("{}=",c).as_str())
-                    },
-                    _ => return get_operator_token(c.to_string().as_str()),
+            Some(c) if c == '<' || c == '>' || c == '=' => match self.read_next_char() {
+                Some('=') => {
+                    self.read_next_char();
+                    return get_operator_token(format!("{}=", c).as_str());
                 }
-            }
+                _ => return get_operator_token(c.to_string().as_str()),
+            },
 
             // Tokens à 1 caractère
             Some(c) => {
                 self.read_next_char();
                 match get_operator_token(c.to_string().as_str()) {
                     Some(token) => return Some(token),
-                    None => self.syntax_error("Invalid token"),
+                    None => Diagnostic::new(
+                        DiagnosticGravity::Error,
+                        "InvalidToken :".to_string(),
+                        self.line_num,
+                        self.line_num,
+                        self.char_num,
+                        self.char_num+1,
+                        format!("{} is invalid", c.to_string().truecolor(255, 0, 0)),
+                    )
+                    .display(),
                 }
-            },
+            }
             None => {
                 self.emmitted_eof = true;
                 return Some(Token::EOF);
@@ -371,7 +436,7 @@ impl Iterator for Lexer {
 #[cfg(test)]
 mod tests {
 
-    use crate::{common::types::token::Token, lexer::lexer::Lexer, reader::Reader};
+    use crate::{common::types::token::{NumToken, Token}, lexer::lexer::Lexer, reader::Reader};
 
     #[test]
     fn test_eof() {
@@ -379,5 +444,21 @@ mod tests {
         assert!(lexer.next() == Some(Token::EOF));
         assert!(lexer.next() == None);
     }
-
+    
+    #[test]
+    fn test_integer() {
+        let mut lexer = Lexer::new(Reader::from("123"));
+        assert!(lexer.next() == Some(Token::integer(123)));
+        assert!(lexer.next() == Some(Token::EOF));
+        assert!(lexer.next() == None);
+    }
+    
+    #[test]
+    #[should_panic]
+    fn test_int_overflow() {
+        let mut lexer = Lexer::new(Reader::from("18446744073709551616"));
+        lexer.next();
+    }
+    
+    
 }

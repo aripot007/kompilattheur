@@ -44,6 +44,11 @@ impl<T: Display + ToString> Node<T> {
         self.childs.clone()
     }
 
+    pub fn set_children(&mut self, children: Vec<Rc<RefCell<Node<T>>>>) {
+        self.childs = children;
+    }
+
+    #[allow(dead_code)]
     pub fn add_child(&mut self, child: Rc<RefCell<Node<T>>>) {
         self.childs.push(child);
     }
@@ -52,6 +57,7 @@ impl<T: Display + ToString> Node<T> {
         self.childs.insert(index, child);
     }
 
+    #[allow(dead_code)]
     pub fn remove_child(&mut self, n: usize) -> Vec<Rc<RefCell<Node<T>>>> {
         let mut result = Vec::new();
         if n < self.childs.len() {

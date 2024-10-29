@@ -4,6 +4,7 @@ mod lexer;
 mod parser;
 mod analysis_table;
 mod cli;
+mod ast;
 use std::io::{self, stdout, Write};
 use analysis_table::{get_analysis_table, setup_analysis_table, AnalysisTable};
 use clap::{CommandFactory, Parser};
@@ -13,6 +14,7 @@ use std::fs::File;
 use common::types::Node;
 use parser::{generate_tree, Lexem};
 use std::{cell::RefCell, rc::Rc};
+use ast::generate_ast;
 
 fn main() {
 
@@ -56,6 +58,9 @@ fn compile(args: CompileArgs) {
 
     let mut output_file = File::create(args.output_file).expect("Error opening output file");
     write!(output_file, "{}", tree.borrow().generate_mermaid()).expect("error writing to output");
+
+    generate_ast(tree.clone());
+    println!("AST: {}", tree.borrow().generate_mermaid());
 
 }
 

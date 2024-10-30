@@ -28,11 +28,11 @@ pub struct Diagnostic {
 impl Diagnostic {
     pub fn new(
         gravity: DiagnosticGravity,
-        kind: String,
-        start_line: u64,
-        end_line: u64,
-        start_column: u64,
-        end_column: u64,
+        kind: String, // Here you can describe the type of error, for example: "IntOverflow"
+        start_line: u64, // The line where the error starts
+        end_line: u64, // The line where the error ends
+        start_column: u64, // The character of start_line where the error starts
+        end_column: u64, // The character of end_line where the error ends
         message: String,
     ) -> Self {
         Self {

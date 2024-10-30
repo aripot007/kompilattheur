@@ -190,15 +190,15 @@ impl Lexer {
             }
             Some(c) if c.is_digit(10) => {}
             other => Diagnostic::new(
-                        DiagnosticGravity::Error, 
-                        "InvalidInteger".to_string(), 
-                        self.line_num,
-                        self.line_num,
-                        self.char_num,
-                        self.char_num,
-                        format!("Expected digit, found {:?}", other),
-                    )
-                    .display(),
+                DiagnosticGravity::Error,
+                "InvalidInteger".to_string(),
+                self.line_num,
+                self.line_num,
+                self.char_num,
+                self.char_num,
+                format!("Expected digit, found {:?}", other),
+            )
+            .display(),
         }
 
         while self.peek.is_some_and(|c| c.is_digit(10)) {
@@ -232,13 +232,12 @@ impl Lexer {
                     self.line_num,
                     self.line_num,
                     self.char_num,
-                    self.char_num+1,
+                    self.char_num + 1,
                     "Integer cannot be represented on a 64 bit integer".to_string(),
                 )
                 .display();
             }
             number = n;
-
             self.read_next_char();
         }
 
@@ -287,7 +286,7 @@ impl Lexer {
                                 self.line_num,
                                 self.line_num,
                                 self.char_num,
-                                self.char_num+1,
+                                self.char_num + 1,
                                 "Expected after \\ : '\"', '\\' or 'n'".to_string(),
                             )
                             .display();
@@ -301,7 +300,7 @@ impl Lexer {
                     self.line_num,
                     self.line_num,
                     self.char_num,
-                    self.char_num+1,
+                    self.char_num + 1,
                     "String must be terminated by '\"'".to_string(),
                 )
                 .display(),
@@ -373,8 +372,12 @@ impl Iterator for Lexer {
                     self.line_num,
                     self.line_num,
                     self.char_num,
-                    self.char_num+1,
-                    format!("{} is invalid, did you meant {} ?",format!("={}", other.unwrap()).truecolor(255, 0, 0), "!=".truecolor(0, 255, 0)),
+                    self.char_num + 1,
+                    format!(
+                        "{} is invalid, did you meant {} ?",
+                        format!("={}", other.unwrap()).truecolor(255, 0, 0),
+                        "!=".truecolor(0, 255, 0)
+                    ),
                 )
                 .display(),
             },
@@ -391,8 +394,12 @@ impl Iterator for Lexer {
                     self.line_num,
                     self.line_num,
                     self.char_num,
-                    self.char_num+1,
-                    format!("{} is invalid, did you meant {} ?",format!("/{}", other.unwrap()).truecolor(255, 0, 0), "//".truecolor(0, 255, 0)),
+                    self.char_num + 1,
+                    format!(
+                        "{} is invalid, did you meant {} ?",
+                        format!("/{}", other.unwrap()).truecolor(255, 0, 0),
+                        "//".truecolor(0, 255, 0)
+                    ),
                 )
                 .display(),
             },
@@ -417,7 +424,7 @@ impl Iterator for Lexer {
                         self.line_num,
                         self.line_num,
                         self.char_num,
-                        self.char_num+1,
+                        self.char_num + 1,
                         format!("{} is invalid", c.to_string().truecolor(255, 0, 0)),
                     )
                     .display(),
@@ -435,7 +442,7 @@ impl Iterator for Lexer {
 
 #[cfg(test)]
 mod tests {
-    use crate::{common::types::Token, lexer::lexer::Lexer, reader::Reader};
+    use crate::{common::types::{IdToken, Token}, lexer::{lexer::{get_operator_token, init_token_table, Lexer}, token_table}, reader::Reader};
 
     #[test]
     fn test_eof() {
@@ -443,7 +450,7 @@ mod tests {
         assert!(lexer.next() == Some(Token::EOF));
         assert!(lexer.next() == None);
     }
-    
+
     #[test]
     fn test_integer() {
         let mut lexer = Lexer::new(Reader::from("123"));
@@ -451,13 +458,85 @@ mod tests {
         assert!(lexer.next() == Some(Token::EOF));
         assert!(lexer.next() == None);
     }
-    
+
     #[test]
-    #[should_panic]
     fn test_int_overflow() {
         let mut lexer = Lexer::new(Reader::from("18446744073709551616"));
-        lexer.next();
+        println!("{:?}", lexer.next());
+        assert!(lexer.next() == Some(Token::EOF));
     }
     
+    #[test]
+    fn test_identifier() {
+        let mut lexer = Lexer::new(Reader::from("hello"));
+        let mut tokentable = init_token_table();
+        let token = tokentable.get_token("hello".to_string());
+        assert!(lexer.next() == Some(token));
+        assert!(lexer.next() == Some(Token::EOF));
+        assert!(lexer.next() == None);
+    }
+    
+    #[test]
+    fn test_string() {
+        let mut lexer = Lexer::new(Reader::from("\"hello\""));
+        assert!(lexer.next() == Some(Token::String("hello".to_string())));
+        assert!(lexer.next() == Some(Token::EOF));
+        assert!(lexer.next() == None);
+    }
+    
+    #[test]
+    fn test_string_error() {
+        let mut lexer = Lexer::new(Reader::from("\"hello \n123"));
+        println!("{:?}", lexer.next());
+        assert!(lexer.next() == Some(Token::EOF));
+        assert!(lexer.next() == None);
+    }
+    
+    #[test]
+    fn test_tokens() {
+        let mut lexer = Lexer::new(Reader::from("+ - * // % == = != < > <= >= True False None and or not def for in if else return print , : ( ) [ ]"));
+        let mut tokentable = init_token_table();
+        assert!(lexer.next() == get_operator_token("+"));
+        assert!(lexer.next() == get_operator_token("-"));
+        assert!(lexer.next() == get_operator_token("*"));
+        assert!(lexer.next() == get_operator_token("//"));
+        assert!(lexer.next() == get_operator_token("%"));
+        assert!(lexer.next() == get_operator_token("=="));
+        assert!(lexer.next() == get_operator_token("="));
+        assert!(lexer.next() == get_operator_token("!="));
+        assert!(lexer.next() == get_operator_token("<"));
+        assert!(lexer.next() == get_operator_token(">"));
+        assert!(lexer.next() == get_operator_token("<="));
+        assert!(lexer.next() == get_operator_token(">="));
+        assert!(lexer.next() == Some(tokentable.get_token("True".to_string())));
+        assert!(lexer.next() == Some(tokentable.get_token("False".to_string())));
+        assert!(lexer.next() == Some(tokentable.get_token("None".to_string())));
+        assert!(lexer.next() == Some(tokentable.get_token("and".to_string())));
+        assert!(lexer.next() == Some(tokentable.get_token("or".to_string())));
+        assert!(lexer.next() == Some(tokentable.get_token("not".to_string())));
+        assert!(lexer.next() == Some(tokentable.get_token("def".to_string())));
+        assert!(lexer.next() == Some(tokentable.get_token("for".to_string())));
+        assert!(lexer.next() == Some(tokentable.get_token("in".to_string())));
+        assert!(lexer.next() == Some(tokentable.get_token("if".to_string())));
+        assert!(lexer.next() == Some(tokentable.get_token("else".to_string())));
+        assert!(lexer.next() == Some(tokentable.get_token("return".to_string())));
+        assert!(lexer.next() == Some(tokentable.get_token("print".to_string())));
+        assert!(lexer.next() == get_operator_token(","));
+        assert!(lexer.next() == get_operator_token(":"));
+        assert!(lexer.next() == get_operator_token("("));
+        assert!(lexer.next() == get_operator_token(")"));
+        assert!(lexer.next() == get_operator_token("["));
+        assert!(lexer.next() == get_operator_token("]"));
+        assert!(lexer.next() == Some(Token::EOF));
+        assert!(lexer.next() == None);
+    }
+    
+    #[test]
+    fn test_illegal_tokens() {
+        let mut lexer = Lexer::new(Reader::from("é"));
+        println!("{:?}", lexer.next());
+        assert!(lexer.next() == Some(Token::EOF));
+        assert!(lexer.next() == None);
+    }
     
 }

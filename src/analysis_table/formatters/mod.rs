@@ -3,8 +3,8 @@ mod plaintext;
 mod rust;
 use super::analysis_table::AnalysisTable;
 use std::{collections::HashMap, mem::Discriminant};
-use crate::common::types::token::Token;
-use crate::parser::lexem::Lexem;
+use crate::common::types::Token;
+use crate::parser::Lexem;
 
 /// Renvoie la représentation générique d'un token, ie le nom sans les informations du token.
 /// 
@@ -29,8 +29,7 @@ macro_rules! generic_token_repr {
 pub (super) use generic_token_repr;
 
 /// Construct a `Vec<Vec<String>>` with the text that should be in each cell of the table.
-/// Also returns a `discriminant_id` HashMap that maps discriminants to their column id, and
-/// a `discriminants_names` Vec that maps a discriminant id to their display name.
+/// Also returns a `discriminants_names` Vec that maps a discriminant id to their display name.
 /// 
 /// ```text
 /// let table, discr_ids, discr_names = construct_string_table(&analysis_table);

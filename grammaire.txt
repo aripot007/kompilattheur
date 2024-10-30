@@ -48,19 +48,14 @@
                   | ;
 
 "<expr>"          : "<expr_and>""<expr2>";
-"<expr_no_ident>" : "<expr_and_no_ident>""<expr2>";
 "<expr2>"         : "or" "<expr_and>""<expr2>"
                   | ;
 "<expr_and>"      : "<expr_not>""<expr_and2>";
-"<expr_and_no_ident>" : "<expr_not_no_ident>""<expr_and2>";
 "<expr_and2>"     : "and" "<expr_not>""<expr_and2>"
                   | ;
 "<expr_not>"      : "not" "<expr_cmp>"
                   | "<expr_cmp>";
-"<expr_not_no_ident>" : "not" "<expr_cmp>"
-                  | "<expr_cmp_no_ident>";
 "<expr_cmp>"      : "<expr_add>""<expr_cmp2>";
-"<expr_cmp_no_ident>" : "<expr_add_no_ident>""<expr_cmp2>";
 "<expr_cmp2>"     : "<" "<expr_add>""<expr_cmp2>"
                   | "<=" "<expr_add>""<expr_cmp2>"
                   | ">" "<expr_add>""<expr_cmp2>"
@@ -69,23 +64,18 @@
                   | "!=" "<expr_add>""<expr_cmp2>"
                   | ;
 "<expr_add>"      : "<expr_mult>""<expr_add2>";
-"<expr_add_no_ident>" : "<expr_mult_no_ident>""<expr_add2>";
 "<expr_add2>"     : "+" "<expr_mult>""<expr_add2>"
                   | "-" "<expr_mult>""<expr_add2>"
                   | ;
 "<expr_mult>"     : "<expr_neg>""<expr_mult2>";
-"<expr_mult_no_ident>" : "<expr_neg_no_ident>""<expr_mult2>";
 "<expr_mult2>"    : "*" "<expr_neg>""<expr_mult2>"
                   | "//" "<expr_neg>""<expr_mult2>"
                   | "%" "<expr_neg>""<expr_mult2>"
                   | ;
 "<expr_neg>"      : "-" "<expr_access>"
                   | "<expr_access>";
-"<expr_neg_no_ident>"      : "-" "<expr_access>"
-                  | "<expr_access_no_ident>";
 
 "<expr_access>"   : "<factor>" "<expr_access2>";
-"<expr_access_no_ident>"   : "<factor_no_ident>" "<expr_access2>";
 
 "<expr_no_ident_no_access>" : "<expr_and_no_ident_no_access>""<expr2_no_access>";
 "<expr2_no_access>"         : "or" "<expr_and_no_access>""<expr2_no_access>"

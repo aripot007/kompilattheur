@@ -1,10 +1,10 @@
 use std::collections::{HashMap, HashSet};
 use core::fmt::Display;
 
-use crate::{common::types::token::{IdToken, Token}, parser::lexem::Lexem};
+use crate::{common::types::{IdToken, Token}, parser::Lexem};
 
 /// Représente un lexem qui a été prsé de la grammaire
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ParsedLexem {
     /// Nom du lexem dans le fichier de la grammaire
     pub name: String,
@@ -26,6 +26,7 @@ impl Into<Lexem> for ParsedLexem {
 }
 
 /// Représente une règle d'une grammaire
+#[derive(PartialEq, Eq)]
 pub struct Rule {
     pub id: usize,
     pub start: ParsedLexem,

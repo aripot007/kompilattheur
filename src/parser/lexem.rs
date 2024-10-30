@@ -1,8 +1,8 @@
 use std::fmt::{Debug, Display, Formatter, Result}; // Add Debug trait import
 
-use crate::{analysis_table::get_analysis_table, common::types::token::Token};
+use crate::{analysis_table::get_analysis_table, common::types::Token};
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum Lexem {
     Terminal(Token),
     NonTerminal(usize),

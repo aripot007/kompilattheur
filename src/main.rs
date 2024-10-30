@@ -8,10 +8,10 @@ use std::io::{self, stdout, Write};
 use analysis_table::{get_analysis_table, setup_analysis_table, AnalysisTable};
 use clap::{CommandFactory, Parser};
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs};
-use lexer::lexer::Lexer;
+use lexer::Lexer;
 use std::fs::File;
-use common::types::tree::Node;
-use parser::{generate_tree::generate_tree, lexem::Lexem};
+use common::types::Node;
+use parser::{generate_tree, Lexem};
 use std::{cell::RefCell, rc::Rc};
 use std::sync::OnceLock;
 
@@ -57,7 +57,10 @@ fn compile(args: CompileArgs) {
 
     let table = get_analysis_table();
     let (tree, accept, error): (Rc<RefCell<Node<Lexem>>>, bool, bool) = generate_tree(lexer, &table);
-    println!("Mermaid tree: {}, Accepted: {}, Error: {}", tree.borrow().generate_mermaid(), accept, error);
+    println!("Accepted: {}, Error: {}", accept, error);
+
+    let mut output_file = File::create(args.output_file).expect("Error opening output file");
+    write!(output_file, "{}", tree.borrow().generate_mermaid()).expect("error writing to output");
 
 }
 

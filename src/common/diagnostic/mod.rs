@@ -1,5 +1,4 @@
 use colored::Colorize;
-use std::collections::LinkedList;
 use std::fs::File;
 use std::io::{self, BufRead};
 

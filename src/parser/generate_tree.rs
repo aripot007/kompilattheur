@@ -1,16 +1,16 @@
-use crate::lexer::lexer::Lexer;
+use crate::lexer::Lexer;
 use super::lexem::Lexem;
 use crate::analysis_table::AnalysisTable;
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::common::types::{{token::Token, tree::Node}};
+use crate::common::types::{Token, Node};
 
 pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<RefCell<Node<Lexem>>>, bool, bool) {
     let tree: Rc<RefCell<Node<Lexem>>> = Node::new(Lexem::NonTerminal(0));
     let mut stack: Vec<Rc<RefCell<Node<Lexem>>>> = vec![tree.clone()];
     let mut error = false;
     let mut accept = false;
-    let mut input = lexer.next().unwrap();
+    let mut input = lexer.next().unwrap_or(Token::EOF);
 
     while !error && !accept {
         //println!("Stack: {:?}, Input: {}", stack, input);
@@ -25,7 +25,7 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
                         if token.is_same_type(&input) {
                             //println!("Input: {:?}", input);
                             node.borrow_mut().value = Lexem::Terminal(input.clone());
-                            input = lexer.next().unwrap();
+                            input = lexer.next().unwrap_or(Token::EOF);
                         } else {
                             error = true;
                             println!("Error: {token:?} != {input}");

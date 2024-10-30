@@ -26,13 +26,24 @@ pub struct Diagnostic {
 }
 
 impl Diagnostic {
+    /// Create a new Diagnostic
+    /// 
+    /// # Arguments
+    /// 
+    /// * `gravity` - between Warning and Error
+    /// * `kind` - describes the type of error, for example: "IntOverflow"
+    /// * `start_line` - line where the error starts
+    /// * `end_line` - line where the error ends
+    /// * `start_column` - character of start_line where the error starts
+    /// * `end_column` - character of end_line where the error ends
+    /// * `message` - message to display
     pub fn new(
         gravity: DiagnosticGravity,
-        kind: String, // Here you can describe the type of error, for example: "IntOverflow"
-        start_line: u64, // The line where the error starts
-        end_line: u64, // The line where the error ends
-        start_column: u64, // The character of start_line where the error starts
-        end_column: u64, // The character of end_line where the error ends
+        kind: String,
+        start_line: u64,
+        end_line: u64,
+        start_column: u64,
+        end_column: u64,
         message: String,
     ) -> Self {
         Self {
@@ -46,6 +57,7 @@ impl Diagnostic {
         }
     }
 
+    /// Display the diagnostic in the terminal
     pub fn display(&self) {
         match self.gravity {
             DiagnosticGravity::Warning => {

@@ -7,3 +7,4 @@ edition = "2021"
 clap = { version = "4.0", features = ["derive"] }
 indoc = "2"
 clap_complete = "4.5.35"
+colored = "2.1.0"

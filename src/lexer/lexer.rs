@@ -99,13 +99,18 @@ impl Lexer {
     }
 
     fn construct_file_elem(&self, token: Token) -> FileElement<Token> {
+        let calc_len = match token {
+            Token::Identifier(IdToken{id}) => self.token_table.get_ident_name(id).len(),
+            Token::Newline => 0,
+            Token::EOF => 0,
+            Token::Begin => 0,
+            Token::End => 0,
+            _ => token.repr().len()
+        };
         FileElement {
             line: self.line_num,
-            start_char: self.char_num,
-            len: match token {
-                Token::Identifier(IdToken{id}) => self.token_table.get_ident_name(id).len(),
-                _ => token.repr().len()
-            },
+            start_char: self.char_num - calc_len as u64,
+            len: calc_len,
             element: token,
         }
     }
@@ -175,8 +180,8 @@ impl Lexer {
                         "IdentationError :".to_string(),
                         self.line_num,
                         self.line_num,
-                        self.char_num,
-                        self.char_num,
+                        self.char_num - 1,
+                        self.char_num - 1,
                         format!("Expected {})", indentation_number),
                     )
                     .display(),
@@ -218,9 +223,9 @@ impl Lexer {
                         "IntOverflow :".to_string(),
                         self.line_num,
                         self.line_num,
-                        self.char_num,
-                        self.char_num,
-                        "Integer cannot be represented on this machine".to_string(),
+                        self.char_num - 1,
+                        self.char_num - 1,
+                        "This character cannot be converted to integer".to_string(),
                     )
                     .display();
                     break;
@@ -234,13 +239,14 @@ impl Lexer {
             let (n, of2) = n.overflowing_add(v);
 
             if of1 | of2 {
+                let element = self.construct_file_elem(Token::integer(number));
                 Diagnostic::new(
                     DiagnosticGravity::Error,
                     "IntOverflow :".to_string(),
-                    self.line_num,
-                    self.line_num,
-                    self.char_num,
-                    self.char_num+1,
+                    element.line,
+                    element.line,
+                    element.start_char,
+                    element.start_char + element.len as u64,
                     "Integer cannot be represented on a 64 bit integer".to_string(),
                 )
                 .display();

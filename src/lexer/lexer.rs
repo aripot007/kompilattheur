@@ -1,3 +1,5 @@
+use std::fmt::format;
+
 use crate::{common::types::FileElement, reader};
 
 use super::token_table::TokenTable;
@@ -180,8 +182,8 @@ impl Lexer {
                         "IdentationError :".to_string(),
                         self.line_num,
                         self.line_num,
-                        self.char_num - 1,
-                        self.char_num - 1,
+                        self.char_num,
+                        self.char_num,
                         format!("Expected {})", indentation_number),
                     )
                     .display(),
@@ -223,8 +225,8 @@ impl Lexer {
                         "IntOverflow :".to_string(),
                         self.line_num,
                         self.line_num,
-                        self.char_num - 1,
-                        self.char_num - 1,
+                        self.char_num,
+                        self.char_num,
                         "This character cannot be converted to integer".to_string(),
                     )
                     .display();
@@ -247,10 +249,10 @@ impl Lexer {
                     element.line,
                     element.start_char,
                     element.start_char + element.len as u64,
-                    "Integer cannot be represented on a 64 bit integer".to_string(),
+                    "Integer cannot be represented on a 64 bits integer".to_string(),
                 )
                 .display();
-                panic!("Integer cannot be represented on a 64 bit integer")
+                panic!("Integer cannot be represented on a 64 bits integer")
             }
             number = n;
 
@@ -300,15 +302,16 @@ impl Lexer {
                         Some('"') => text.push('"'),
                         Some('\\') => text.push('\\'),
                         Some('n') => text.push('\n'),
-                        _ => {
+                        other => {
+                            let element = self.construct_file_elem(Token::String(text.clone()));
                             Diagnostic::new(
                                 DiagnosticGravity::Error,
                                 "InvalidEscapeSequence :".to_string(),
-                                self.line_num,
-                                self.line_num,
-                                self.char_num,
-                                self.char_num+1,
-                                "Expected after \\ : '\"', '\\' or 'n'".to_string(),
+                                element.line,
+                                element.line,
+                                element.start_char,
+                                element.start_char + element.len as u64,
+                                format!("\\{} unkown, expected after \\ : '{}', '{}' or '{}'", other.unwrap().to_string().truecolor(255, 0, 0) , "\"".truecolor(0, 255, 0), "\\".truecolor(0, 255, 0), "n".truecolor(0, 255, 0))
                             )
                             .display();
                             break;
@@ -321,7 +324,7 @@ impl Lexer {
                     self.line_num,
                     self.line_num,
                     self.char_num,
-                    self.char_num+1,
+                    self.char_num,
                     "String must be terminated by '\"'".to_string(),
                 )
                 .display(),
@@ -402,11 +405,10 @@ impl Iterator for Lexer {
                     "InvalidToken :".to_string(),
                     self.line_num,
                     self.line_num,
+                    self.char_num - 1,
                     self.char_num,
-                    self.char_num+1,
                     format!("{} is invalid, did you mean {} ?",format!("={}", other.unwrap()).truecolor(255, 0, 0), "!=".truecolor(0, 255, 0)),
-                )
-                .display(),
+                ).display(),
             },
 
             // //
@@ -420,11 +422,10 @@ impl Iterator for Lexer {
                     "InvalidToken :".to_string(),
                     self.line_num,
                     self.line_num,
+                    self.char_num - 1,
                     self.char_num,
-                    self.char_num+1,
                     format!("{} is invalid, did you mean {} ?",format!("/{}", other.unwrap()).truecolor(255, 0, 0), "//".truecolor(0, 255, 0)),
-                )
-                .display(),
+                ).display(),
             },
 
             // <, >, =, <=, >=, ==
@@ -446,8 +447,8 @@ impl Iterator for Lexer {
                         "InvalidToken :".to_string(),
                         self.line_num,
                         self.line_num,
-                        self.char_num,
-                        self.char_num+1,
+                        self.char_num-1,
+                        self.char_num-1,
                         format!("{} is invalid", c.to_string().truecolor(255, 0, 0)),
                     )
                     .display(),

@@ -1,4 +1,4 @@
-use crate::lexer::Lexer;
+use crate::{common::types::file_element, lexer::Lexer};
 use super::lexem::Lexem;
 use crate::analysis_table::AnalysisTable;
 use std::cell::RefCell;
@@ -10,7 +10,7 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
     let mut stack: Vec<Rc<RefCell<Node<Lexem>>>> = vec![tree.clone()];
     let mut error = false;
     let mut accept = false;
-    let mut input = lexer.next().unwrap_or(Token::EOF);
+    let mut input = lexer.next().unwrap_or(file_element::EOF);
 
     while !error && !accept {
         //println!("Stack: {:?}, Input: {}", stack, input);
@@ -22,17 +22,17 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
                 let lexem = node.borrow_mut().value.clone();
                 match lexem {
                     Lexem::Terminal(token) => {
-                        if token.is_same_type(&input) {
+                        if token.is_same_type(&input.element) {
                             //println!("Input: {:?}", input);
-                            node.borrow_mut().value = Lexem::Terminal(input.clone());
-                            input = lexer.next().unwrap_or(Token::EOF);
+                            node.borrow_mut().value = Lexem::Terminal(input.element.clone());
+                            input = lexer.next().unwrap_or(file_element::EOF);
                         } else {
                             error = true;
-                            println!("Error: {token:?} != {input}");
+                            println!("Error: {token:?} != {}", input.element);
                         }
                     }
                     Lexem::NonTerminal(id) => {
-                        let entry = analysis_table.get(&id, &input);
+                        let entry = analysis_table.get(&id, &input.element);
                         match entry {
                             Some(lexems) => {
                                 for lexem in lexems.iter().rev() {
@@ -43,14 +43,14 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
                             }
                             None => {
                                 error = true;
-                                println!("Error: No entry for {id:?} and {input}");
+                                println!("Error: No entry for {id:?} and {}", input.element);
                             }
                         }
                     }
                 }
             }
             None => {
-                if input != Token::EOF {
+                if input.element != Token::EOF {
                     error = true;
                     println!("Error: Stack is empty and input is not EOF");
                 }

@@ -101,6 +101,7 @@ impl Lexer {
     fn construct_file_elem(&self, token: Token) -> FileElement<Token> {
         let calc_len = match token {
             Token::Identifier(IdToken{id}) => self.token_table.get_ident_name(id).len(),
+            Token::String(ref s) => s.len() + 2,
             Token::Newline => 0,
             Token::EOF => 0,
             Token::Begin => 0,

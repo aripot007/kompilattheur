@@ -108,8 +108,8 @@
                   | "//" "<expr_neg_no_access>""<expr_mult2_no_access>"
                   | "%" "<expr_neg_no_access>""<expr_mult2_no_access>"
                   | ;
-"<expr_neg_no_access>"      : "-" "<expr_access_no_access>"
-                  | "<expr_access_no_access>";
+"<expr_neg_no_access>"      : "-" "<factor>"
+                  | "<factor>";
 "<expr_neg_no_ident_no_access>"      : "-" "<factor>"
                   | "<factor_no_ident>";
 

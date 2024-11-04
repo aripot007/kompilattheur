@@ -1,4 +1,6 @@
-use crate::{common::types::file_element, lexer::Lexer};
+use colored:: Colorize;
+
+use crate::{common::{diagnostic::{Diagnostic, DiagnosticGravity}, types::file_element}, lexer::Lexer};
 use super::lexem::Lexem;
 use crate::analysis_table::AnalysisTable;
 use std::cell::RefCell;
@@ -28,7 +30,22 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
                             input = lexer.next().unwrap_or(file_element::EOF);
                         } else {
                             error = true;
-                            println!("Error: {token:?} != {}", input.element);
+                            let line = if input.element == Token::Newline && input.line > 0 {
+                                input.line - 1
+                            } else {
+                                input.line
+                            };
+                            Diagnostic::new(
+                                DiagnosticGravity::Error,
+                                "ParserInputError :".to_string(),
+                                line,
+                                input.line,
+                                input.start_char,
+                                if input.len > 0 { input.start_char + (input.len - 1) as u64 } else { input.start_char },
+                                format!("Expected {} but got {}", token.to_string().truecolor(255, 0, 0), input.element.to_string().truecolor(255, 0, 0)).to_string(),
+                            )
+                            .display();
+                            // println!("Error: {token:?} != {}", input.element);
                         }
                     }
                     Lexem::NonTerminal(id) => {
@@ -43,7 +60,25 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
                             }
                             None => {
                                 error = true;
-                                println!("Error: No entry for {id:?} and {}", input.element);
+                                let expected_tokens = analysis_table.get_expected_tokens(&id);
+                                let expected_tokens = expected_tokens.iter().map(|x| {
+                                    match x {
+                                        Token::Identifier(_) => "Identifier".to_string().truecolor(255, 0, 0).to_string(),
+                                        Token::Integer(_) => "Integer".to_string().truecolor(255, 0, 0).to_string(),
+                                        Token::String(_) => "String".to_string().truecolor(255, 0, 0).to_string(),
+                                        _ => x.to_string().truecolor(255, 0, 0).to_string(),
+                                    }
+                                }).collect::<Vec<String>>().join(", ");
+                                Diagnostic::new(
+                                    DiagnosticGravity::Error,
+                                    "ParserTableError :".to_string(),
+                                    input.line,
+                                    input.line,
+                                    input.start_char,
+                                    if input.len > 0 { input.start_char + (input.len - 1) as u64 } else { input.start_char },
+                                    format!("Expected {} but got {}", expected_tokens, input.element.to_string().truecolor(255, 0, 0)).to_string(),
+                                ).display();
+                                //println!("Error: No entry for {} and {}", analysis_table.get_non_terminal_name(id), input.element);
                             }
                         }
                     }
@@ -52,6 +87,15 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
             None => {
                 if input.element != Token::EOF {
                     error = true;
+                    Diagnostic::new(
+                        DiagnosticGravity::Error,
+                        "ParserStackError :".to_string(),
+                        input.line,
+                        input.line,
+                        input.start_char,
+                        input.start_char + (input.len - 1) as u64,
+                        "Stack is empty and input is not EOF".to_string(),
+                    ).display();
                     println!("Error: Stack is empty and input is not EOF");
                 }
                 accept = true;
@@ -70,19 +114,56 @@ mod tests {
 
     use super::*;
 
+    use once_cell::sync::Lazy;
+
+    static ANALYSIS_TABLE: Lazy<&AnalysisTable> = Lazy::new(|| setup_analysis_table(Some(&PathBuf::from("grammaire.txt"))));
+
     #[test]
     fn test_generate_tree() {
-        let source = "2 + 5 * 7";
+        let source = "5 + 5 * 8 \n";
         // let lexer = Lexer::new(source.into());
         // for token in lexer {
         //     print!("{}", token);
         // }
         // print!("\n");
         let lexer = Lexer::new(source.into());
-        let analysis_table = setup_analysis_table(Some(&PathBuf::from("grammaire_ex.txt")));
-        let (tree, accept, error) = generate_tree(lexer, &analysis_table);
+        let analysis_table = Lazy::force(&ANALYSIS_TABLE);
+        let (tree, accept, error) = generate_tree(lexer, *analysis_table);
         println!("{}", tree.borrow().generate_mermaid());
         assert_eq!(accept, true);
         assert_eq!(error, false);
+    }
+
+    #[test]
+    fn test_invalid_input_parser() {
+        let source = "print \"Hello World !\")";
+        let lexer = Lexer::new(source.into());
+        let analysis_table = Lazy::force(&ANALYSIS_TABLE);
+        let (tree, accept, error) = generate_tree(lexer, *analysis_table);
+        println!("{}", tree.borrow().generate_mermaid());
+        assert_eq!(accept, false);
+        assert_eq!(error, true);
+    }
+
+    #[test]
+    fn test_invalid_rule_parser() {
+        let source = "( + ";
+        let lexer = Lexer::new(source.into());
+        let analysis_table = Lazy::force(&ANALYSIS_TABLE);
+        let (tree, accept, error) = generate_tree(lexer, *analysis_table);
+        println!("{}", tree.borrow().generate_mermaid());
+        assert_eq!(accept, false);
+        assert_eq!(error, true);
+    }
+
+    #[test]
+    fn test_empty_stack_parser() {
+        let source = "\n \n";
+        let lexer = Lexer::new(source.into());
+        let analysis_table = Lazy::force(&ANALYSIS_TABLE);
+        let (tree, accept, error) = generate_tree(lexer, *analysis_table);
+        println!("{}", tree.borrow().generate_mermaid());
+        assert_eq!(accept, false);
+        assert_eq!(error, true);
     }
 }

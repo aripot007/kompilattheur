@@ -60,12 +60,16 @@ fn compile(args: CompileArgs) {
     let table = get_analysis_table();
     let (tree, accept, error): (Rc<RefCell<Node<Lexem>>>, bool, bool) = generate_tree(lexer, &table);
     println!("Accepted: {}, Error: {}", accept, error);
+    if args.syntax_tree {
+        let mut output_file = File::create(args.output_file).expect("Error opening output file");
+        write!(output_file, "{}", tree.borrow().generate_mermaid()).expect("error writing to output");
+        return
+    }
+    
+    generate_ast(tree.clone());
 
     let mut output_file = File::create(args.output_file).expect("Error opening output file");
     write!(output_file, "{}", tree.borrow().generate_mermaid()).expect("error writing to output");
-
-    generate_ast(tree.clone());
-    println!("AST: {}", tree.borrow().generate_mermaid());
 
 }
 

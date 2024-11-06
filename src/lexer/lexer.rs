@@ -323,7 +323,7 @@ impl Lexer {
                     self.line_num,
                     self.char_num,
                     self.char_num,
-                    "String must be terminated by '\"'".to_string(),
+                    format!("String must be terminated by {}", "\"".truecolor(0, 255, 0)),
                 )
                 .display(),
                 Some(c) => text.push(c),

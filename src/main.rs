@@ -15,6 +15,9 @@ use common::types::Node;
 use parser::{generate_tree, Lexem};
 use std::{cell::RefCell, rc::Rc};
 use ast::generate_ast;
+use std::sync::OnceLock;
+
+static FILE_PATH: OnceLock<String> = OnceLock::new();
 
 fn main() {
 
@@ -40,10 +43,12 @@ fn compile(args: CompileArgs) {
         eprintln!("Input file required");
         return;
     };
+    
+    FILE_PATH.set(file_path.to_str().unwrap().to_string()).unwrap();
 
     let lexer = Lexer::new(reader::new(&file_path));
     for token in lexer {
-        print!("{} ", token);
+        print!("{} ", token.element);
     }
 
     print!("\n");

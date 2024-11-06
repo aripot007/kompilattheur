@@ -37,6 +37,10 @@ impl TokenTable {
             });
         token.clone()
     }
+
+    pub fn get_ident_name(&self, id: usize) -> &String {
+        &self.id_names[id]
+    }
 }
 
 #[cfg(test)]

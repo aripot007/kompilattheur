@@ -1,7 +1,9 @@
-use crate::reader;
+use crate::{common::types::FileElement, reader};
 
 use super::token_table::TokenTable;
-use crate::common::types::Token;
+use crate::common::types::{Token, IdToken};
+use colored::Colorize;
+use crate::common::diagnostic::*;
 
 pub fn get_operator_token(op: &str) -> Option<Token> {
     match op {
@@ -58,7 +60,6 @@ pub struct Lexer {
 }
 
 fn init_token_table() -> TokenTable {
-
     let mut table = TokenTable::new();
 
     table.reserve_word("True", Token::True);
@@ -76,21 +77,20 @@ fn init_token_table() -> TokenTable {
     table.reserve_word("print", Token::Print);
 
     return table;
-
 }
 
-impl Lexer {
 
+impl Lexer {
     pub fn new(mut reader: reader::Reader) -> Lexer {
         // Initialise la pile d'indentation avec 0 pour avoir le niveau global
         let indentation_stack = Vec::from([0]);
         let peek = reader.next();
         return Lexer {
-            reader, 
-            indentation_stack, 
-            peek, 
-            emmitted_eof: false, 
-            line_num: 1, 
+            reader,
+            indentation_stack,
+            peek,
+            emmitted_eof: false,
+            line_num: 1,
             char_num: 1,
             end_token_count: 0,
             emit_begin: false,
@@ -98,15 +98,28 @@ impl Lexer {
         };
     }
 
-    fn syntax_error(&self, err: &str) {
-        panic!("Syntax Error l.{}:{} {}", self.line_num, self.char_num, err);
+    fn construct_file_elem(&self, token: Token) -> FileElement<Token> {
+        let calc_len = match token {
+            Token::Identifier(IdToken{id}) => self.token_table.get_ident_name(id).len(),
+            Token::String(ref s) => s.len() + 2,
+            Token::Newline => 0,
+            Token::EOF => 0,
+            Token::Begin => 0,
+            Token::End => 0,
+            _ => token.repr().len()
+        };
+        FileElement {
+            line: self.line_num,
+            start_char: self.char_num - calc_len as u64,
+            len: calc_len,
+            element: token,
+        }
     }
 
     // Lit les caractères correspondant à des espaces et à des commentaires
     // Si une nouvelle ligne est rencontrée, renvoie true, et le nombre d'espaces depuis le début de la
     // dernière ligne lue. Sinon, renvoie false et le nombre d'espaces lu.
     fn skip_whitespace_and_comments(&mut self) -> (bool, u64) {
-
         let mut nb_spaces = 0;
         let mut new_line = false;
 
@@ -117,23 +130,21 @@ impl Lexer {
                     nb_spaces = 0;
                     self.line_num += 1;
                     self.char_num = 0;
-                },
+                }
                 Some(' ') => nb_spaces += 1,
                 Some(c) if c.is_whitespace() => (),
-                Some('#') => {
-                    loop {
-                        match self.read_next_char() {
-                            Some('\n') | None => {
-                                new_line = true;
-                                nb_spaces = 0;
-                                self.line_num += 1;
-                                self.char_num = 0;
-                                break;
-                            },
-                            _ => (),
+                Some('#') => loop {
+                    match self.read_next_char() {
+                        Some('\n') | None => {
+                            new_line = true;
+                            nb_spaces = 0;
+                            self.line_num += 1;
+                            self.char_num = 0;
+                            break;
                         }
+                        _ => (),
                     }
-                }
+                },
                 _ => return (new_line, nb_spaces),
             }
             self.read_next_char();
@@ -146,17 +157,16 @@ impl Lexer {
         S'il faut émettre des tokens END, met à jour `end_token_count`
         avec le nombre de tokens END restant à émettre.
      */
-    fn parse_indentation(&mut self, indentation_number: u64){
+    fn parse_indentation(&mut self, indentation_number: u64) {
 
         let top: u64 = *self.indentation_stack.last().unwrap_or(&0);
-        
+
         if indentation_number == top {
             return;
         } else if indentation_number > top {
             self.indentation_stack.push(indentation_number);
             self.emit_begin = true;
         } else {
-
             // Dépile jusqu'à trouver le bon numéro d'indentation
             loop {
                 match self.indentation_stack.pop() {
@@ -166,7 +176,16 @@ impl Lexer {
                         self.indentation_stack.push(indentation_number);
                         break;
                     }
-                    _ => self.syntax_error(format!("Indentation error (expected {})", indentation_number).as_str()),
+                    _ => Diagnostic::new(
+                        DiagnosticGravity::Error,
+                        "IdentationError :".to_string(),
+                        self.line_num,
+                        self.line_num,
+                        self.char_num,
+                        self.char_num,
+                        format!("Expected {})", indentation_number),
+                    )
+                    .display(),
                 }
             }
         }
@@ -180,16 +199,19 @@ impl Lexer {
     }
 
     // Parse un integer a partir du caractère courant
-    fn parse_integer(&mut self) -> Token {
+    fn parse_integer(&mut self) -> FileElement<Token> {
 
         let mut number: u64 = 0;
 
         match self.peek {
             Some('0') => {
                 self.read_next_char();
-                return Token::integer(0);
+                return self.construct_file_elem(Token::integer(0));
             },
             Some(c) if c.is_digit(10) => {},
+
+            // Ici on doit panic car la fonction parse_integer a été appelée par erreur du développeur et non
+            // a cause d'une erreur lexicale
             _ => panic!("trying to use parse_integer while not on a digit"),
         }
 
@@ -197,7 +219,16 @@ impl Lexer {
             let v: u64 = match self.peek.unwrap().to_digit(10) {
                 Some(v) => v.try_into().unwrap(),
                 None => {
-                    self.syntax_error("Could not convert digit to usize");
+                    Diagnostic::new(
+                        DiagnosticGravity::Error,
+                        "IntOverflow :".to_string(),
+                        self.line_num,
+                        self.line_num,
+                        self.char_num,
+                        self.char_num,
+                        "This character cannot be converted to integer".to_string(),
+                    )
+                    .display();
                     break;
                 }
             };
@@ -209,34 +240,49 @@ impl Lexer {
             let (n, of2) = n.overflowing_add(v);
 
             if of1 | of2 {
-                self.syntax_error("Integer cannot be represented on a 64 bit integer");
+                let element = self.construct_file_elem(Token::integer(number));
+                Diagnostic::new(
+                    DiagnosticGravity::Error,
+                    "IntOverflow :".to_string(),
+                    element.line,
+                    element.line,
+                    element.start_char,
+                    element.start_char + element.len as u64,
+                    "Integer cannot be represented on a 64 bits integer".to_string(),
+                )
+                .display();
+                panic!("Integer cannot be represented on a 64 bits integer")
             }
             number = n;
-
             self.read_next_char();
         }
 
-        return Token::integer(number);
+        return self.construct_file_elem(Token::integer(number));
     }
 
     // Parse un identifier à partir du caractère courant
     // Ne vérifie pas que le premier caractère n'est pas un chiffre
-    fn parse_identifier(&mut self) -> Token {
-
+    fn parse_identifier(&mut self) -> FileElement<Token> {
+        
         let mut identifier = String::new();
 
-        while self.peek.is_some_and(|c| c.is_ascii_alphanumeric() || c == '_') {
+        while self
+            .peek
+            .is_some_and(|c| c.is_ascii_alphanumeric() || c == '_')
+        {
             identifier.push(self.peek.unwrap());
             self.read_next_char();
         }
 
-        return self.token_table.get_token(identifier);
+        let token = self.token_table.get_token(identifier);
+
+        return self.construct_file_elem(token);
 
     }
 
     // Parse un string à partir du caractère courant.
     // Ne vérifie pas que le caractère courant est un '"'
-    fn parse_string(&mut self) -> Token {
+    fn parse_string(&mut self) -> FileElement<Token> {
 
         let mut text = String::new();
 
@@ -244,47 +290,77 @@ impl Lexer {
 
         loop {
             match self.peek {
-                Some('"') => {self.read_next_char(); break;},
+                Some('"') => {
+                    self.read_next_char();
+                    break;
+                }
                 Some('\\') => {
                     self.read_next_char();
                     match self.peek {
                         Some('"') => text.push('"'),
                         Some('\\') => text.push('\\'),
                         Some('n') => text.push('\n'),
-                        _ => {
-                            self.syntax_error("Invalid escape sequence");
+                        other => {
+                            let element = self.construct_file_elem(Token::String(text.clone()));
+                            Diagnostic::new(
+                                DiagnosticGravity::Error,
+                                "InvalidEscapeSequence :".to_string(),
+                                element.line,
+                                element.line,
+                                element.start_char,
+                                element.start_char + element.len as u64,
+                                format!("\\{} unkown, expected after \\ : '{}', '{}' or '{}'", other.unwrap().to_string().truecolor(255, 0, 0) , "\"".truecolor(0, 255, 0), "\\".truecolor(0, 255, 0), "n".truecolor(0, 255, 0))
+                            )
+                            .display();
                             break;
                         }
                     }
-                },
-                Some('\n') => {self.syntax_error("Unterminated string");},
+                }
+                Some('\n') => Diagnostic::new(
+                    DiagnosticGravity::Error,
+                    "UnterminatedString :".to_string(),
+                    self.line_num,
+                    self.line_num,
+                    self.char_num,
+                    self.char_num,
+                    "String must be terminated by '\"'".to_string(),
+                )
+                .display(),
                 Some(c) => text.push(c),
                 None => break,
             }
             self.read_next_char();
         }
 
-        return Token::String(text);
+        return self.construct_file_elem(Token::String(text));
     }
 }
 
-
 impl Iterator for Lexer {
-    // TODO: Change to token type
-    type Item = Token;
+
+    type Item = FileElement<Token>;
 
     fn next(&mut self) -> Option<Self::Item> {
+
+        macro_rules! operator_file_elem {
+            ($s: expr) => {
+               match get_operator_token($s) {
+                    None => None,
+                    Some(token) => Some(self.construct_file_elem(token)),
+               } 
+            };
+        }
 
         // Handle BEGIN and END tokens
 
         if self.emit_begin {
             self.emit_begin = false;
-            return Some(Token::Begin);
+            return Some(self.construct_file_elem(Token::Begin));
         }
 
         if self.end_token_count > 0 {
             self.end_token_count -= 1;
-            return Some(Token::End);
+            return Some(self.construct_file_elem(Token::End));
         }
 
         // Already at the end of the file
@@ -293,21 +369,20 @@ impl Iterator for Lexer {
                 return None;
             } else {
                 self.emmitted_eof = true;
-                return Some(Token::EOF);
+                return Some(self.construct_file_elem(Token::EOF));
             }
         }
 
         // Skip whitespace and comments
         let (new_line, nb_indentation) = self.skip_whitespace_and_comments();
-        
+
         // Handle BEGIN and END tokens if indentation changes on a new line
         if new_line {
             self.parse_indentation(nb_indentation);
-            return Some(Token::Newline);
+            return Some(self.construct_file_elem(Token::Newline));
         }
 
         match self.peek {
-
             // <integer>
             Some(c) if c.is_digit(10) => return Some(self.parse_integer()),
 
@@ -318,49 +393,68 @@ impl Iterator for Lexer {
             Some('"') => return Some(self.parse_string()),
 
             // !=
-            Some('!') => {
-                match self.read_next_char() {
-                    Some('=') => {
-                        self.read_next_char();
-                        return get_operator_token("!=")
-                    },
-                    _ => self.syntax_error("Invalid token"),
+            Some('!') => match self.read_next_char() {
+                Some('=') => {
+                    self.read_next_char();
+                        return operator_file_elem!("!=")
                 }
-            }
+                other => Diagnostic::new(
+                    DiagnosticGravity::Error,
+                    "InvalidToken :".to_string(),
+                    self.line_num,
+                    self.line_num,
+                    self.char_num - 1,
+                    self.char_num,
+                    format!("{} is invalid, did you mean {} ?",format!("={}", other.unwrap()).truecolor(255, 0, 0), "!=".truecolor(0, 255, 0)),
+                ).display(),
+            },
 
             // //
-            Some('/') => {
-                match self.read_next_char() {
-                    Some('/') => {
-                        self.read_next_char();
-                        return get_operator_token("//");
-                    },
-                    _ => self.syntax_error("Invalid token"),
+            Some('/') => match self.read_next_char() {
+                Some('/') => {
+                    self.read_next_char();
+                        return operator_file_elem!("//");
                 }
-            }
+                other => Diagnostic::new(
+                    DiagnosticGravity::Error,
+                    "InvalidToken :".to_string(),
+                    self.line_num,
+                    self.line_num,
+                    self.char_num - 1,
+                    self.char_num,
+                    format!("{} is invalid, did you mean {} ?",format!("/{}", other.unwrap()).truecolor(255, 0, 0), "//".truecolor(0, 255, 0)),
+                ).display(),
+            },
 
             // <, >, =, <=, >=, ==
-            Some(c) if c == '<' || c == '>' || c == '=' => {
-                match self.read_next_char() {
-                    Some('=') => {
-                        self.read_next_char();
-                        return get_operator_token(format!("{}=",c).as_str())
-                    },
-                    _ => return get_operator_token(c.to_string().as_str()),
+            Some(c) if c == '<' || c == '>' || c == '=' => match self.read_next_char() {
+                Some('=') => {
+                    self.read_next_char();
+                    return operator_file_elem!(format!("{}=",c).as_str())
                 }
-            }
+                _ => return operator_file_elem!(c.to_string().as_str()),
+            },
 
             // Tokens à 1 caractère
             Some(c) => {
                 self.read_next_char();
                 match get_operator_token(c.to_string().as_str()) {
-                    Some(token) => return Some(token),
-                    None => self.syntax_error("Invalid token"),
+                    Some(token) => return Some(self.construct_file_elem(token)),
+                    None => Diagnostic::new(
+                        DiagnosticGravity::Error,
+                        "InvalidToken :".to_string(),
+                        self.line_num,
+                        self.line_num,
+                        self.char_num-1,
+                        self.char_num-1,
+                        format!("{} is invalid", c.to_string().truecolor(255, 0, 0)),
+                    )
+                    .display(),
                 }
-            },
+            }
             None => {
                 self.emmitted_eof = true;
-                return Some(Token::EOF);
+                return Some(self.construct_file_elem(Token::EOF));
             }
         }
 
@@ -370,14 +464,80 @@ impl Iterator for Lexer {
 
 #[cfg(test)]
 mod tests {
-
-    use crate::{common::types::Token, lexer::lexer::Lexer, reader::Reader};
+    use crate::{common::types::{IdToken, Token}, lexer::{lexer::{get_operator_token, init_token_table, Lexer}, token_table}, reader::Reader};
 
     #[test]
     fn test_eof() {
         let mut lexer = Lexer::new(Reader::from(""));
-        assert!(lexer.next() == Some(Token::EOF));
+        let n = lexer.next();
+        assert_ne!(None, n);
+        let t = n.unwrap().element;
+        assert!(t == Token::EOF);
         assert!(lexer.next() == None);
     }
 
+    #[test]
+    fn test_integer() {
+        let mut lexer = Lexer::new(Reader::from("123"));
+        assert!(lexer.next().unwrap().element == Token::integer(123));
+        assert!(lexer.next().unwrap().element == Token::EOF);
+        assert!(lexer.next() == None);
+    }
+    
+    #[test]
+    fn test_identifier() {
+        let mut lexer = Lexer::new(Reader::from("hello"));
+        let mut tokentable = init_token_table();
+        let token = tokentable.get_token("hello".to_string());
+        assert!(lexer.next().unwrap().element == token);
+        assert!(lexer.next().unwrap().element == Token::EOF);
+        assert!(lexer.next() == None);
+    }
+    
+    #[test]
+    fn test_string() {
+        let mut lexer = Lexer::new(Reader::from("\"hello\""));
+        assert!(lexer.next().unwrap().element == Token::String("hello".to_string()));
+        assert!(lexer.next().unwrap().element == Token::EOF);
+        assert!(lexer.next() == None);
+    }
+    
+    #[test]
+    fn test_tokens() {
+        let mut lexer = Lexer::new(Reader::from("+ - * // % == = != < > <= >= True False None and or not def for in if else return print , : ( ) [ ]"));
+        let mut tokentable = init_token_table();
+        assert!(lexer.next().unwrap().element == get_operator_token("+").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("-").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("*").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("//").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("%").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("==").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("=").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("!=").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("<").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token(">").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("<=").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token(">=").unwrap());
+        assert!(lexer.next().unwrap().element == tokentable.get_token("True".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("False".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("None".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("and".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("or".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("not".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("def".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("for".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("in".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("if".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("else".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("return".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("print".to_string()));
+        assert!(lexer.next().unwrap().element == get_operator_token(",").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token(":").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("(").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token(")").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("[").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("]").unwrap());
+        assert!(lexer.next().unwrap().element == Token::EOF);
+        assert!(lexer.next() == None);
+    }
 }

@@ -122,7 +122,7 @@ impl Token {
             Token::NotEqual => String::from("!="),
             Token::Less => String::from("<"),
             Token::Greater => String::from(">"),
-            Token::LessEq => String::from("="),
+            Token::LessEq => String::from("<="),
             Token::GreaterEq => String::from(">="),
             Token::Begin => String::from("BEGIN"),
             Token::End => String::from("END"),

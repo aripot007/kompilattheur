@@ -22,6 +22,10 @@ impl AnalysisTable {
         self.table[*id].get(&discriminant(token))
     }
 
+    pub fn get_expected_tokens(&self, id: &usize) -> Vec<&Token> {
+        self.table[*id].keys().map(|d| self.discriminant_tokens.get(d).unwrap()).collect()
+    }
+
     /// Essaie d'ajouter une règle une case de la table d'analyse.
     /// Si une règle est déjà présente (grammaire non LL(1)), panique
     fn try_set(&mut self, left_non_terminal: &ParsedLexem, token: &Token, production: &Vec<ParsedLexem>) {

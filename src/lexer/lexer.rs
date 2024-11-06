@@ -99,13 +99,19 @@ impl Lexer {
     }
 
     fn construct_file_elem(&self, token: Token) -> FileElement<Token> {
+        let calc_len = match token {
+            Token::Identifier(IdToken{id}) => self.token_table.get_ident_name(id).len(),
+            Token::String(ref s) => s.len() + 2,
+            Token::Newline => 0,
+            Token::EOF => 0,
+            Token::Begin => 0,
+            Token::End => 0,
+            _ => token.repr().len()
+        };
         FileElement {
             line: self.line_num,
-            start_char: self.char_num,
-            len: match token {
-                Token::Identifier(IdToken{id}) => self.token_table.get_ident_name(id).len(),
-                _ => token.repr().len()
-            },
+            start_char: self.char_num - calc_len as u64,
+            len: calc_len,
             element: token,
         }
     }
@@ -220,7 +226,7 @@ impl Lexer {
                         self.line_num,
                         self.char_num,
                         self.char_num,
-                        "Integer cannot be represented on this machine".to_string(),
+                        "This character cannot be converted to integer".to_string(),
                     )
                     .display();
                     break;
@@ -234,20 +240,20 @@ impl Lexer {
             let (n, of2) = n.overflowing_add(v);
 
             if of1 | of2 {
+                let element = self.construct_file_elem(Token::integer(number));
                 Diagnostic::new(
                     DiagnosticGravity::Error,
                     "IntOverflow :".to_string(),
-                    self.line_num,
-                    self.line_num,
-                    self.char_num,
-                    self.char_num+1,
-                    "Integer cannot be represented on a 64 bit integer".to_string(),
+                    element.line,
+                    element.line,
+                    element.start_char,
+                    element.start_char + element.len as u64,
+                    "Integer cannot be represented on a 64 bits integer".to_string(),
                 )
                 .display();
-                panic!("Integer cannot be represented on a 64 bit integer")
+                panic!("Integer cannot be represented on a 64 bits integer")
             }
             number = n;
-
             self.read_next_char();
         }
 
@@ -294,15 +300,16 @@ impl Lexer {
                         Some('"') => text.push('"'),
                         Some('\\') => text.push('\\'),
                         Some('n') => text.push('\n'),
-                        _ => {
+                        other => {
+                            let element = self.construct_file_elem(Token::String(text.clone()));
                             Diagnostic::new(
                                 DiagnosticGravity::Error,
                                 "InvalidEscapeSequence :".to_string(),
-                                self.line_num,
-                                self.line_num,
-                                self.char_num,
-                                self.char_num+1,
-                                "Expected after \\ : '\"', '\\' or 'n'".to_string(),
+                                element.line,
+                                element.line,
+                                element.start_char,
+                                element.start_char + element.len as u64,
+                                format!("\\{} unkown, expected after \\ : '{}', '{}' or '{}'", other.unwrap().to_string().truecolor(255, 0, 0) , "\"".truecolor(0, 255, 0), "\\".truecolor(0, 255, 0), "n".truecolor(0, 255, 0))
                             )
                             .display();
                             break;
@@ -315,7 +322,7 @@ impl Lexer {
                     self.line_num,
                     self.line_num,
                     self.char_num,
-                    self.char_num+1,
+                    self.char_num,
                     "String must be terminated by '\"'".to_string(),
                 )
                 .display(),
@@ -396,11 +403,10 @@ impl Iterator for Lexer {
                     "InvalidToken :".to_string(),
                     self.line_num,
                     self.line_num,
+                    self.char_num - 1,
                     self.char_num,
-                    self.char_num+1,
                     format!("{} is invalid, did you mean {} ?",format!("={}", other.unwrap()).truecolor(255, 0, 0), "!=".truecolor(0, 255, 0)),
-                )
-                .display(),
+                ).display(),
             },
 
             // //
@@ -414,11 +420,10 @@ impl Iterator for Lexer {
                     "InvalidToken :".to_string(),
                     self.line_num,
                     self.line_num,
+                    self.char_num - 1,
                     self.char_num,
-                    self.char_num+1,
                     format!("{} is invalid, did you mean {} ?",format!("/{}", other.unwrap()).truecolor(255, 0, 0), "//".truecolor(0, 255, 0)),
-                )
-                .display(),
+                ).display(),
             },
 
             // <, >, =, <=, >=, ==
@@ -440,8 +445,8 @@ impl Iterator for Lexer {
                         "InvalidToken :".to_string(),
                         self.line_num,
                         self.line_num,
-                        self.char_num,
-                        self.char_num+1,
+                        self.char_num-1,
+                        self.char_num-1,
                         format!("{} is invalid", c.to_string().truecolor(255, 0, 0)),
                     )
                     .display(),
@@ -459,7 +464,7 @@ impl Iterator for Lexer {
 
 #[cfg(test)]
 mod tests {
-    use crate::{common::types::Token, lexer::lexer::Lexer, reader::Reader};
+    use crate::{common::types::{IdToken, Token}, lexer::{lexer::{get_operator_token, init_token_table, Lexer}, token_table}, reader::Reader};
 
     #[test]
     fn test_eof() {
@@ -470,11 +475,9 @@ mod tests {
         assert!(t == Token::EOF);
         assert!(lexer.next() == None);
     }
-    
+
     #[test]
     fn test_integer() {
-
-        // TODO: Adapter le test pour éviter de panic 
         let mut lexer = Lexer::new(Reader::from("123"));
         assert!(lexer.next().unwrap().element == Token::integer(123));
         assert!(lexer.next().unwrap().element == Token::EOF);
@@ -482,11 +485,59 @@ mod tests {
     }
     
     #[test]
-    #[should_panic]
-    fn test_int_overflow() {
-        let mut lexer = Lexer::new(Reader::from("18446744073709551616"));
-        lexer.next();
+    fn test_identifier() {
+        let mut lexer = Lexer::new(Reader::from("hello"));
+        let mut tokentable = init_token_table();
+        let token = tokentable.get_token("hello".to_string());
+        assert!(lexer.next().unwrap().element == token);
+        assert!(lexer.next().unwrap().element == Token::EOF);
+        assert!(lexer.next() == None);
     }
     
+    #[test]
+    fn test_string() {
+        let mut lexer = Lexer::new(Reader::from("\"hello\""));
+        assert!(lexer.next().unwrap().element == Token::String("hello".to_string()));
+        assert!(lexer.next().unwrap().element == Token::EOF);
+        assert!(lexer.next() == None);
+    }
     
+    #[test]
+    fn test_tokens() {
+        let mut lexer = Lexer::new(Reader::from("+ - * // % == = != < > <= >= True False None and or not def for in if else return print , : ( ) [ ]"));
+        let mut tokentable = init_token_table();
+        assert!(lexer.next().unwrap().element == get_operator_token("+").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("-").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("*").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("//").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("%").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("==").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("=").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("!=").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("<").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token(">").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("<=").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token(">=").unwrap());
+        assert!(lexer.next().unwrap().element == tokentable.get_token("True".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("False".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("None".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("and".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("or".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("not".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("def".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("for".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("in".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("if".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("else".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("return".to_string()));
+        assert!(lexer.next().unwrap().element == tokentable.get_token("print".to_string()));
+        assert!(lexer.next().unwrap().element == get_operator_token(",").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token(":").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("(").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token(")").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("[").unwrap());
+        assert!(lexer.next().unwrap().element == get_operator_token("]").unwrap());
+        assert!(lexer.next().unwrap().element == Token::EOF);
+        assert!(lexer.next() == None);
+    }
 }

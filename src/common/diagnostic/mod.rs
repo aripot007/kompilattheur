@@ -94,8 +94,8 @@ impl Diagnostic {
                         if i+1 == self.start_line as usize {
                             result.push_str(format!("{} {} {}", (i+1).to_string().truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2),"|".truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2) , line.unwrap()).to_string().as_str());
                             result.push('\n');
-                            let spaces = self.start_column as usize+ i.to_string().len() + 3;
-                            result.push_str(format!("{:<spaces$}{:^>token_len$}", "", "", token_len = self.end_column as usize - self.start_column as usize).truecolor(HIGHLIGHT_COLOR.0, HIGHLIGHT_COLOR.1, HIGHLIGHT_COLOR.2).to_string().as_str());
+                            let spaces = self.start_column as usize+ i.to_string().len() + 2;
+                            result.push_str(format!("{:<spaces$}{:^>token_len$}", "", "", token_len = self.end_column as usize - self.start_column as usize + 1).truecolor(HIGHLIGHT_COLOR.0, HIGHLIGHT_COLOR.1, HIGHLIGHT_COLOR.2).to_string().as_str());
                         }
                     }
                 }
@@ -105,7 +105,7 @@ impl Diagnostic {
                        if i+1 == self.start_line as usize {
                             result.push_str(format!("{} {} {}", (i+1).to_string().truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2),"|".truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2) , line).to_string().as_str());
                             result.push('\n');
-                            let spaces = self.start_column as usize+ i.to_string().len() + 3;
+                            let spaces = self.start_column as usize+ i.to_string().len() + 2;
                             result.push_str(format!("{:<spaces$}{:^>token_len$}", "", "", token_len = line.len() - self.start_column as usize).truecolor(HIGHLIGHT_COLOR.0, HIGHLIGHT_COLOR.1, HIGHLIGHT_COLOR.2).to_string().as_str());
                             result.push('\n');
                         } else if i+1 > self.start_line as usize && i+1 < self.end_line as usize {
@@ -118,7 +118,7 @@ impl Diagnostic {
                             result.push_str(format!("{} {} {}", (i+1).to_string().truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2),"|".truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2) , line).to_string().as_str());
                             result.push('\n');
                             let spaces = i.to_string().len() + 3;
-                            result.push_str(format!("{:<spaces$}{:^>token_len$}", "", "", token_len = self.end_column as usize).truecolor(HIGHLIGHT_COLOR.0, HIGHLIGHT_COLOR.1, HIGHLIGHT_COLOR.2).to_string().as_str());
+                            result.push_str(format!("{:<spaces$}{:^>token_len$}", "", "", token_len = self.end_column as usize + 1).truecolor(HIGHLIGHT_COLOR.0, HIGHLIGHT_COLOR.1, HIGHLIGHT_COLOR.2).to_string().as_str());
                         }
                    }
                } 

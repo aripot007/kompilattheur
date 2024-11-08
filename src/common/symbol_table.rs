@@ -53,7 +53,7 @@ impl SymbolTable {
     }
     
     
-    pub fn update_symbol(&mut self, name: String, symbol: Symbol) {
+    pub fn update(&mut self, name: String, symbol: Symbol) {
         if self.table.contains_key(&name) {
             self.table.insert(name, symbol);
         } else {
@@ -66,6 +66,7 @@ impl SymbolTable {
                 }
                 current_parent = parent.parent.clone();
             }
+            self.table.insert(name, symbol);
         }
     }
 }

@@ -26,29 +26,47 @@ impl SymbolTable {
         }))
     }
 
-    pub fn get_symbol(&mut self, name: String, symbol: Symbol) -> Symbol {
+    pub fn get_symbol(&mut self, name: String) -> Option<Symbol> {
         if self.table.contains_key(&name) {
-            self.table.get(&name).unwrap().clone()
-        }  else {
-            while (self.parent.is_some()) {
-                let parent = self.parent.as_ref().unwrap().borrow();
+            Some(self.table.get(&name).unwrap().clone())
+        } else {
+            let mut current_parent = self.parent.clone();
+            while let Some(parent_rc) = current_parent {
+                let parent = parent_rc.borrow();
                 if parent.table.contains_key(&name) {
-                    return parent.table.get(&name).unwrap().clone();
+                    return Some(parent.table.get(&name).unwrap().clone());
                 }
+                current_parent = parent.parent.clone();
             }
-            self.table.insert(name.clone(), symbol.clone());
-            symbol
+            None
         }
     }
 
     pub fn enter_scope(&mut self) -> Rc<RefCell<SymbolTable>> {
-        let scope = SymbolTable::new(Some(Rc::clone(self)));
-        self.childs.push(Rc::clone(&scope));
-        scope
+        let new_table = SymbolTable::new(Some(Rc::new(RefCell::new(self.clone()))));
+        self.childs.push(new_table.clone());
+        new_table
     }
 
     pub fn exit_scope(&mut self) -> Rc<RefCell<SymbolTable>> {
         self.parent.as_ref().unwrap().clone()
+    }
+    
+    
+    pub fn update_symbol(&mut self, name: String, symbol: Symbol) {
+        if self.table.contains_key(&name) {
+            self.table.insert(name, symbol);
+        } else {
+            let mut current_parent = self.parent.clone();
+            while let Some(parent_rc) = current_parent {
+                let mut parent = parent_rc.borrow_mut();
+                if parent.table.contains_key(&name) {
+                    parent.table.insert(name, symbol);
+                    return;
+                }
+                current_parent = parent.parent.clone();
+            }
+        }
     }
 }
 

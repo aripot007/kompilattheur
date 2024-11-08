@@ -98,6 +98,153 @@ impl<T: Display + ToString> Node<T> {
 
         result
     }
+
+    pub fn generate_html(&self) -> String {
+        let html_content = format!(
+            r#"
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Zoomable & Draggable Mermaid Diagram</title>
+
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({{ startOnLoad: true }});
+    </script>
+
+    <style>
+        html, body, .mermaid-container {{
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+            overflow: hidden;
+            position: relative;
+        }}
+        .mermaid {{
+            transform-origin: center;
+            cursor: grab;
+            position: absolute;
+        }}
+        .mermaid.dragging {{
+            cursor: grabbing;
+        }}
+        .zoom-controls {{
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 10; /* Ensure buttons are on top */
+        }}
+        .zoom-controls button {{
+            padding: 8px 12px;
+            font-size: 16px;
+            cursor: pointer;
+        }}
+    </style>
+</head>
+
+<body>
+    <div class="mermaid-container">
+        <div class="zoom-controls">
+            <button onclick="zoomIn()">Zoom In</button>
+            <button onclick="zoomOut()">Zoom Out</button>
+            <button onclick="resetZoom()">Reset</button>
+        </div>
+        <div class="mermaid" id="mermaid">
+            {}
+        </div>
+    </div>
+
+    <script>
+        let scale = 1;
+        let isDragging = false;
+        let startX, startY;
+        let translateX = 0;
+        let translateY = 0;
+        let requestId = null;
+        const mermaidDiv = document.getElementById('mermaid');
+
+        function zoomIn() {{
+            scale += 0.5;
+            updateTransform();
+        }}
+
+        function zoomOut() {{
+            scale = Math.max(0.5, scale - 0.5); // Prevent scaling below 0.5
+            updateTransform();
+        }}
+
+        function resetZoom() {{
+            scale = 2.5;
+            translateX = 0;
+            translateY = 0;
+            updateTransform();
+        }}
+
+        function updateTransform() {{
+            mermaidDiv.style.transform = `translate(${{translateX}}px, ${{translateY}}px) scale(${{scale}})`;
+        }}
+
+        function onMove(e) {{
+            if (isDragging) {{
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+
+                if (!requestId) {{
+                    requestId = requestAnimationFrame(() => {{
+                        updateTransform();
+                        requestId = null;
+                    }});
+                }}
+            }}
+        }}
+
+        mermaidDiv.addEventListener('mousedown', (e) => {{
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+            mermaidDiv.classList.add('dragging');
+        }});
+
+        document.addEventListener('mousemove', onMove);
+
+        document.addEventListener('mouseup', () => {{
+            isDragging = false;
+            mermaidDiv.classList.remove('dragging');
+            if (requestId) {{
+                cancelAnimationFrame(requestId);
+                requestId = null;
+            }}
+        }});
+        mermaidDiv.addEventListener('wheel', (e) => {{
+            e.preventDefault(); // Prevent page scroll
+
+            // Zoom in or out based on the scroll direction
+            if (e.deltaY < 0) {{
+                // Scroll up, zoom in
+                scale += 0.5
+            }} else {{
+                // Scroll down, zoom out, ensuring minimum scale
+                scale = Math.max(0.1, scale - 0.5);
+            }}
+
+            updateTransform();
+        }});
+    </script>
+</body>
+</html>
+    "#,
+            self.generate_mermaid()
+        );
+        html_content
+    }
 }
 
 #[cfg(test)]

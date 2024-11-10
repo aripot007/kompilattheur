@@ -159,6 +159,23 @@ impl Lexer {
         }
     }
 
+    /// Consomme les caractères restants jusqu'au prochain caractère blanc,
+    /// et renvoie le nombre de caractères lus.
+    /// 
+    /// Permet de finir la lecture du token actuel en cas d'erreur
+    fn skip_current_token(&mut self) -> usize {
+
+        let mut nb_read = 0;
+
+        while let Some(c) = self.read_next_char() {
+            nb_read += 1;
+            if c.is_whitespace() {
+                break;
+            }
+        };
+        return nb_read;
+    }
+
     /*
         Permet de gérer l'émission des tokens BEGIN et END.
         S'il faut émettre un token BEGIN, passe `self.emit_begin` à true.
@@ -219,6 +236,8 @@ impl Lexer {
 
         let mut number: u64 = 0;
 
+        let starting_char = self.char_num;
+
         match self.peek {
             Some('0') => {
                 self.read_next_char();
@@ -231,6 +250,8 @@ impl Lexer {
             _ => panic!("trying to use parse_integer while not on a digit"),
         }
 
+        let mut overflow = false;
+
         while self.peek.is_some_and(|c| c.is_digit(10)) {
 
             let v: u64 = self.peek.unwrap().to_digit(10).unwrap().into();
@@ -241,21 +262,26 @@ impl Lexer {
             let (n, of1) = number.overflowing_mul(10);
             let (n, of2) = n.overflowing_add(v);
 
-            if of1 | of2 {
-                let element = self.construct_file_elem(Token::integer(number));
-                let diag = Diagnostic::new(
-                    DiagnosticGravity::Error,
-                    "IntOverflow :".to_string(),
-                    element.line,
-                    element.line,
-                    element.start_char,
-                    element.start_char + element.len as u64,
-                    "Integer cannot be represented on a 64 bits integer".to_string(),
-                );
-                return Err(diag);
-            }
+            overflow = overflow | of1 | of2;
             number = n;
             self.read_next_char();
+        }
+
+        if overflow {
+            let diag = Diagnostic::new(
+                DiagnosticGravity::Error,
+                "IntOverflow :".to_string(),
+                self.line_num,
+                self.line_num,
+                starting_char,
+                self.char_num - 1,
+                "Integer cannot be represented on a 64 bit integer".to_string(),
+            );
+            diag.display();
+            self.diagnostics.push(diag);
+            self.nb_errors += 1;
+            number = 0;
+            //return Err(diag);
         }
 
         return Ok(self.construct_file_elem(Token::integer(number)));

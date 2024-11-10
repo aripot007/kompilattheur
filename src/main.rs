@@ -45,13 +45,6 @@ fn compile(args: CompileArgs) {
     FILE_PATH.set(file_path.to_str().unwrap().to_string()).unwrap();
 
     let lexer = Lexer::new(reader::new(&file_path));
-    for token in lexer {
-        print!("{} ", token.element);
-    }
-
-    print!("\n");
-
-    let lexer = Lexer::new(reader::new(&file_path));
 
     setup_analysis_table(args.alternative_grammar.as_deref());
 

@@ -167,11 +167,9 @@ impl Lexer {
 
         let mut nb_read = 0;
 
-        while let Some(c) = self.read_next_char() {
+        while self.peek.is_some_and(|c| !c.is_whitespace()) {
             nb_read += 1;
-            if c.is_whitespace() {
-                break;
-            }
+            self.read_next_char();
         };
         return nb_read;
     }
@@ -224,7 +222,7 @@ impl Lexer {
         }
     }
 
-    // Lit le caractère suivant et le stocke dans self.peek
+    /// Lit le caractère suivant et le stocke dans self.peek
     fn read_next_char(&mut self) -> Option<char> {
         self.peek = self.reader.next();
         self.char_num += 1;
@@ -382,6 +380,30 @@ impl Lexer {
         }   
     }
 
+    /// Skip le token actuel en émettant l'erreur donnée, et passe au token suivant
+    /// Considère que le token se trouve sur la ligne actuelle du lexer, commence
+    /// au caractère `start_char` et se termine après l'appel à `self::skip_current_token`.
+    fn skip_with_error(&mut self, error: String, msg: String, start_char: u64, ) -> Option<FileElement<Token>> {
+
+        self.skip_current_token();
+
+        let diag = Diagnostic::new(
+            DiagnosticGravity::Error,
+            error,
+            self.line_num,
+            self.line_num,
+            start_char,
+            self.char_num - 1,
+            msg,
+        );
+
+        diag.display();
+        self.diagnostics.push(diag);
+        self.nb_errors += 1;
+
+        return self.next()
+    }
+
 }
 
 impl Iterator for Lexer {
@@ -453,34 +475,26 @@ impl Iterator for Lexer {
             Some('!') => match self.read_next_char() {
                 Some('=') => {
                     self.read_next_char();
-                        return operator_file_elem!("!=")
-                }
-                other => Diagnostic::new(
-                    DiagnosticGravity::Error,
-                    "InvalidToken :".to_string(),
-                    self.line_num,
-                    self.line_num,
-                    self.char_num - 1,
-                    self.char_num,
-                    format!("{} is invalid, did you mean {} ?",format!("={}", other.unwrap()).truecolor(255, 0, 0), "!=".truecolor(0, 255, 0)),
-                ).display(),
+                    return operator_file_elem!("!=")
+                },
+                other => return self.skip_with_error(
+                    String::from("InvalidToken"),
+                    format!("Unrecognized token, did you mean {} ?", "!=".truecolor(0, 255, 0)),
+                    self.char_num - 1
+                )
             },
 
             // //
             Some('/') => match self.read_next_char() {
                 Some('/') => {
                     self.read_next_char();
-                        return operator_file_elem!("//");
+                    return operator_file_elem!("//");
                 }
-                other => Diagnostic::new(
-                    DiagnosticGravity::Error,
-                    "InvalidToken :".to_string(),
-                    self.line_num,
-                    self.line_num,
-                    self.char_num - 1,
-                    self.char_num,
-                    format!("{} is invalid, did you mean {} ?",format!("/{}", other.unwrap()).truecolor(255, 0, 0), "//".truecolor(0, 255, 0)),
-                ).display(),
+                other => return self.skip_with_error(
+                    String::from("InvalidToken"),
+                    format!("Unrecognized token '{}', did you mean {} ?",format!("/{}", other.unwrap_or(' ')).truecolor(255, 0, 0), "//".truecolor(0, 255, 0)),
+                    self.char_num - 1
+                )
             },
 
             // <, >, =, <=, >=, ==
@@ -497,16 +511,11 @@ impl Iterator for Lexer {
                 self.read_next_char();
                 match get_operator_token(c.to_string().as_str()) {
                     Some(token) => return Some(self.construct_file_elem(token)),
-                    None => Diagnostic::new(
-                        DiagnosticGravity::Error,
-                        "InvalidToken :".to_string(),
-                        self.line_num,
-                        self.line_num,
-                        self.char_num-1,
-                        self.char_num-1,
-                        format!("{} is invalid", c.to_string().truecolor(255, 0, 0)),
+                    None => return self.skip_with_error(
+                        String::from("InvalidToken"),
+                        format!("Unrecognized token '{}'", c.to_string().truecolor(255, 0, 0)),
+                        self.char_num - 1
                     )
-                    .display(),
                 }
             }
             None => {
@@ -514,8 +523,6 @@ impl Iterator for Lexer {
                 return Some(self.construct_file_elem(Token::EOF));
             }
         }
-
-        return None;
     }
 }
 

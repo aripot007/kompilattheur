@@ -16,7 +16,7 @@ pub enum DiagnosticGravity {
 }
 
 pub struct Diagnostic {
-    gravity: DiagnosticGravity,
+    pub gravity: DiagnosticGravity,
     kind: String,
     start_line: u64,
     end_line: u64,

@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use crate::{common::types::FileElement, reader};
 
 use super::token_table::TokenTable;
@@ -234,21 +232,8 @@ impl Lexer {
         }
 
         while self.peek.is_some_and(|c| c.is_digit(10)) {
-            let v: u64 = match self.peek.unwrap().to_digit(10) {
-                Some(v) => v.try_into().unwrap(),
-                None => {
-                    let diag = Diagnostic::new(
-                        DiagnosticGravity::Error,
-                        "InvalidInt :".to_string(),
-                        self.line_num,
-                        self.line_num,
-                        self.char_num,
-                        self.char_num,
-                        "Invalid integer format".to_string(),
-                    );
-                    return Err(diag);
-                }
-            };
+
+            let v: u64 = self.peek.unwrap().to_digit(10).unwrap().into();
 
             // Calcule la valeur de l'entier en vérifiant qu'elle peut
             // être contenue dans un entier machine

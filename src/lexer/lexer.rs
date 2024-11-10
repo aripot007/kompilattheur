@@ -1,3 +1,5 @@
+use std::fmt::format;
+
 use crate::{common::types::FileElement, reader};
 
 use super::token_table::TokenTable;
@@ -179,21 +181,25 @@ impl Lexer {
             loop {
                 match self.indentation_stack.pop() {
                     Some(m) if m > indentation_number => self.end_token_count += 1,
-                    Some(m) if m < indentation_number => (),
                     Some(m) if m == indentation_number => {
                         self.indentation_stack.push(indentation_number);
                         break;
                     }
-                    _ => {
+                    opt => {
+                        let error_str = match opt {
+                            Some(n) => format!("Expected {} spaces, got {} instead", n, indentation_number),
+                            None => format!("Could not find previous block of indentation {}, maybe another IndentationError occured earlier in the program ?", indentation_number),
+                        };
                         let diag = Diagnostic::new(
                             DiagnosticGravity::Error,
-                            "IdentationError :".to_string(),
+                            "IndentationError :".to_string(),
                             self.line_num,
                             self.line_num,
-                            self.char_num,
-                            self.char_num,
-                            format!("Expected {}", indentation_number),
+                            0,
+                            self.char_num - 1,
+                            error_str,
                         );
+                        diag.display();
                         self.diagnostics.push(diag);
                         self.nb_errors += 1;
                         break;

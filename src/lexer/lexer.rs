@@ -313,6 +313,8 @@ impl Lexer {
 
         let mut diags: Vec<Diagnostic> = Vec::new();
 
+        let start_char = self.char_num;
+
         self.read_next_char();
 
         loop {
@@ -347,7 +349,7 @@ impl Lexer {
                         "UnterminatedString :".to_string(),
                         self.line_num,
                         self.line_num,
-                        self.char_num,
+                        start_char,
                         self.char_num,
                         "String must be terminated by '\"'".to_string(),
                     );

@@ -102,6 +102,12 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
             }
         }
     }
+
+    // Finish lexical analysis before returning
+    if error {
+        while let Some(_) = lexer.next() {};
+    }
+
     return (tree, accept, error);
 }
 

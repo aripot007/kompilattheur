@@ -5,9 +5,9 @@ use std::io::{self, BufRead};
 use crate::FILE_PATH;
 
 const ERROR_COLOR:(u8,u8,u8) = (255, 0, 0);
-const WARNING_COLOR:(u8,u8,u8) = (255, 130, 0);
-const TYPE_COLOR:(u8,u8,u8) = (0, 165, 255);
-const HIGHLIGHT_COLOR:(u8,u8,u8) = (150, 0, 0);
+const WARNING_COLOR:(u8,u8,u8) = (255, 180, 0);
+const HIGHLIGHT_ERROR_COLOR:(u8,u8,u8) = (200, 0, 0);
+const HIGHLIGHT_WARN_COLOR: (u8,u8,u8) = (200, 150, 0);
 const SECONDARY_COLOR:(u8,u8,u8) = (125, 125, 125);
 
 pub enum DiagnosticGravity {
@@ -16,7 +16,7 @@ pub enum DiagnosticGravity {
 }
 
 pub struct Diagnostic {
-    gravity: DiagnosticGravity,
+    pub gravity: DiagnosticGravity,
     kind: String,
     start_line: u64,
     end_line: u64,
@@ -65,8 +65,8 @@ impl Diagnostic {
                     "{} {} \n{}\n{} {}",
                     "Warning :".truecolor(WARNING_COLOR.0,WARNING_COLOR.1,WARNING_COLOR.2).bold(),
                     format!("at line {}:{} :", self.start_line, self.start_column).bold(),
-                    self.format_source_line(),
-                    self.kind.truecolor(TYPE_COLOR.0,TYPE_COLOR.1,TYPE_COLOR.2),
+                    self.format_source_line(HIGHLIGHT_WARN_COLOR),
+                    self.kind.truecolor(HIGHLIGHT_WARN_COLOR.0,HIGHLIGHT_WARN_COLOR.1,HIGHLIGHT_WARN_COLOR.2),
                     self.message
                 );
             }
@@ -75,15 +75,16 @@ impl Diagnostic {
                     "{} {} \n{}\n{} {}",
                     "Error :".truecolor(ERROR_COLOR.0,ERROR_COLOR.1,ERROR_COLOR.2).bold(),
                     format!("at line {}:{} :", self.start_line, self.start_column).bold(),
-                    self.format_source_line(),
-                    self.kind.truecolor(TYPE_COLOR.0,TYPE_COLOR.1,TYPE_COLOR.2),
+                    self.format_source_line(HIGHLIGHT_ERROR_COLOR),
+                    self.kind.truecolor(HIGHLIGHT_ERROR_COLOR.0,HIGHLIGHT_ERROR_COLOR.1,HIGHLIGHT_ERROR_COLOR.2),
                     self.message
                 );
             }
         }
+        println!("");
     }
     
-    fn format_source_line(&self) -> String {
+    fn format_source_line(&self, highlight : (u8,u8,u8)) -> String {
         let mut result = String::new();
         if let Some(path) = FILE_PATH.get() {
             if let Ok(file) = File::open(path) {
@@ -95,7 +96,7 @@ impl Diagnostic {
                             result.push_str(format!("{} {} {}", (i+1).to_string().truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2),"|".truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2) , line.unwrap()).to_string().as_str());
                             result.push('\n');
                             let spaces = self.start_column as usize+ i.to_string().len() + 2;
-                            result.push_str(format!("{:<spaces$}{:^>token_len$}", "", "", token_len = self.end_column as usize - self.start_column as usize + 1).truecolor(HIGHLIGHT_COLOR.0, HIGHLIGHT_COLOR.1, HIGHLIGHT_COLOR.2).to_string().as_str());
+                            result.push_str(format!("{:<spaces$}{:^>token_len$}", "", "", token_len = self.end_column as usize - self.start_column as usize + 1).truecolor(highlight.0, highlight.1, highlight.2).bold().to_string().as_str());
                         }
                     }
                 }
@@ -106,19 +107,19 @@ impl Diagnostic {
                             result.push_str(format!("{} {} {}", (i+1).to_string().truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2),"|".truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2) , line).to_string().as_str());
                             result.push('\n');
                             let spaces = self.start_column as usize+ i.to_string().len() + 2;
-                            result.push_str(format!("{:<spaces$}{:^>token_len$}", "", "", token_len = line.len() - self.start_column as usize).truecolor(HIGHLIGHT_COLOR.0, HIGHLIGHT_COLOR.1, HIGHLIGHT_COLOR.2).to_string().as_str());
+                            result.push_str(format!("{:<spaces$}{:^>token_len$}", "", "", token_len = line.len() - self.start_column as usize).truecolor(highlight.0, highlight.1, highlight.2).bold().to_string().as_str());
                             result.push('\n');
                         } else if i+1 > self.start_line as usize && i+1 < self.end_line as usize {
                             result.push_str(format!("{} {} {}", (i+1).to_string().truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2),"|".truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2) , line).to_string().as_str());
                             result.push('\n');
                             let spaces = i.to_string().len() + 3;
-                            result.push_str(format!("{:<spaces$}{:^>token_len$}", "", "", token_len = line.len()).truecolor(HIGHLIGHT_COLOR.0, HIGHLIGHT_COLOR.1, HIGHLIGHT_COLOR.2).to_string().as_str());
+                            result.push_str(format!("{:<spaces$}{:^>token_len$}", "", "", token_len = line.len()).truecolor(highlight.0, highlight.1, highlight.2).bold().to_string().as_str());
                             result.push('\n');
                         } else if i+1 == self.end_line as usize {
                             result.push_str(format!("{} {} {}", (i+1).to_string().truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2),"|".truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2) , line).to_string().as_str());
                             result.push('\n');
                             let spaces = i.to_string().len() + 3;
-                            result.push_str(format!("{:<spaces$}{:^>token_len$}", "", "", token_len = self.end_column as usize + 1).truecolor(HIGHLIGHT_COLOR.0, HIGHLIGHT_COLOR.1, HIGHLIGHT_COLOR.2).to_string().as_str());
+                            result.push_str(format!("{:<spaces$}{:^>token_len$}", "", "", token_len = self.end_column as usize + 1).truecolor(highlight.0, highlight.1, highlight.2).bold().to_string().as_str());
                         }
                    }
                } 

@@ -48,12 +48,6 @@ fn compile(args: CompileArgs) {
         .set(file_path.to_str().unwrap().to_string())
         .unwrap();
 
-    let lexer = Lexer::new(reader::new(&file_path));
-    for token in lexer {
-        print!("{} ", token.element);
-    }
-
-    print!("\n");
 
     let lexer = Lexer::new(reader::new(&file_path));
 

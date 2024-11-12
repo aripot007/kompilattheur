@@ -1,0 +1,9 @@
+
+def foo(a):
+    a = 12
+    if True:
+        a = 13
+    return a + b
+
+b = 12
+print(foo(12))

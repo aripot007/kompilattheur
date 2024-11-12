@@ -307,9 +307,11 @@ impl Lexer {
 
     // Parse un string à partir du caractère courant.
     // Ne vérifie pas que le caractère courant est un '"'
-    fn parse_string(&mut self) -> Result<FileElement<Token>, Diagnostic> {
+    fn parse_string(&mut self) -> Result<FileElement<Token>, Vec<Diagnostic>> {
 
         let mut text = String::new();
+
+        let mut diags: Vec<Diagnostic> = Vec::new();
 
         self.read_next_char();
 
@@ -326,17 +328,16 @@ impl Lexer {
                         Some('\\') => text.push('\\'),
                         Some('n') => text.push('\n'),
                         other => {
-                            let element = self.construct_file_elem(Token::String(text.clone()));
                             let diag = Diagnostic::new(
                                 DiagnosticGravity::Error,
                                 "InvalidEscapeSequence :".to_string(),
-                                element.line,
-                                element.line,
-                                element.start_char,
-                                element.start_char + element.len as u64,
+                                self.line_num,
+                                self.line_num,
+                                self.char_num - 1,
+                                self.char_num,
                                 format!("\\{} unkown, expected after \\ : '{}', '{}' or '{}'", other.unwrap().to_string().truecolor(255, 0, 0) , "\"".truecolor(0, 255, 0), "\\".truecolor(0, 255, 0), "n".truecolor(0, 255, 0))
                             );
-                            return Err(diag);
+                            diags.push(diag);
                         }
                     }
                 }
@@ -350,12 +351,17 @@ impl Lexer {
                         self.char_num,
                         "String must be terminated by '\"'".to_string(),
                     );
-                    return Err(diag);
+                    diags.push(diag);
+                    break;
                 }
                 Some(c) => text.push(c),
                 None => break,
             }
             self.read_next_char();
+        }
+
+        if !diags.is_empty() {
+            return Err(diags);
         }
 
         return Ok(self.construct_file_elem(Token::String(text)));
@@ -365,16 +371,24 @@ impl Lexer {
     /// Tente une opération de parsing qui peut échouer en émettant un diagnostic.
     /// Si un diagnostic est émis, l'affiche et tente de renvoyer le token suivant.
     fn try_parse(&mut self, result: Result<FileElement<Token>, Diagnostic>) -> Option<FileElement<Token>> {
+        return self.try_parse_multiple(result.map_err(|e| vec![e])); 
+    }
+
+    /// Tente une opération de parsing qui peut échouer en émettant plusieurs diagnostics.
+    /// Si des diagnostics sont émis, les affiche et tente de renvoyer le token suivant.
+    fn try_parse_multiple(&mut self, result: Result<FileElement<Token>, Vec<Diagnostic>>) -> Option<FileElement<Token>> {
 
         match result {
             Ok(elem) => Some(elem),
-            Err(diag) => {
-                diag.display();
-                match &diag.gravity {
-                    DiagnosticGravity::Warning => self.nb_warnings += 1,
-                    DiagnosticGravity::Error => self.nb_errors += 1,
+            Err(diags) => {
+                for diag in diags {
+                    diag.display();
+                    match &diag.gravity {
+                        DiagnosticGravity::Warning => self.nb_warnings += 1,
+                        DiagnosticGravity::Error => self.nb_errors += 1,
+                    }
+                    self.diagnostics.push(diag);
                 }
-                self.diagnostics.push(diag);
                 return self.next();
             }
         }   
@@ -469,7 +483,10 @@ impl Iterator for Lexer {
             Some(c) if c.is_ascii_alphabetic() || c == '_' => return Some(self.parse_identifier()),
 
             // <string>
-            Some('"') => return try_parse!(self.parse_string()),
+            Some('"') => {
+                let res = self.parse_string();
+                return self.try_parse_multiple(res)
+            }
 
             // !=
             Some('!') => match self.read_next_char() {
@@ -477,7 +494,7 @@ impl Iterator for Lexer {
                     self.read_next_char();
                     return operator_file_elem!("!=")
                 },
-                other => return self.skip_with_error(
+                _ => return self.skip_with_error(
                     String::from("InvalidToken"),
                     format!("Unrecognized token, did you mean {} ?", "!=".truecolor(0, 255, 0)),
                     self.char_num - 1

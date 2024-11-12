@@ -351,7 +351,7 @@ impl Lexer {
                         self.line_num,
                         start_char,
                         self.char_num,
-                        "String must be terminated by '\"'".to_string(),
+                        format!("String must be terminated by {}", "\"".truecolor(0, 255, 0)),
                     );
                     diags.push(diag);
                     break;

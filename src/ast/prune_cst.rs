@@ -12,7 +12,7 @@ Transitionner type de l'arbre
 Modifier les noeuds de l'arbre avec les nouveaux types
 */
 
-pub fn generate_ast(tree: Rc<RefCell<Node<Lexem>>>) {
+pub fn prune_cst(tree: Rc<RefCell<Node<Lexem>>>) {
     remove_syntax_terminals(tree.clone());
     remove_empty_non_terminals(tree.clone()).unwrap_or(Node::new(Lexem::NonTerminal(0)));
     lift_single_child_nodes(tree.clone());

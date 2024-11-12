@@ -1,3 +1,3 @@
-mod generate_ast;
+mod prune_cst;
 
-pub use generate_ast::generate_ast;
+pub use prune_cst::prune_cst;

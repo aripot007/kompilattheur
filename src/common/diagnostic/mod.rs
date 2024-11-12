@@ -81,6 +81,7 @@ impl Diagnostic {
                 );
             }
         }
+        println!("");
     }
     
     fn format_source_line(&self) -> String {

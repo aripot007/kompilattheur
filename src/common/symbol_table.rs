@@ -1,4 +1,9 @@
 use std::collections::HashMap;
+use std::cell::RefCell;
+use std::rc::Rc;
+
+use crate::common::symbol_table;
+
 use super::types::Node;
 
 #[derive(Debug, Clone)]
@@ -31,6 +36,21 @@ impl SymbolTable {
     pub fn update_symbol(&mut self, key: String, value: Symbol) {
         self.table.insert(key, value);
     }
+}
+
+pub fn init_symbol_table() -> Node<SymbolTable> {
+    Node::new(SymbolTable::new())
+}
+
+pub fn enter_scope(parent: RefCell<Node<SymbolTable>>) -> Rc<RefCell<Node<SymbolTable>>> {
+    let child= Node::new(SymbolTable::new());
+    parent.borrow_mut().add_child(&parent, child.clone());
+    child.clone()
+}
+
+pub fn exit_scope(node: RefCell<Node<SymbolTable>>) -> Option<Rc<RefCell<Node<SymbolTable>>>> {
+    let parent = node.borrow().get_parent();
+    parent
 }
     
 

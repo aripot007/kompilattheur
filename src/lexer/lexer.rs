@@ -38,25 +38,30 @@ pub fn get_operator_token(op: &str) -> Option<Token> {
 pub struct Lexer {
     reader: reader::Reader,
 
-    // Pile contenant les nombres d'indentation
+    /// Pile contenant les nombres d'indentation
     indentation_stack: Vec<u64>,
 
-    // Nombre de tokens END à émettre avant de lire la suite du fichier
+    /// Nombre de tokens END à émettre avant de lire la suite du fichier
     end_token_count: u64,
 
-    // Vrai si le prochain token à émettre est un token BEGIN
+    /// Vrai si le prochain token à émettre est un token BEGIN
     emit_begin: bool,
 
-    // Caractère courant
+    /// Caractère courant
     peek: Option<char>,
 
-    // Vrai une fois que le token EOF a été émis
+    /// Vrai une fois que le token EOF a été émis
     emmitted_eof: bool,
 
     line_num: u64,
     char_num: u64,
 
     token_table: TokenTable,
+    
+    nb_errors: usize,
+    nb_warnings: usize,
+
+    diagnostics: Vec<Diagnostic>,
 }
 
 fn init_token_table() -> TokenTable {
@@ -95,6 +100,9 @@ impl Lexer {
             end_token_count: 0,
             emit_begin: false,
             token_table: init_token_table(),
+            nb_errors: 0,
+            nb_warnings: 0,
+            diagnostics: Vec::new(),
         };
     }
 
@@ -151,6 +159,21 @@ impl Lexer {
         }
     }
 
+    /// Consomme les caractères restants jusqu'au prochain caractère blanc,
+    /// et renvoie le nombre de caractères lus.
+    /// 
+    /// Permet de finir la lecture du token actuel en cas d'erreur
+    fn skip_current_token(&mut self) -> usize {
+
+        let mut nb_read = 0;
+
+        while self.peek.is_some_and(|c| !c.is_whitespace()) {
+            nb_read += 1;
+            self.read_next_char();
+        };
+        return nb_read;
+    }
+
     /*
         Permet de gérer l'émission des tokens BEGIN et END.
         S'il faut émettre un token BEGIN, passe `self.emit_begin` à true.
@@ -171,27 +194,35 @@ impl Lexer {
             loop {
                 match self.indentation_stack.pop() {
                     Some(m) if m > indentation_number => self.end_token_count += 1,
-                    Some(m) if m < indentation_number => (),
                     Some(m) if m == indentation_number => {
                         self.indentation_stack.push(indentation_number);
                         break;
                     }
-                    _ => Diagnostic::new(
-                        DiagnosticGravity::Error,
-                        "IdentationError :".to_string(),
-                        self.line_num,
-                        self.line_num,
-                        self.char_num,
-                        self.char_num,
-                        format!("Expected {})", indentation_number),
-                    )
-                    .display(),
+                    opt => {
+                        let error_str = match opt {
+                            Some(n) => format!("Expected {} spaces, got {} instead", n, indentation_number),
+                            None => format!("Could not find previous block of indentation {}, maybe another IndentationError occured earlier in the program ?", indentation_number),
+                        };
+                        let diag = Diagnostic::new(
+                            DiagnosticGravity::Error,
+                            "IndentationError :".to_string(),
+                            self.line_num,
+                            self.line_num,
+                            0,
+                            self.char_num - 1,
+                            error_str,
+                        );
+                        diag.display();
+                        self.diagnostics.push(diag);
+                        self.nb_errors += 1;
+                        break;
+                    },
                 }
             }
         }
     }
 
-    // Lit le caractère suivant et le stocke dans self.peek
+    /// Lit le caractère suivant et le stocke dans self.peek
     fn read_next_char(&mut self) -> Option<char> {
         self.peek = self.reader.next();
         self.char_num += 1;
@@ -199,14 +230,16 @@ impl Lexer {
     }
 
     // Parse un integer a partir du caractère courant
-    fn parse_integer(&mut self) -> FileElement<Token> {
+    fn parse_integer(&mut self) -> Result<FileElement<Token>, Diagnostic> {
 
         let mut number: u64 = 0;
+
+        let starting_char = self.char_num;
 
         match self.peek {
             Some('0') => {
                 self.read_next_char();
-                return self.construct_file_elem(Token::integer(0));
+                return Ok(self.construct_file_elem(Token::integer(0)));
             },
             Some(c) if c.is_digit(10) => {},
 
@@ -215,23 +248,11 @@ impl Lexer {
             _ => panic!("trying to use parse_integer while not on a digit"),
         }
 
+        let mut overflow = false;
+
         while self.peek.is_some_and(|c| c.is_digit(10)) {
-            let v: u64 = match self.peek.unwrap().to_digit(10) {
-                Some(v) => v.try_into().unwrap(),
-                None => {
-                    Diagnostic::new(
-                        DiagnosticGravity::Error,
-                        "IntOverflow :".to_string(),
-                        self.line_num,
-                        self.line_num,
-                        self.char_num,
-                        self.char_num,
-                        "This character cannot be converted to integer".to_string(),
-                    )
-                    .display();
-                    break;
-                }
-            };
+
+            let v: u64 = self.peek.unwrap().to_digit(10).unwrap().into();
 
             // Calcule la valeur de l'entier en vérifiant qu'elle peut
             // être contenue dans un entier machine
@@ -239,25 +260,29 @@ impl Lexer {
             let (n, of1) = number.overflowing_mul(10);
             let (n, of2) = n.overflowing_add(v);
 
-            if of1 | of2 {
-                let element = self.construct_file_elem(Token::integer(number));
-                Diagnostic::new(
-                    DiagnosticGravity::Error,
-                    "IntOverflow :".to_string(),
-                    element.line,
-                    element.line,
-                    element.start_char,
-                    element.start_char + element.len as u64,
-                    "Integer cannot be represented on a 64 bits integer".to_string(),
-                )
-                .display();
-                panic!("Integer cannot be represented on a 64 bits integer")
-            }
+            overflow = overflow | of1 | of2;
             number = n;
             self.read_next_char();
         }
 
-        return self.construct_file_elem(Token::integer(number));
+        if overflow {
+            let diag = Diagnostic::new(
+                DiagnosticGravity::Error,
+                "IntOverflow :".to_string(),
+                self.line_num,
+                self.line_num,
+                starting_char,
+                self.char_num - 1,
+                "Integer cannot be represented on a 64 bit integer".to_string(),
+            );
+            diag.display();
+            self.diagnostics.push(diag);
+            self.nb_errors += 1;
+            number = 0;
+            //return Err(diag);
+        }
+
+        return Ok(self.construct_file_elem(Token::integer(number)));
     }
 
     // Parse un identifier à partir du caractère courant
@@ -282,9 +307,13 @@ impl Lexer {
 
     // Parse un string à partir du caractère courant.
     // Ne vérifie pas que le caractère courant est un '"'
-    fn parse_string(&mut self) -> FileElement<Token> {
+    fn parse_string(&mut self) -> Result<FileElement<Token>, Vec<Diagnostic>> {
 
         let mut text = String::new();
+
+        let mut diags: Vec<Diagnostic> = Vec::new();
+
+        let start_char = self.char_num;
 
         self.read_next_char();
 
@@ -301,39 +330,96 @@ impl Lexer {
                         Some('\\') => text.push('\\'),
                         Some('n') => text.push('\n'),
                         other => {
-                            let element = self.construct_file_elem(Token::String(text.clone()));
-                            Diagnostic::new(
+                            let diag = Diagnostic::new(
                                 DiagnosticGravity::Error,
                                 "InvalidEscapeSequence :".to_string(),
-                                element.line,
-                                element.line,
-                                element.start_char,
-                                element.start_char + element.len as u64,
+                                self.line_num,
+                                self.line_num,
+                                self.char_num - 1,
+                                self.char_num,
                                 format!("\\{} unkown, expected after \\ : '{}', '{}' or '{}'", other.unwrap().to_string().truecolor(255, 0, 0) , "\"".truecolor(0, 255, 0), "\\".truecolor(0, 255, 0), "n".truecolor(0, 255, 0))
-                            )
-                            .display();
-                            break;
+                            );
+                            diags.push(diag);
                         }
                     }
                 }
-                Some('\n') => Diagnostic::new(
-                    DiagnosticGravity::Error,
-                    "UnterminatedString :".to_string(),
-                    self.line_num,
-                    self.line_num,
-                    self.char_num,
-                    self.char_num,
-                    format!("String must be terminated by {}", "\"".truecolor(0, 255, 0)),
-                )
-                .display(),
+                Some('\n') => {
+                    let diag = Diagnostic::new(
+                        DiagnosticGravity::Error,
+                        "UnterminatedString :".to_string(),
+                        self.line_num,
+                        self.line_num,
+                        start_char,
+                        self.char_num,
+                        format!("String must be terminated by {}", "\"".truecolor(0, 255, 0)),
+                    );
+                    diags.push(diag);
+                    break;
+                }
                 Some(c) => text.push(c),
                 None => break,
             }
             self.read_next_char();
         }
 
-        return self.construct_file_elem(Token::String(text));
+        if !diags.is_empty() {
+            return Err(diags);
+        }
+
+        return Ok(self.construct_file_elem(Token::String(text)));
     }
+
+
+    /// Tente une opération de parsing qui peut échouer en émettant un diagnostic.
+    /// Si un diagnostic est émis, l'affiche et tente de renvoyer le token suivant.
+    fn try_parse(&mut self, result: Result<FileElement<Token>, Diagnostic>) -> Option<FileElement<Token>> {
+        return self.try_parse_multiple(result.map_err(|e| vec![e])); 
+    }
+
+    /// Tente une opération de parsing qui peut échouer en émettant plusieurs diagnostics.
+    /// Si des diagnostics sont émis, les affiche et tente de renvoyer le token suivant.
+    fn try_parse_multiple(&mut self, result: Result<FileElement<Token>, Vec<Diagnostic>>) -> Option<FileElement<Token>> {
+
+        match result {
+            Ok(elem) => Some(elem),
+            Err(diags) => {
+                for diag in diags {
+                    diag.display();
+                    match &diag.gravity {
+                        DiagnosticGravity::Warning => self.nb_warnings += 1,
+                        DiagnosticGravity::Error => self.nb_errors += 1,
+                    }
+                    self.diagnostics.push(diag);
+                }
+                return self.next();
+            }
+        }   
+    }
+
+    /// Skip le token actuel en émettant l'erreur donnée, et passe au token suivant
+    /// Considère que le token se trouve sur la ligne actuelle du lexer, commence
+    /// au caractère `start_char` et se termine après l'appel à `self::skip_current_token`.
+    fn skip_with_error(&mut self, error: String, msg: String, start_char: u64, ) -> Option<FileElement<Token>> {
+
+        self.skip_current_token();
+
+        let diag = Diagnostic::new(
+            DiagnosticGravity::Error,
+            error,
+            self.line_num,
+            self.line_num,
+            start_char,
+            self.char_num - 1,
+            msg,
+        );
+
+        diag.display();
+        self.diagnostics.push(diag);
+        self.nb_errors += 1;
+
+        return self.next()
+    }
+
 }
 
 impl Iterator for Lexer {
@@ -348,6 +434,15 @@ impl Iterator for Lexer {
                     None => None,
                     Some(token) => Some(self.construct_file_elem(token)),
                } 
+            };
+        }
+
+        macro_rules! try_parse {
+            ($parse: expr) => {
+                {
+                    let res = $parse;
+                    self.try_parse(res)
+                }
             };
         }
 
@@ -384,46 +479,41 @@ impl Iterator for Lexer {
 
         match self.peek {
             // <integer>
-            Some(c) if c.is_digit(10) => return Some(self.parse_integer()),
+            Some(c) if c.is_digit(10) => return try_parse!(self.parse_integer()),
 
             // <identifier>
             Some(c) if c.is_ascii_alphabetic() || c == '_' => return Some(self.parse_identifier()),
 
             // <string>
-            Some('"') => return Some(self.parse_string()),
+            Some('"') => {
+                let res = self.parse_string();
+                return self.try_parse_multiple(res)
+            }
 
             // !=
             Some('!') => match self.read_next_char() {
                 Some('=') => {
                     self.read_next_char();
-                        return operator_file_elem!("!=")
-                }
-                other => Diagnostic::new(
-                    DiagnosticGravity::Error,
-                    "InvalidToken :".to_string(),
-                    self.line_num,
-                    self.line_num,
-                    self.char_num - 1,
-                    self.char_num,
-                    format!("{} is invalid, did you mean {} ?",format!("={}", other.unwrap()).truecolor(255, 0, 0), "!=".truecolor(0, 255, 0)),
-                ).display(),
+                    return operator_file_elem!("!=")
+                },
+                _ => return self.skip_with_error(
+                    String::from("InvalidToken"),
+                    format!("Unrecognized token, did you mean {} ?", "!=".truecolor(0, 255, 0)),
+                    self.char_num - 1
+                )
             },
 
             // //
             Some('/') => match self.read_next_char() {
                 Some('/') => {
                     self.read_next_char();
-                        return operator_file_elem!("//");
+                    return operator_file_elem!("//");
                 }
-                other => Diagnostic::new(
-                    DiagnosticGravity::Error,
-                    "InvalidToken :".to_string(),
-                    self.line_num,
-                    self.line_num,
-                    self.char_num - 1,
-                    self.char_num,
-                    format!("{} is invalid, did you mean {} ?",format!("/{}", other.unwrap()).truecolor(255, 0, 0), "//".truecolor(0, 255, 0)),
-                ).display(),
+                other => return self.skip_with_error(
+                    String::from("InvalidToken"),
+                    format!("Unrecognized token '{}', did you mean {} ?",format!("/{}", other.unwrap_or(' ')).truecolor(255, 0, 0), "//".truecolor(0, 255, 0)),
+                    self.char_num - 1
+                )
             },
 
             // <, >, =, <=, >=, ==
@@ -440,16 +530,11 @@ impl Iterator for Lexer {
                 self.read_next_char();
                 match get_operator_token(c.to_string().as_str()) {
                     Some(token) => return Some(self.construct_file_elem(token)),
-                    None => Diagnostic::new(
-                        DiagnosticGravity::Error,
-                        "InvalidToken :".to_string(),
-                        self.line_num,
-                        self.line_num,
-                        self.char_num-1,
-                        self.char_num-1,
-                        format!("{} is invalid", c.to_string().truecolor(255, 0, 0)),
+                    None => return self.skip_with_error(
+                        String::from("InvalidToken"),
+                        format!("Unrecognized token '{}'", c.to_string().truecolor(255, 0, 0)),
+                        self.char_num - 1
                     )
-                    .display(),
                 }
             }
             None => {
@@ -457,14 +542,12 @@ impl Iterator for Lexer {
                 return Some(self.construct_file_elem(Token::EOF));
             }
         }
-
-        return None;
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{common::types::{IdToken, Token}, lexer::{lexer::{get_operator_token, init_token_table, Lexer}, token_table}, reader::Reader};
+    use crate::{common::types::Token, lexer::lexer::{get_operator_token, init_token_table, Lexer}, reader::Reader};
 
     #[test]
     fn test_eof() {

@@ -1,13 +1,22 @@
-use colored:: Colorize;
+use colored::Colorize;
 
-use crate::{common::{diagnostic::{Diagnostic, DiagnosticGravity}, types::file_element}, lexer::Lexer};
 use super::lexem::Lexem;
 use crate::analysis_table::AnalysisTable;
+use crate::common::types::{Node, Token};
+use crate::{
+    common::{
+        diagnostic::{Diagnostic, DiagnosticGravity},
+        types::file_element,
+    },
+    lexer::Lexer,
+};
 use std::cell::RefCell;
 use std::rc::Rc;
-use crate::common::types::{Token, Node};
 
-pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<RefCell<Node<Lexem>>>, bool, bool) {
+pub fn generate_tree(
+    mut lexer: Lexer,
+    analysis_table: &AnalysisTable,
+) -> (Rc<RefCell<Node<Lexem>>>, bool, bool) {
     let tree: Rc<RefCell<Node<Lexem>>> = Node::new(Lexem::NonTerminal(0));
     let mut stack: Vec<Rc<RefCell<Node<Lexem>>>> = vec![tree.clone()];
     let mut error = false;
@@ -41,8 +50,17 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
                                 line,
                                 input.line,
                                 input.start_char,
-                                if input.len > 0 { input.start_char + (input.len - 1) as u64 } else { input.start_char },
-                                format!("Expected {} but got {}", token.to_string().truecolor(255, 0, 0), input.element.to_string().truecolor(255, 0, 0)).to_string(),
+                                if input.len > 0 {
+                                    input.start_char + (input.len - 1) as u64
+                                } else {
+                                    input.start_char
+                                },
+                                format!(
+                                    "Expected {} but got {}",
+                                    token.to_string().truecolor(255, 0, 0),
+                                    input.element.to_string().truecolor(255, 0, 0)
+                                )
+                                .to_string(),
                             )
                             .display();
                             // println!("Error: {token:?} != {}", input.element);
@@ -55,29 +73,48 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
                                 for lexem in lexems.iter().rev() {
                                     let new_node = Node::new((*lexem).clone());
                                     stack.push(new_node.clone());
-                                    node.borrow_mut().insert_child(0, new_node.clone());
+                                    node.borrow_mut().insert_child(&node, 0, new_node.clone());
                                 }
                             }
                             None => {
                                 error = true;
                                 let expected_tokens = analysis_table.get_expected_tokens(&id);
-                                let expected_tokens = expected_tokens.iter().map(|x| {
-                                    match x {
-                                        Token::Identifier(_) => "Identifier".to_string().truecolor(255, 0, 0).to_string(),
-                                        Token::Integer(_) => "Integer".to_string().truecolor(255, 0, 0).to_string(),
-                                        Token::String(_) => "String".to_string().truecolor(255, 0, 0).to_string(),
+                                let expected_tokens = expected_tokens
+                                    .iter()
+                                    .map(|x| match x {
+                                        Token::Identifier(_) => "Identifier"
+                                            .to_string()
+                                            .truecolor(255, 0, 0)
+                                            .to_string(),
+                                        Token::Integer(_) => {
+                                            "Integer".to_string().truecolor(255, 0, 0).to_string()
+                                        }
+                                        Token::String(_) => {
+                                            "String".to_string().truecolor(255, 0, 0).to_string()
+                                        }
                                         _ => x.to_string().truecolor(255, 0, 0).to_string(),
-                                    }
-                                }).collect::<Vec<String>>().join(", ");
+                                    })
+                                    .collect::<Vec<String>>()
+                                    .join(", ");
                                 Diagnostic::new(
                                     DiagnosticGravity::Error,
                                     "ParserTableError :".to_string(),
                                     input.line,
                                     input.line,
                                     input.start_char,
-                                    if input.len > 0 { input.start_char + (input.len - 1) as u64 } else { input.start_char },
-                                    format!("Expected {} but got {}", expected_tokens, input.element.to_string().truecolor(255, 0, 0)).to_string(),
-                                ).display();
+                                    if input.len > 0 {
+                                        input.start_char + (input.len - 1) as u64
+                                    } else {
+                                        input.start_char
+                                    },
+                                    format!(
+                                        "Expected {} but got {}",
+                                        expected_tokens,
+                                        input.element.to_string().truecolor(255, 0, 0)
+                                    )
+                                    .to_string(),
+                                )
+                                .display();
                                 //println!("Error: No entry for {} and {}", analysis_table.get_non_terminal_name(id), input.element);
                             }
                         }
@@ -95,19 +132,25 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
                         input.start_char,
                         input.start_char + (input.len - 1) as u64,
                         "Stack is empty and input is not EOF".to_string(),
-                    ).display();
+                    )
+                    .display();
                     println!("Error: Stack is empty and input is not EOF");
                 }
                 accept = true;
             }
         }
     }
+
+    // Finish lexical analysis before returning
+    if error {
+        while let Some(_) = lexer.next() {}
+    }
+
     return (tree, accept, error);
 }
 
 #[cfg(test)]
 mod tests {
-
 
     use crate::analysis_table::setup_analysis_table;
     use std::path::PathBuf;
@@ -116,7 +159,8 @@ mod tests {
 
     use once_cell::sync::Lazy;
 
-    static ANALYSIS_TABLE: Lazy<&AnalysisTable> = Lazy::new(|| setup_analysis_table(Some(&PathBuf::from("grammaire.txt"))));
+    static ANALYSIS_TABLE: Lazy<&AnalysisTable> =
+        Lazy::new(|| setup_analysis_table(Some(&PathBuf::from("grammaire.txt"))));
 
     #[test]
     fn test_generate_tree() {

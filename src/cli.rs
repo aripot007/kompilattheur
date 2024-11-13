@@ -7,7 +7,6 @@ use clap_complete::Shell;
 #[command(args_conflicts_with_subcommands = true)]
 #[command(flatten_help = true)]
 pub struct Cli {
-
     #[command(subcommand)]
     pub command: Option<Commands>,
 
@@ -17,7 +16,6 @@ pub struct Cli {
 
 #[derive(Debug, Subcommand)]
 pub enum Commands {
-
     /// Génère la table d'analyse de la grammaire passée en paramètres
     GenerateAnalysisTable(GenerateTableArgs),
 
@@ -33,13 +31,12 @@ pub enum Commands {
 
 #[derive(Debug, Args)]
 pub struct GenerateTableArgs {
-
     /// Le fichier contenant la grammmaire
     #[arg()]
     pub grammar_file: PathBuf,
 
     /// Le fichier de sortie
-    #[arg(name="output", short, long, default_value="generated_table.rs")]
+    #[arg(name = "output", short, long, default_value = "generated_table.rs")]
     pub output_file: PathBuf,
 
     /// Affiche également la table générée
@@ -55,17 +52,15 @@ pub struct GenerateTableArgs {
     pub with_comments: bool,
 }
 
-
 #[derive(Debug, Args)]
 #[command(flatten_help = true)]
 pub struct PrintTableArgs {
-
     /// Utilise la grammaire contenue dans ce fichier à la place de celle du compilateur
     #[arg(long, short)]
     pub grammar_file: Option<PathBuf>,
 
     /// Un fichier dans lequel écrire la table, au lieu de la sortie standard
-    #[arg(name="output", short, long)]
+    #[arg(name = "output", short, long)]
     pub output_file: Option<PathBuf>,
 
     #[arg(long, short, num_args = 0..=1, value_enum, default_value_t=TableFormat::Plaintext)]
@@ -74,12 +69,10 @@ pub struct PrintTableArgs {
     /// Ajoute des commentaires
     #[arg(long, action, alias("comments"))]
     pub with_comments: bool,
-
 }
 
 #[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TableFormat {
-
     #[value(alias("plain"))]
     Plaintext,
 
@@ -90,19 +83,21 @@ pub enum TableFormat {
     Rust,
 }
 
-
 #[derive(Debug, Args)]
 pub struct CompileArgs {
-
     /// Utilise une autre grammaire que celle inclue dans le compilateur
-    #[arg(long, short='g')]
+    #[arg(long, short = 'g')]
     pub alternative_grammar: Option<PathBuf>,
-    
+
     /// Le fichier à compiler
     #[arg()]
     pub file: Option<PathBuf>,
-    
+
     /// Le fichier de sortie
-    #[arg(name="output", short, long, default_value="p.out")]
+    #[arg(name = "output", short, long, default_value = "p.html")]
     pub output_file: PathBuf,
+
+    /// Génère l'arbre syntaxique concret uniquement
+    #[arg(long, alias("cst"), alias("st"), action)]
+    pub syntax_tree: bool,
 }

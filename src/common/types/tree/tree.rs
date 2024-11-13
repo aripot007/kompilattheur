@@ -114,4 +114,23 @@ mod tests {
         assert!(children.len() == 1);
         assert!(children[0].borrow().value == "child11");
     }
+
+    #[test]
+    fn test_get_parent() {
+        let root = Node::new("root");
+        let child1 = Node::new("child1");
+        root.borrow_mut().add_child(&root, child1.clone());
+
+        let parent = child1.borrow().get_parent();
+        match parent {
+            Some(p) => {
+                let value = p.borrow().value;
+                println!("{}", value);
+                assert!(value == "root");
+            }
+            None => {
+                assert!(false);
+            }
+        }
+    }
 }

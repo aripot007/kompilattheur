@@ -85,7 +85,7 @@ pub fn enter_scope(parent: Rc<RefCell<Node<SymbolTable>>>) -> Rc<RefCell<Node<Sy
     child.clone()
 }
 
-pub fn exit_scope(node: RefCell<Node<SymbolTable>>) -> Option<Rc<RefCell<Node<SymbolTable>>>> {
+pub fn exit_scope(node: Rc<RefCell<Node<SymbolTable>>>) -> Option<Rc<RefCell<Node<SymbolTable>>>> {
     let parent = node.borrow().get_parent();
     parent
 }

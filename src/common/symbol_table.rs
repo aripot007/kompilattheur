@@ -3,8 +3,6 @@ use std::collections::HashMap;
 use std::fmt::Display;
 use std::rc::Rc;
 
-use crate::common::symbol_table;
-
 use super::types::Node;
 
 #[derive(Debug, Clone)]

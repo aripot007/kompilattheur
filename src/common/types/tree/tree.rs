@@ -33,6 +33,13 @@ impl<T: Display + ToString> Node<T> {
         self.childs = children;
     }
 
+    pub fn get_parent(&self) -> Option<Rc<RefCell<Node<T>>>> {
+        match &self.parent {
+            Some(parent) => parent.upgrade(),
+            None => None,
+        }
+    }
+
     #[allow(dead_code)]
     pub fn add_child(&mut self, parent: &Rc<RefCell<Node<T>>>, child: Rc<RefCell<Node<T>>>) {
         child.borrow_mut().parent = Some(Rc::downgrade(parent));

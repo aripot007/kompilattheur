@@ -94,7 +94,7 @@ pub struct CompileArgs {
     pub file: Option<PathBuf>,
 
     /// Le fichier de sortie
-    #[arg(name = "output", short, long, default_value = "p.out")]
+    #[arg(name = "output", short, long, default_value = "p.html")]
     pub output_file: PathBuf,
 
     /// Génère l'arbre syntaxique concret uniquement

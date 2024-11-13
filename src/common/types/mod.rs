@@ -5,4 +5,3 @@ mod tree;
 pub use file_element::FileElement;
 pub use token::{IdToken, NumToken, Token};
 pub use tree::Node;
-pub use tree::*;

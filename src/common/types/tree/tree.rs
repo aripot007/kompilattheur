@@ -33,13 +33,6 @@ impl<T: Display + ToString> Node<T> {
         self.childs = children;
     }
 
-    pub fn get_parent(&self) -> Option<Rc<RefCell<Node<T>>>> {
-        match &self.parent {
-            Some(parent) => parent.upgrade(),
-            None => None,
-        }
-    }
-
     #[allow(dead_code)]
     pub fn add_child(&mut self, parent: &Rc<RefCell<Node<T>>>, child: Rc<RefCell<Node<T>>>) {
         child.borrow_mut().parent = Some(Rc::downgrade(parent));
@@ -63,6 +56,13 @@ impl<T: Display + ToString> Node<T> {
             result = self.childs.remove(n).borrow().get_children();
         }
         result
+    }
+
+    pub fn get_parent(&self) -> Option<Rc<RefCell<Node<T>>>> {
+        match &self.parent {
+            Some(parent) => parent.upgrade(),
+            None => None,
+        }
     }
 }
 
@@ -132,5 +132,16 @@ mod tests {
                 assert!(false);
             }
         }
+
+        let result = root.borrow().generate_mermaid();
+        let expected = concat!(
+            "flowchart TD\n",
+            "0[\"root\"]\n",
+            "1[\"child1\"]\n",
+            "0 --> 1\n",
+        );
+
+        println!("{}", result);
+        assert!(expected == result);
     }
 }

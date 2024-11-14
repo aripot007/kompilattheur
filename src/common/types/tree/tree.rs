@@ -33,13 +33,6 @@ impl<T: Display + ToString> Node<T> {
         self.childs = children;
     }
 
-    pub fn get_parent(&self) -> Option<Rc<RefCell<Node<T>>>> {
-        match &self.parent {
-            Some(parent) => parent.upgrade(),
-            None => None,
-        }
-    }
-
     #[allow(dead_code)]
     pub fn add_child(&mut self, parent: &Rc<RefCell<Node<T>>>, child: Rc<RefCell<Node<T>>>) {
         child.borrow_mut().parent = Some(Rc::downgrade(parent));
@@ -63,6 +56,13 @@ impl<T: Display + ToString> Node<T> {
             result = self.childs.remove(n).borrow().get_children();
         }
         result
+    }
+
+    pub fn get_parent(&self) -> Option<Rc<RefCell<Node<T>>>> {
+        match &self.parent {
+            Some(parent) => parent.upgrade(),
+            None => None,
+        }
     }
 }
 
@@ -113,5 +113,35 @@ mod tests {
 
         assert!(children.len() == 1);
         assert!(children[0].borrow().value == "child11");
+    }
+
+    #[test]
+    fn test_get_parent() {
+        let root = Node::new("root");
+        let child1 = Node::new("child1");
+        root.borrow_mut().add_child(&root, child1.clone());
+
+        let parent = child1.borrow().get_parent();
+        match parent {
+            Some(p) => {
+                let value = p.borrow().value;
+                println!("{}", value);
+                assert!(value == "root");
+            }
+            None => {
+                assert!(false);
+            }
+        }
+
+        let result = root.borrow().generate_mermaid();
+        let expected = concat!(
+            "flowchart TD\n",
+            "0[\"root\"]\n",
+            "1[\"child1\"]\n",
+            "0 --> 1\n",
+        );
+
+        println!("{}", result);
+        assert!(expected == result);
     }
 }

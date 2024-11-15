@@ -101,6 +101,20 @@ pub fn exit_scope(node: Rc<RefCell<Node<SymbolTable>>>) -> Option<Rc<RefCell<Nod
     }
 }
 
+pub fn get_scope(root: Rc<RefCell<Node<SymbolTable>>>, index: usize) -> Option<Rc<RefCell<Node<SymbolTable>>>> {
+    let mut stack = vec![root];
+    while !stack.is_empty() {
+        let node = stack.pop().unwrap();
+        if node.borrow().get_value().index == index {
+            return Some(node);
+        }
+        for child in node.borrow().get_children() {
+            stack.push(child);
+        }
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

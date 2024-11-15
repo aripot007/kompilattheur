@@ -15,8 +15,8 @@ pub enum Symbol {
 #[derive(Debug, Clone)]
 pub struct SymbolTable {
     pub table: HashMap<usize, (Symbol,)>,
-    pub depth: usize,
     pub index: usize,
+    pub last_given_index: usize,
 }
 
 impl Display for SymbolTable {
@@ -56,11 +56,11 @@ impl Display for SymbolTable {
 }
 
 impl SymbolTable {
-    pub fn new(depth: usize, index: usize) -> SymbolTable {
+    pub fn new(index: usize, last_given_index: usize) -> SymbolTable {
         SymbolTable {
             table: HashMap::new(),
-            depth,
             index,
+            last_given_index,
         }
     }
 
@@ -82,14 +82,23 @@ pub fn init_symbol_table() -> Rc<RefCell<Node<SymbolTable>>> {
 }
 
 pub fn enter_scope(parent: Rc<RefCell<Node<SymbolTable>>>) -> Rc<RefCell<Node<SymbolTable>>> {
-    let child = Node::new(SymbolTable::new(parent.borrow().get_value().depth + 1, parent.borrow().get_children().len()));
+    let index = parent.borrow().get_value().index + 1;
+    let last_given_index = index.clone();
+    let child = Node::new(SymbolTable::new(index, last_given_index));
     parent.borrow_mut().add_child(&parent, child.clone());
     child.clone()
 }
 
 pub fn exit_scope(node: Rc<RefCell<Node<SymbolTable>>>) -> Option<Rc<RefCell<Node<SymbolTable>>>> {
     let parent = node.borrow().get_parent();
-    parent
+    match parent {
+        Some(parent) => {
+            let last_given_index = node.borrow().get_value().last_given_index;
+            parent.borrow_mut().get_value().last_given_index = last_given_index;
+            Some(parent)
+        }
+        None => None,
+    }
 }
 
 #[cfg(test)]

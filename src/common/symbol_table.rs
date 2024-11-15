@@ -15,6 +15,8 @@ pub enum Symbol {
 #[derive(Debug, Clone)]
 pub struct SymbolTable {
     pub table: HashMap<usize, (Symbol,)>,
+    pub depth: usize,
+    pub index: usize,
 }
 
 impl Display for SymbolTable {
@@ -54,9 +56,11 @@ impl Display for SymbolTable {
 }
 
 impl SymbolTable {
-    pub fn new() -> SymbolTable {
+    pub fn new(depth: usize, index: usize) -> SymbolTable {
         SymbolTable {
             table: HashMap::new(),
+            depth,
+            index,
         }
     }
 
@@ -74,11 +78,11 @@ impl SymbolTable {
 }
 
 pub fn init_symbol_table() -> Rc<RefCell<Node<SymbolTable>>> {
-    Node::new(SymbolTable::new())
+    Node::new(SymbolTable::new(0,0))
 }
 
 pub fn enter_scope(parent: Rc<RefCell<Node<SymbolTable>>>) -> Rc<RefCell<Node<SymbolTable>>> {
-    let child = Node::new(SymbolTable::new());
+    let child = Node::new(SymbolTable::new(parent.borrow().get_value().depth + 1, parent.borrow().get_children().len()));
     parent.borrow_mut().add_child(&parent, child.clone());
     child.clone()
 }
@@ -90,18 +94,14 @@ pub fn exit_scope(node: Rc<RefCell<Node<SymbolTable>>>) -> Option<Rc<RefCell<Nod
 
 #[cfg(test)]
 mod tests {
-    use std::result;
-
     use super::*;
 
     #[test]
     fn test_symbol_table() {
-        let mut symbol_table = SymbolTable::new();
+        let mut symbol_table = SymbolTable::new(0,0);
         symbol_table.update_symbol(1, Symbol::Variable());
         symbol_table.update_symbol(2, Symbol::Parameter());
 
         print!("{}", symbol_table);
-
-        assert!(false)
     }
 }

@@ -66,6 +66,12 @@ impl<T: Display + ToString> Node<T> {
     }
 }
 
+impl <T: Display + ToString + Clone> Node<T> {
+    pub fn get_value(&self) -> T {
+        self.value.clone()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::Node;

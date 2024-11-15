@@ -115,6 +115,17 @@ pub fn get_scope(root: Rc<RefCell<Node<SymbolTable>>>, index: usize) -> Option<R
     None
 }
 
+pub fn get_symbol(node: Rc<RefCell<Node<SymbolTable>>>, key: &usize) -> Option<(Symbol,)> {
+    if let Some(sym) = node.borrow().get_value().table.get(key) {
+        return Some(sym.clone());
+    } else {
+        match node.borrow().get_parent() {
+            Some(parent) => return get_symbol(parent, key),
+            None => return None,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

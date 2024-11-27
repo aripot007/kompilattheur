@@ -179,6 +179,22 @@ pub fn get_scope(
     node: Rc<RefCell<Node<SymbolTable>>>,
     index: usize,
 ) -> Option<Rc<RefCell<Node<SymbolTable>>>> {
+    let base = node.clone();
+    let res = get_scope_rec(node, index);
+    match res {
+        Some(res) => {
+            let last_given_index = base.borrow().get_value().last_given_index;
+            res.borrow_mut().set_last_given_index(last_given_index);
+            Some(res)
+        }
+        None => None,
+    }
+}
+
+fn get_scope_rec(
+    node: Rc<RefCell<Node<SymbolTable>>>,
+    index: usize,
+) -> Option<Rc<RefCell<Node<SymbolTable>>>> {
     let parent = node.borrow().get_parent();
     let root = match parent {
         Some(parent) => get_scope(parent, index).unwrap_or_else(|| node.clone()),
@@ -304,14 +320,19 @@ mod tests {
     #[test]
     fn test_get_scope() {
         let (node, root) = init_symbol_table();
+
         let node = enter_scope(node);
         let node = exit_scope(node);
+
         let node = enter_scope(node);
         let node = exit_scope(node);
+
         let node = get_scope(node, 1).unwrap();
         assert_eq!(node.borrow().get_value().index, 1);
+
         let node = get_scope(node, 0).unwrap();
         assert_eq!(node.borrow().get_value().index, root.borrow().get_value().index);
+
         let node = get_scope(node, 3);
         assert!(node.is_none());
     }
@@ -321,21 +342,84 @@ mod tests {
         let (node, root) = init_symbol_table();
         node.borrow_mut().insert_symbol(1, (Symbol::Function(),));
         node.borrow_mut().insert_symbol(2, (Symbol::Variable(),));
+
         let node = enter_scope(node);
         node.borrow_mut().insert_symbol(3, (Symbol::Parameter(),));
+
         let (node, symbol) = get_symbol(node, &1);
         let res = format!("{:?}", symbol);
         assert_eq!(res, "Some((Function,))");
+
         let (node, symbol) = get_symbol(node, &2);
         let res = format!("{:?}", symbol);
         assert_eq!(res, "Some((Variable,))");
+
         let (node, symbol) = get_symbol(node, &3);
         let res = format!("{:?}", symbol);
         assert_eq!(res, "Some((Parameter,))");
+
         let node = exit_scope(node);
         let (node, symbol) = get_symbol(node, &3);
         assert!(symbol.is_none());
     }
 
+    #[test]
+    fn bigger_tree_and_all_functions() {
+        let (node, root) = init_symbol_table();
+        node.borrow_mut().insert_symbol(1, (Symbol::Function(),));
+        node.borrow_mut().insert_symbol(2, (Symbol::Variable(),));
+
+        let node = enter_scope(node);
+        node.borrow_mut().insert_symbol(3, (Symbol::Parameter(),));
+        node.borrow_mut().insert_symbol(4, (Symbol::Variable(),));
+        node.borrow_mut().insert_symbol(5, (Symbol::Function(),));
+
+        let node = enter_scope(node);
+        node.borrow_mut().insert_symbol(6, (Symbol::Function(),));
+        node.borrow_mut().insert_symbol(7, (Symbol::Variable(),));
+
+        let node = exit_scope(node);
+        node.borrow_mut().insert_symbol(8, (Symbol::Function(),));
+
+        let node = enter_scope(node);
+
+        let node = get_scope(node, 0).unwrap();
+        node.borrow_mut().insert_symbol(9, (Symbol::Function(),));
+
+        let node = enter_scope(node);
+        node.borrow_mut().insert_symbol(10, (Symbol::Variable(),));
+
+        let node = exit_scope(node);
+
+        let node = enter_scope(node);
+        let node = exit_scope(node);
+
+        
+        
+        assert_eq!(node.borrow().get_value().index, root.borrow().get_value().index);
+
+        let (node, symbol) = get_symbol(node, &1);
+        let res = format!("{:?}", symbol);
+        assert_eq!(res, "Some((Function,))");
+
+        let (node, symbol) = get_symbol(node, &7);
+        assert!(symbol.is_none());
+
+        let node = get_scope(node, 2).unwrap();
+        let (node, symbol) = get_symbol(node, &7);
+        let res = format!("{:?}", symbol);
+        assert_eq!(res, "Some((Variable,))");
+        let (node, symbol) = get_symbol(node, &5);
+        let res = format!("{:?}", symbol);
+        assert_eq!(res, "Some((Function,))");
+        let (node, symbol) = get_symbol(node, &2);
+        let res = format!("{:?}", symbol);
+        assert_eq!(res, "Some((Variable,))");
+        let (node, symbol) = get_symbol(node, &10);
+        assert!(symbol.is_none());
+
+        let res = root.borrow().generate_unsafe_mermaid();
+        println!("{}", res);
+    }
 
 }

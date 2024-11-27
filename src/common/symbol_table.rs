@@ -72,8 +72,8 @@ impl SymbolTable {
         }
     }
 
-    pub fn update_symbol(&mut self, key: usize, value: Symbol) {
-        self.table.insert(key, (value,));
+    pub fn update_symbol(&mut self, key: usize, value: (Symbol,)) {
+        self.table.insert(key, value);
     }
 }
 
@@ -115,6 +115,10 @@ pub fn get_scope(root: Rc<RefCell<Node<SymbolTable>>>, index: usize) -> Option<R
     None
 }
 
+pub fn update_tree(node: Rc<RefCell<Node<SymbolTable>>>, key: &usize, value:(Symbol,)) {
+    node.borrow_mut().get_value().update_symbol(*key, value);
+}
+
 pub fn get_symbol(node: Rc<RefCell<Node<SymbolTable>>>, key: &usize) -> Option<(Symbol,)> {
     if let Some(sym) = node.borrow().get_value().table.get(key) {
         return Some(sym.clone());
@@ -133,9 +137,17 @@ mod tests {
     #[test]
     fn test_symbol_table() {
         let mut symbol_table = SymbolTable::new(0,0);
-        symbol_table.update_symbol(1, Symbol::Variable());
-        symbol_table.update_symbol(2, Symbol::Parameter());
+        symbol_table.update_symbol(1, (Symbol::Variable(),));
+        symbol_table.update_symbol(2, (Symbol::Parameter(),));
 
         print!("{}", symbol_table);
+    }
+    
+    #[test]
+    fn test_symbol_table_tree() {
+        let root = init_symbol_table();
+        update_tree(root, &1, (Symbol::Variable(),));
+        update_tree(root, &2, (Symbol::Parameter(),));
+        
     }
 }

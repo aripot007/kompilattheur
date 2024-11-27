@@ -66,7 +66,7 @@ impl<T: Display + ToString> Node<T> {
     }
 }
 
-impl <T: Display + ToString + Clone> Node<T> {
+impl <T: Clone> Node<T> {
     pub fn get_value(&self) -> T {
         self.value.clone()
     }

@@ -23,7 +23,8 @@ impl Display for SymbolTable {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut display = String::new();
         display.push_str(&format!(
-            r#"<table>
+            r#"Node index: {}
+<table>
     <thead>
         <tr>
             <th>Key</th>
@@ -31,7 +32,7 @@ impl Display for SymbolTable {
         </tr>
     </thead>
     <tbody>"#
-        ));
+        , self.index));
 
         for (key, value) in self.table.iter() {
             display.push_str(&format!(
@@ -77,10 +78,28 @@ impl SymbolTable {
     }
 }
 
+
+/// Create a new symbol table
+/// 
+/// # Returns
+/// A counted reference to a tree that represents the symbol table
 pub fn init_symbol_table() -> Rc<RefCell<Node<SymbolTable>>> {
     Node::new(SymbolTable::new(0,0))
 }
 
+/// Enter a new scope
+/// 
+/// # Arguments
+/// * `parent` - A counted reference to the parent node
+/// 
+/// # Returns
+/// A counted reference to the child node
+/// 
+/// # Example
+/// ```
+/// let root = init_symbol_table();
+/// let child = enter_scope(root);
+/// ```
 pub fn enter_scope(parent: Rc<RefCell<Node<SymbolTable>>>) -> Rc<RefCell<Node<SymbolTable>>> {
     let index = parent.borrow().get_value().index + 1;
     let last_given_index = index.clone();
@@ -89,19 +108,48 @@ pub fn enter_scope(parent: Rc<RefCell<Node<SymbolTable>>>) -> Rc<RefCell<Node<Sy
     child.clone()
 }
 
-pub fn exit_scope(node: Rc<RefCell<Node<SymbolTable>>>) -> Option<Rc<RefCell<Node<SymbolTable>>>> {
+/// Exit the current scope
+/// 
+/// # Arguments
+/// * `node` - A counted reference to the current node
+/// 
+/// # Returns
+/// A counted reference to the parent node, if it exists, otherwise the current node
+/// 
+/// # Example
+/// ```
+/// let root = init_symbol_table();
+/// let child = enter_scope(root);
+/// let parent = exit_scope(child);
+/// ```
+pub fn exit_scope(node: Rc<RefCell<Node<SymbolTable>>>) -> Rc<RefCell<Node<SymbolTable>>> {
     let parent = node.borrow().get_parent();
     match parent {
         Some(parent) => {
             let last_given_index = node.borrow().get_value().last_given_index;
             parent.borrow_mut().get_value().last_given_index = last_given_index;
-            Some(parent)
+            parent
         }
-        None => None,
+        None => node,
     }
 }
 
-pub fn get_scope(root: Rc<RefCell<Node<SymbolTable>>>, index: usize) -> Option<Rc<RefCell<Node<SymbolTable>>>> {
+/// Get the scope of a given index
+/// 
+/// the index is generated when a new scope is created, it follows a depth-first order, starting from 0
+/// 
+/// # Arguments
+/// * `node` - A counted reference to a node
+/// * `index` - The index of the scope
+/// 
+/// # Returns
+/// A counted reference to the node that represents the scope, if it exists, otherwise None
+pub fn get_scope(node: Rc<RefCell<Node<SymbolTable>>>, index: usize) -> Option<Rc<RefCell<Node<SymbolTable>>>> {
+    let parent = node.borrow().get_parent();
+    let root = match parent {
+        Some(parent) => get_scope(parent, index).unwrap_or_else(|| node.clone()),
+        None => node.clone(),
+    };
     let mut stack = vec![root];
     while !stack.is_empty() {
         let node = stack.pop().unwrap();
@@ -115,10 +163,29 @@ pub fn get_scope(root: Rc<RefCell<Node<SymbolTable>>>, index: usize) -> Option<R
     None
 }
 
-pub fn update_tree(node: Rc<RefCell<Node<SymbolTable>>>, key: &usize, value:(Symbol,)) {
+/// Update the symbol table
+/// Adds a new symbol to the current scope
+/// 
+/// # Arguments
+/// * `node` - A counted reference to the current node
+/// * `key` - The key of the symbol
+/// * `value` - The value of the symbol
+/// 
+/// # Returns
+/// the updated node
+pub fn update_tree(node: Rc<RefCell<Node<SymbolTable>>>, key: &usize, value:(Symbol,)) -> Rc<RefCell<Node<SymbolTable>>> {
     node.borrow_mut().get_value().update_symbol(*key, value);
+    node
 }
 
+/// Get a symbol from the symbol table
+/// 
+/// # Arguments
+/// * `node` - A counted reference to the current node
+/// * `key` - The key of the symbol
+/// 
+/// # Returns
+/// The symbol, if it exists, otherwise None
 pub fn get_symbol(node: Rc<RefCell<Node<SymbolTable>>>, key: &usize) -> Option<(Symbol,)> {
     if let Some(sym) = node.borrow().get_value().table.get(key) {
         return Some(sym.clone());
@@ -145,9 +212,31 @@ mod tests {
     
     #[test]
     fn test_symbol_table_tree() {
-        let root = init_symbol_table();
-        update_tree(root, &1, (Symbol::Variable(),));
-        update_tree(root, &2, (Symbol::Parameter(),));
-        
+        let node = init_symbol_table();
+        print!("{}", node.borrow().get_value());
+        let node = update_tree(node, &1, (Symbol::Variable(),));
+        print!("{}", node.borrow().get_value());
+        let node = update_tree(node, &2, (Symbol::Parameter(),));
+        print!("{}", node.borrow().get_value());
+        let node = enter_scope(node);
+        print!("{}", node.borrow().get_value());
+        let node = update_tree(node, &3, (Symbol::Function(),));
+        print!("{}", node.borrow().get_value());
+        let node = enter_scope(node);
+        print!("{}", node.borrow().get_value());
+        let node = update_tree(node, &4, (Symbol::Variable(),));
+        print!("{}", node.borrow().get_value());
+        let node = exit_scope(node);
+        print!("{}", node.borrow().get_value());
+        let node = update_tree(node, &5, (Symbol::Function(),));
+        print!("{}", node.borrow().get_value());
+        let node = enter_scope(node);
+        print!("{}", node.borrow().get_value());
+        let node = update_tree(node, &6, (Symbol::Variable(),));
+        print!("{}", node.borrow().get_value());
+        let node = exit_scope(node);
+        print!("{}", node.borrow().get_value());
+        let node = exit_scope(node);
+        print!("{}", node.borrow().get_value());
     }
 }

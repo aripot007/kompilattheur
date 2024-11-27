@@ -66,16 +66,18 @@ impl SymbolTable {
         }
     }
 
-    pub fn get_symbol(&self, key: &usize) -> Option<&(Symbol,)> {
-        if self.table.get(key).is_some() {
-            return self.table.get(key).clone();
-        } else {
-            return None;
-        }
-    }
-
     pub fn update_symbol(&mut self, key: usize, value: (Symbol,)) {
         self.table.insert(key, value);
+    }
+}
+
+impl Node<SymbolTable> {
+    pub fn insert_symbole(&mut self, key: usize, value: (Symbol,)) {
+        self.value.table.insert(key, value);
+    }
+
+    pub fn set_last_given_index(&mut self, last_given_index: usize) {
+        self.value.last_given_index = last_given_index;
     }
 }
 
@@ -83,8 +85,12 @@ impl SymbolTable {
 ///
 /// # Returns
 /// A counted reference to a tree that represents the symbol table
-pub fn init_symbol_table() -> Rc<RefCell<Node<SymbolTable>>> {
-    Node::new(SymbolTable::new(0, 0))
+pub fn init_symbol_table() -> (
+    Rc<RefCell<Node<SymbolTable>>>,
+    Rc<RefCell<Node<SymbolTable>>>,
+) {
+    let node = Node::new(SymbolTable::new(0, 0));
+    (node.clone(), node)
 }
 
 /// Enter a new scope
@@ -127,7 +133,7 @@ pub fn exit_scope(node: Rc<RefCell<Node<SymbolTable>>>) -> Rc<RefCell<Node<Symbo
     match parent {
         Some(parent) => {
             let last_given_index = node.borrow().get_value().last_given_index;
-            parent.borrow_mut().get_value().last_given_index = last_given_index;
+            parent.borrow_mut().set_last_given_index(last_given_index);
             parent
         }
         None => node,
@@ -166,25 +172,6 @@ pub fn get_scope(
     None
 }
 
-/// Update the symbol table
-/// Adds a new symbol to the current scope
-///
-/// # Arguments
-/// * `node` - A counted reference to the current node
-/// * `key` - The key of the symbol
-/// * `value` - The value of the symbol
-///
-/// # Returns
-/// the updated node
-pub fn update_tree(
-    node: Rc<RefCell<Node<SymbolTable>>>,
-    key: &usize,
-    value: (Symbol,),
-) -> Rc<RefCell<Node<SymbolTable>>> {
-    node.borrow_mut().get_value().update_symbol(*key, value);
-    node
-}
-
 /// Get a symbol from the symbol table
 ///
 /// # Arguments
@@ -219,43 +206,28 @@ mod tests {
 
     #[test]
     fn test_symbol_table_tree() {
-        let node = init_symbol_table();
-        let root = node.clone();
+        let (node, root) = init_symbol_table();
 
-        print!("{}", node.borrow().get_value());
-        let node = update_tree(node, &1, (Symbol::Variable(),));
-        print!("{}", node.borrow().get_value());
-        let node = update_tree(node, &2, (Symbol::Parameter(),));
-        print!("{}", node.borrow().get_value());
+        node.borrow_mut().insert_symbole(1, (Symbol::Variable(),));
+        node.borrow_mut().insert_symbole(2, (Symbol::Parameter(),));
 
         let node = enter_scope(node);
-        print!("{}", node.borrow().get_value());
-        let node = update_tree(node, &3, (Symbol::Function(),));
-        print!("{}", node.borrow().get_value());
+        node.borrow_mut().insert_symbole(3, (Symbol::Function(),));
 
         let node = enter_scope(node);
-        print!("{}", node.borrow().get_value());
-        let node = update_tree(node, &4, (Symbol::Variable(),));
-        print!("{}", node.borrow().get_value());
+        node.borrow_mut().insert_symbole(4, (Symbol::Variable(),));
 
         let node = exit_scope(node);
-        print!("{}", node.borrow().get_value());
-
-        let node = update_tree(node, &5, (Symbol::Function(),));
-        print!("{}", node.borrow().get_value());
+        node.borrow_mut().insert_symbole(5, (Symbol::Function(),));
 
         let node = enter_scope(node);
-        print!("{}", node.borrow().get_value());
-        let node = update_tree(node, &6, (Symbol::Variable(),));
-        print!("{}", node.borrow().get_value());
+        node.borrow_mut().insert_symbole(6, (Symbol::Variable(),));
 
         let node = exit_scope(node);
-        print!("{}", node.borrow().get_value());
 
         let node = exit_scope(node);
-        print!("{}", node.borrow().get_value());
 
-        let p = node.borrow().generate_unsafe_mermaid();
+        let p = root.borrow().generate_unsafe_mermaid();
         println!("{}", p);
         assert!(false);
     }

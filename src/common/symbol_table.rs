@@ -58,7 +58,7 @@ impl Display for SymbolTable {
 }
 
 impl SymbolTable {
-    pub fn new(index: usize, last_given_index: usize) -> SymbolTable {
+    fn new(index: usize, last_given_index: usize) -> SymbolTable {
         SymbolTable {
             table: HashMap::new(),
             index,
@@ -66,24 +66,35 @@ impl SymbolTable {
         }
     }
 
-    pub fn update_symbol(&mut self, key: usize, value: (Symbol,)) {
+    fn update_symbol(&mut self, key: usize, value: (Symbol,)) {
         self.table.insert(key, value);
     }
 }
 
 impl Node<SymbolTable> {
+    /// # Insert a symbol into the symbol table
+    /// 
+    /// ## Arguments
+    /// * `key` - The key of the symbol
+    /// * `value` - The value of the symbol
+    /// 
+    /// ## Example
+    /// ```
+    /// let (node, root) = init_symbol_table();
+    /// node.borrow_mut().insert_symbol(1, (Symbol::Function(),));
+    /// ```
     pub fn insert_symbol(&mut self, key: usize, value: (Symbol,)) {
         self.value.table.insert(key, value);
     }
 
-    pub fn set_last_given_index(&mut self, last_given_index: usize) {
+    fn set_last_given_index(&mut self, last_given_index: usize) {
         self.value.last_given_index = last_given_index;
     }
 }
 
-/// **Create a new symbol table**
+/// # Create a new symbol table
 /// 
-/// # Returns
+/// ## Returns
 /// * `node` - current node of the symbol table
 /// * `root` - root node of the symbol table
 pub fn init_symbol_table() -> (
@@ -94,15 +105,15 @@ pub fn init_symbol_table() -> (
     (node.clone(), node)
 }
 
-/// **Enter a new scope**
+/// # Enter a new scope
 ///
-/// # Arguments
+/// ## Arguments
 /// * `parent` - A counted reference to the parent node
 ///
-/// # Returns
+/// ## Returns
 /// * `node` - A counted reference to the child node
 ///
-/// # Example
+/// ## Example
 /// ```
 /// let (node, root) = init_symbol_table();
 /// let node = enter_scope(node);
@@ -115,15 +126,15 @@ pub fn enter_scope(parent: Rc<RefCell<Node<SymbolTable>>>) -> Rc<RefCell<Node<Sy
     child.clone()
 }
 
-/// **Exit the current scope**
+/// # Exit the current scope
 ///
-/// # Arguments
+/// ## Arguments
 /// * `node` - A counted reference to the current node
 ///
-/// # Returns
+/// ## Returns
 /// * `node` - A counted reference to the parent node, if it doesn't have a parent, it returns itself
 /// 
-/// # Example
+/// ## Example
 /// ```
 /// let (node, root) = init_symbol_table();
 /// let node = exit_scope(node); // gives node
@@ -144,17 +155,17 @@ pub fn exit_scope(node: Rc<RefCell<Node<SymbolTable>>>) -> Rc<RefCell<Node<Symbo
     }
 }
 
-/// **Get the scope of a given index**
+/// # Get the scope of a given index
 /// Each scope has a unique index, defined by the order in which they were created (follows depth-first order), starting from 0
 ///
-/// # Arguments
+/// ## Arguments
 /// * `node` - A counted reference to a node
 /// * `index` - The index of the scope
 ///
-/// # Returns
+/// ## Returns
 /// * `node` / `None` - A counted reference to the node with the given index, if it exists, otherwise None
 /// 
-/// # Example
+/// ## Example
 /// ```
 /// let (node, root) = init_symbol_table();
 /// let node = enter_scope(node);
@@ -186,13 +197,13 @@ pub fn get_scope(
     None
 }
 
-/// **Get a symbol from the symbol table**
+/// # Get a symbol from the symbol table
 ///
-/// # Arguments
+/// ## Arguments
 /// * `node` - A counted reference to the current node
 /// * `key` - The key of the symbol
 ///
-/// # Returns
+/// ## Returns
 /// * `base` - the node given as an argument
 /// * `symbol` / `None` - the symbol if it exists, otherwise None
 pub fn get_symbol(node: Rc<RefCell<Node<SymbolTable>>>, key: &usize) -> (Rc<RefCell<Node<SymbolTable>>>,Option<(Symbol,)>) {
@@ -282,4 +293,22 @@ mod tests {
         assert_eq!(res,expected);
         assert_eq!(node.borrow().get_value().index, root.borrow().get_value().index);
     }
+
+
+    #[test]
+    fn test_get_scope() {
+        let (node, root) = init_symbol_table();
+        let node = enter_scope(node);
+        let node = exit_scope(node);
+        let node = enter_scope(node);
+        let node = exit_scope(node);
+        let node = get_scope(node, 1).unwrap();
+        assert_eq!(node.borrow().get_value().index, 1);
+        let node = get_scope(node, 0).unwrap();
+        assert_eq!(node.borrow().get_value().index, root.borrow().get_value().index);
+        let node = get_scope(node, 3);
+        assert!(node.is_none());
+    }
+
+
 }

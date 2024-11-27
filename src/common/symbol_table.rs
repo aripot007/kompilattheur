@@ -197,6 +197,17 @@ pub fn get_scope(
     None
 }
 
+fn get_symbol_rec(node: Rc<RefCell<Node<SymbolTable>>>, key: &usize) -> Option<(Symbol,)> {
+        if let Some(sym) = node.borrow().get_value().table.get(key) {
+        return Some(sym.clone());
+    } else {
+        match node.borrow().get_parent() {
+            Some(parent) => return get_symbol_rec(parent, key),
+            None => return None,
+        }
+    }
+}
+
 /// # Get a symbol from the symbol table
 ///
 /// ## Arguments
@@ -208,14 +219,8 @@ pub fn get_scope(
 /// * `symbol` / `None` - the symbol if it exists, otherwise None
 pub fn get_symbol(node: Rc<RefCell<Node<SymbolTable>>>, key: &usize) -> (Rc<RefCell<Node<SymbolTable>>>,Option<(Symbol,)>) {
     let base = node.clone();
-    if let Some(sym) = node.borrow().get_value().table.get(key) {
-        return (base, Some(sym.clone()));
-    } else {
-        match node.borrow().get_parent() {
-            Some(parent) => return get_symbol(parent, key),
-            None => return (base, None),
-        }
-    }
+    let symbol = get_symbol_rec(node, key);
+    (base, symbol)
 }
 
 #[cfg(test)]
@@ -308,6 +313,27 @@ mod tests {
         assert_eq!(node.borrow().get_value().index, root.borrow().get_value().index);
         let node = get_scope(node, 3);
         assert!(node.is_none());
+    }
+
+    #[test]
+    fn test_get_symbol() {
+        let (node, root) = init_symbol_table();
+        node.borrow_mut().insert_symbol(1, (Symbol::Function(),));
+        node.borrow_mut().insert_symbol(2, (Symbol::Variable(),));
+        let node = enter_scope(node);
+        node.borrow_mut().insert_symbol(3, (Symbol::Parameter(),));
+        let (node, symbol) = get_symbol(node, &1);
+        let res = format!("{:?}", symbol);
+        assert_eq!(res, "Some((Function,))");
+        let (node, symbol) = get_symbol(node, &2);
+        let res = format!("{:?}", symbol);
+        assert_eq!(res, "Some((Variable,))");
+        let (node, symbol) = get_symbol(node, &3);
+        let res = format!("{:?}", symbol);
+        assert_eq!(res, "Some((Parameter,))");
+        let node = exit_scope(node);
+        let (node, symbol) = get_symbol(node, &3);
+        assert!(symbol.is_none());
     }
 
 

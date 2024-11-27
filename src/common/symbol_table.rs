@@ -197,17 +197,6 @@ pub fn get_scope(
     None
 }
 
-fn get_symbol_rec(node: Rc<RefCell<Node<SymbolTable>>>, key: &usize) -> Option<(Symbol,)> {
-        if let Some(sym) = node.borrow().get_value().table.get(key) {
-        return Some(sym.clone());
-    } else {
-        match node.borrow().get_parent() {
-            Some(parent) => return get_symbol_rec(parent, key),
-            None => return None,
-        }
-    }
-}
-
 /// # Get a symbol from the symbol table
 ///
 /// ## Arguments
@@ -222,6 +211,18 @@ pub fn get_symbol(node: Rc<RefCell<Node<SymbolTable>>>, key: &usize) -> (Rc<RefC
     let symbol = get_symbol_rec(node, key);
     (base, symbol)
 }
+
+fn get_symbol_rec(node: Rc<RefCell<Node<SymbolTable>>>, key: &usize) -> Option<(Symbol,)> {
+        if let Some(sym) = node.borrow().get_value().table.get(key) {
+        return Some(sym.clone());
+    } else {
+        match node.borrow().get_parent() {
+            Some(parent) => return get_symbol_rec(parent, key),
+            None => return None,
+        }
+    }
+}
+
 
 #[cfg(test)]
 mod tests {

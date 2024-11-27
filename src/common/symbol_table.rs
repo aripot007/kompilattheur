@@ -107,7 +107,7 @@ pub fn init_symbol_table() -> (
 /// let child = enter_scope(root);
 /// ```
 pub fn enter_scope(parent: Rc<RefCell<Node<SymbolTable>>>) -> Rc<RefCell<Node<SymbolTable>>> {
-    let index = parent.borrow().get_value().index + 1;
+    let index = parent.borrow().get_value().last_given_index + 1;
     let last_given_index = index.clone();
     let child = Node::new(SymbolTable::new(index, last_given_index));
     parent.borrow_mut().add_child(&parent, child.clone());
@@ -207,28 +207,63 @@ mod tests {
     #[test]
     fn test_symbol_table_tree() {
         let (node, root) = init_symbol_table();
-
-        node.borrow_mut().insert_symbole(1, (Symbol::Variable(),));
-        node.borrow_mut().insert_symbole(2, (Symbol::Parameter(),));
+        node.borrow_mut().insert_symbole(1, (Symbol::Function(),));
 
         let node = enter_scope(node);
-        node.borrow_mut().insert_symbole(3, (Symbol::Function(),));
-
-        let node = enter_scope(node);
-        node.borrow_mut().insert_symbole(4, (Symbol::Variable(),));
-
-        let node = exit_scope(node);
-        node.borrow_mut().insert_symbole(5, (Symbol::Function(),));
-
-        let node = enter_scope(node);
-        node.borrow_mut().insert_symbole(6, (Symbol::Variable(),));
 
         let node = exit_scope(node);
 
-        let node = exit_scope(node);
+        let node = enter_scope(node);
 
-        let p = root.borrow().generate_unsafe_mermaid();
-        println!("{}", p);
-        assert!(false);
+        let node = exit_scope(node);    
+
+        let res = root.borrow().generate_unsafe_mermaid();
+
+        let expected = r#"flowchart TD
+0["Node index: 0
+<table>
+    <thead>
+        <tr>
+            <th>Key</th>
+            <th>Type</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>Function</td>
+        </tr>
+    </tbody>
+</table>
+"]
+1["Node index: 1
+<table>
+    <thead>
+        <tr>
+            <th>Key</th>
+            <th>Type</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+"]
+0 --> 1
+2["Node index: 2
+<table>
+    <thead>
+        <tr>
+            <th>Key</th>
+            <th>Type</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+"]
+0 --> 2
+"#;
+        assert_eq!(res,expected);
+        assert_eq!(node.borrow().get_value().index, root.borrow().get_value().index);
     }
 }

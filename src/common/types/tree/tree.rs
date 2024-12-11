@@ -8,6 +8,8 @@ pub struct Node<T> {
     pub childs: Vec<Rc<RefCell<Node<T>>>>,
 }
 
+pub type Tree<T> = Rc<RefCell<Node<T>>>;
+
 impl<T: Display + ToString> Node<T> {
     pub fn new(value: T) -> Rc<RefCell<Node<T>>> {
         Rc::new(RefCell::new(Node {

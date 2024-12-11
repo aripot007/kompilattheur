@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use super::Token;
 
 
@@ -42,4 +44,10 @@ impl<T> PartialEq for FileElement<T> where T: PartialEq {
 
 impl<T> Eq for FileElement<T> where T: Eq {
 
+}
+
+impl<T: Display> Display for FileElement<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.element.fmt(f)
+    }
 }

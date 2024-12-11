@@ -65,3 +65,38 @@ fn lift_single_child_nodes(node: Rc<RefCell<Node<Lexem>>>) {
         lift_single_child_nodes(child);
     }
 }
+
+fn remove_syntax_terminals(node: Rc<RefCell<Node<Lexem>>>) {
+    let children = node.borrow().get_children().clone();
+    let mut new_children = vec![];
+    for child in children {
+        if !is_syntax_terminal(child.clone()) {
+            new_children.push(child);
+        }
+    }
+    node.borrow_mut().set_children(&node, new_children.clone());
+    for child in new_children {
+        remove_syntax_terminals(child);
+    }
+}
+
+fn is_syntax_terminal(node: Rc<RefCell<Node<Lexem>>>) -> bool {
+    match node.borrow().value {
+        Lexem::Terminal(ref t) => match t {
+            Token::Begin
+            | Token::CloseBracket
+            | Token::CloseParenthesis
+            | Token::Comma
+            | Token::Def
+            | Token::EOF
+            | Token::End
+            | Token::Newline
+            | Token::OpenBracket
+            | Token::OpenParenthesis
+            | Token::Sep => true,
+            _ => false,
+        },
+        _ => false,
+    }
+}
+

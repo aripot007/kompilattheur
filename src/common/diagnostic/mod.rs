@@ -10,6 +10,7 @@ const HIGHLIGHT_ERROR_COLOR:(u8,u8,u8) = (200, 0, 0);
 const HIGHLIGHT_WARN_COLOR: (u8,u8,u8) = (200, 150, 0);
 const SECONDARY_COLOR:(u8,u8,u8) = (125, 125, 125);
 
+#[allow(dead_code)]
 pub enum DiagnosticGravity {
     Warning,
     Error,

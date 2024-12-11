@@ -24,7 +24,7 @@ fn simplify_terminal_nodes(node: Rc<RefCell<Node<Lexem>>>) {
     if children.len() == 1 && !is_non_terminal(&children[0]) {
         let terminal_value = children[0].borrow().value.clone();
         node.borrow_mut().value = terminal_value;
-        node.borrow_mut().set_children(vec![]);
+        node.borrow_mut().set_children(&node, vec![]);
     } else {
         for child in children {
             simplify_terminal_nodes(child);
@@ -43,7 +43,7 @@ fn remove_empty_non_terminals(node: Rc<RefCell<Node<Lexem>>>) -> Option<Rc<RefCe
             new_children.push(non_empty_child);
         }
     }
-    node.borrow_mut().set_children(new_children);
+    node.borrow_mut().set_children(&node, new_children);
     Some(node)
 }
 
@@ -60,7 +60,7 @@ fn lift_single_child_nodes(node: Rc<RefCell<Node<Lexem>>>) {
         let grand_children = children[0].borrow().get_children().clone();
         children = grand_children;
     }
-    node.borrow_mut().set_children(children.clone());
+    node.borrow_mut().set_children(&node, children.clone());
     for child in children {
         lift_single_child_nodes(child);
     }
@@ -74,7 +74,7 @@ fn remove_syntax_terminals(node: Rc<RefCell<Node<Lexem>>>) {
             new_children.push(child);
         }
     }
-    node.borrow_mut().set_children(new_children.clone());
+    node.borrow_mut().set_children(&node, new_children.clone());
     for child in new_children {
         remove_syntax_terminals(child);
     }
@@ -99,3 +99,4 @@ fn is_syntax_terminal(node: Rc<RefCell<Node<Lexem>>>) -> bool {
         _ => false,
     }
 }
+

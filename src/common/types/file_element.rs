@@ -51,3 +51,44 @@ impl<T: Display> Display for FileElement<T> {
         self.element.fmt(f)
     }
 }
+
+/// Permet de recréer un FileElement en gardant les informations mais en changeant l'élément
+macro_rules! file_element_from {
+    ($from: expr, $new_val: expr) => {
+        FileElement {
+                len: $from.len,
+                line: $from.line,
+                start_char: $from.start_char,
+                element: $new_val,
+        }
+    };
+}
+
+pub (crate) use file_element_from;
+
+
+#[cfg(test)]
+mod tests {
+    use super::FileElement;
+
+    #[test]
+    fn test_file_elem_from() {
+
+        let e1 = FileElement {
+            len: 0,
+            line: 1,
+            start_char: 42,
+            element: 123456,
+        };
+
+        let e2 = file_element_from!(e1, "chokbar");
+
+        assert_eq!(e1.len, e2.len);
+        assert_eq!(e1.line, e2.line);
+        assert_eq!(e1.start_char, e2.start_char);
+        assert_eq!(e1.element, 123456);
+        assert_eq!(e2.element, "chokbar");
+
+    }
+
+}

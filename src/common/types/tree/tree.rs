@@ -84,7 +84,7 @@ mod tests {
     use super::Node;
 
     #[test]
-    fn test_get_value_and_get_value_ref_mut() {
+    fn test_get_value_ref_mut() {
         #[derive(Clone)]
         struct TestStruct {
             value: String,
@@ -108,6 +108,19 @@ mod tests {
         let root = Node::new("root");
         root.borrow_mut().set_value("new_root");
         assert!(root.borrow().get_value() == "new_root");
+    }
+
+    #[test]
+    fn test_set_children() {
+        let root = Node::new("root");
+        let child1 = Node::new("child1");
+        let child2 = Node::new("child2");
+        root.borrow_mut().set_children(&root, vec![child1, child2]);
+
+        let children = root.borrow().get_children();
+        assert!(children.len() == 2);
+        assert!(children[0].borrow().value == "child1");
+        assert!(children[1].borrow().value == "child2");
     }
 
     #[test]

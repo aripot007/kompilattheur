@@ -339,7 +339,7 @@ mod tests {
 
     #[test]
     fn test_get_symbol() {
-        let (node, root) = init_symbol_table();
+        let (node, _root) = init_symbol_table();
         node.borrow_mut().insert_symbol(1, (Symbol::Function(),));
         node.borrow_mut().insert_symbol(2, (Symbol::Variable(),));
 
@@ -359,7 +359,7 @@ mod tests {
         assert_eq!(res, "Some((Parameter,))");
 
         let node = exit_scope(node);
-        let (node, symbol) = get_symbol(node, &3);
+        let (_node, symbol) = get_symbol(node, &3);
         assert!(symbol.is_none());
     }
 
@@ -415,7 +415,7 @@ mod tests {
         let (node, symbol) = get_symbol(node, &2);
         let res = format!("{:?}", symbol);
         assert_eq!(res, "Some((Variable,))");
-        let (node, symbol) = get_symbol(node, &10);
+        let (_node, symbol) = get_symbol(node, &10);
         assert!(symbol.is_none());
 
         let res = root.borrow().generate_unsafe_mermaid();

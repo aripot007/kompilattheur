@@ -3,6 +3,7 @@ use crate::parser::Lexem;
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::mem::{discriminant, Discriminant};
+use super::generated_table::NonTerminal;
 use super::grammar::{Grammar, ParsedLexem};
 
 /// Représente une table d'analyse pour une grammaire
@@ -11,6 +12,8 @@ pub struct AnalysisTable {
     pub table: Vec<HashMap<Discriminant<Token>, Vec<Lexem>>>,
     
     pub(super) non_terminal_names: Vec<String>,
+
+    pub(super) non_terminal_enums: Vec<NonTerminal>,
 
     // Permet de map un discriminant à un token pour le debug
     pub(super) discriminant_tokens: HashMap<Discriminant<Token>, Token>,
@@ -80,6 +83,7 @@ impl From<&Grammar> for AnalysisTable {
             table: analysis_table,
             non_terminal_names,
             discriminant_tokens: HashMap::new(),
+            non_terminal_enums: Vec::new(),
         };
 
         // Try to fill the table

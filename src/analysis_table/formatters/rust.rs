@@ -19,6 +19,28 @@ macro_rules! token_constructor {
     };
 }
 
+/// Convertit un nom de non terminal en identifiant d'enum
+fn non_terminal_to_enum_name(name: &String) -> String {
+
+    let mut enum_name = String::new();
+    let mut capitalize = true;
+
+    for c in name.chars() {
+        if c.is_alphanumeric() {
+            if capitalize {
+                enum_name += &c.to_uppercase().to_string();
+                capitalize = false;
+            } else {
+                enum_name.push(c);
+            }
+        } else {
+            capitalize = true;
+        }
+    }
+
+    return enum_name;
+}
+
 impl AnalysisTable {
     
     /// Formate la table d'analyse dans un format markdown
@@ -31,6 +53,11 @@ impl AnalysisTable {
 
         impl<'a> fmt::Display for RustAnalysisTable<'a> {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+
+                let non_terminal_enum_names: Vec<String> = self.table.non_terminal_names
+                    .iter()
+                    .map(non_terminal_to_enum_name)
+                    .collect();
 
                 // File header
                 writedoc!(f, r#"
@@ -45,6 +72,36 @@ impl AnalysisTable {
                     use super::analysis_table::AnalysisTable;
                     use std::collections::HashMap;
                     use std::mem::{{discriminant, Discriminant}};
+                    use std::fmt::Display;
+
+                    pub enum NonTerminal {{
+                "#)?;
+
+                // Non terminal enum
+                for name in &non_terminal_enum_names {
+                    writeln!(f, "   {},", name.escape_debug())?;
+                }
+                
+
+                writedoc!(f, r#"
+                    }}
+
+                    impl Display for NonTerminal {{
+                        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {{
+                            match self {{
+                "#)?;
+
+                for i in 0..non_terminal_enum_names.len() {
+                    let name = &self.table.non_terminal_names[i];
+                    let enum_name = &non_terminal_enum_names[i];
+                    writeln!(f, "           NonTerminal::{} => write!(f, \"{}\"),", enum_name, name.escape_debug())?;
+                }
+                                
+                writeln!(f, "        }}")?;
+                writeln!(f, "    }}")?;
+                writeln!(f, "}}\n")?;
+
+                writedoc!(f, r#"
 
                     pub fn get_analysis_table() -> AnalysisTable {{
 
@@ -59,6 +116,14 @@ impl AnalysisTable {
 
                 writeln!(f, "    ];\n")?;
 
+                // non terminal enum
+                writeln!(f, "    let non_terminal_enums: Vec<NonTerminal> = vec![")?;
+
+                for name in &non_terminal_enum_names {
+                    writeln!(f, "        NonTerminal::{},", name)?;
+                }
+
+                writeln!(f, "    ];\n")?;
 
                 // discriminant tokens
                 writeln!(f, "    let discriminant_tokens: HashMap<Discriminant<Token>, Token> = HashMap::from([")?;
@@ -132,6 +197,7 @@ impl AnalysisTable {
                             table,
                             non_terminal_names,
                             discriminant_tokens,
+                            non_terminal_enums,
                         }};
                     }}
                 "#)?;
@@ -161,6 +227,14 @@ mod tests {
         assert_eq!("Token::Identifier(IdToken {id: 12})", token_constructor!(Token::Identifier(IdToken {id: 12})));
         assert_eq!("Token::String(String::from(\"Hello, World !\"))", token_constructor!(Token::String(String::from("Hello, World !"))));
         assert_eq!("Token::String(String::from(\"Escape \\\" \\n \\\\ chars\"))", token_constructor!(Token::String(String::from("Escape \" \n \\ chars"))));
+    }
+
+    #[test]
+    fn test_non_terminal_to_enum() {
+        assert_eq!("File", non_terminal_to_enum_name(&String::from("<file>")));
+        assert_eq!("Capitalizefirst", non_terminal_to_enum_name(&String::from("capitalizefirst")));
+        assert_eq!("MultipleWords", non_terminal_to_enum_name(&String::from("multiple_words")));
+        assert_eq!("WordsWithSmthg", non_terminal_to_enum_name(&String::from("<words_with_smthg>")));
     }
 
 }

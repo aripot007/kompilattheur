@@ -74,6 +74,7 @@ impl AnalysisTable {
                     use std::mem::{{discriminant, Discriminant}};
                     use std::fmt::Display;
 
+                    #[derive(Clone, PartialEq, Eq, Debug)]
                     pub enum NonTerminal {{
                 "#)?;
 

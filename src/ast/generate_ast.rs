@@ -1,8 +1,19 @@
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{common::types::Node, parser::Lexem};
+use crate::{
+    common::types::{Node, Token},
+    parser::Lexem,
+};
+
+/*
+TODO:
+Créer superset de Lexem pour AST
+Transitionner type de l'arbre
+Modifier les noeuds de l'arbre avec les nouveaux types
+*/
 
 pub fn generate_ast(tree: Rc<RefCell<Node<Lexem>>>) {
+    remove_syntax_terminals(tree.clone());
     remove_empty_non_terminals(tree.clone()).unwrap_or(Node::new(Lexem::NonTerminal(0)));
     lift_single_child_nodes(tree.clone());
     simplify_terminal_nodes(tree);

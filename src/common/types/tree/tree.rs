@@ -1,21 +1,28 @@
 use std::cell::RefCell;
-use std::fmt::Display;
 use std::rc::{Rc, Weak};
 
 #[derive(Debug, Clone)]
 pub struct Node<T> {
-    pub value: T,
+    value: T,
     parent: Option<Weak<RefCell<Node<T>>>>,
     childs: Vec<Rc<RefCell<Node<T>>>>,
 }
 
-impl<T: Display + ToString> Node<T> {
+impl<T> Node<T> {
     pub fn new(value: T) -> Rc<RefCell<Node<T>>> {
         Rc::new(RefCell::new(Node {
             value,
             parent: None,
             childs: Vec::new(),
         }))
+    }
+
+    pub fn get_value_ref_mut(&mut self) -> &mut T {
+        &mut self.value
+    }
+
+    pub fn set_value(&mut self, value: T) {
+        self.value = value;
     }
 
     pub fn get_children(&self) -> Vec<Rc<RefCell<Node<T>>>> {
@@ -66,7 +73,7 @@ impl<T: Display + ToString> Node<T> {
     }
 }
 
-impl <T: Clone> Node<T> {
+impl<T: Clone> Node<T> {
     pub fn get_value(&self) -> T {
         self.value.clone()
     }
@@ -75,6 +82,51 @@ impl <T: Clone> Node<T> {
 #[cfg(test)]
 mod tests {
     use super::Node;
+
+    #[test]
+    fn test_get_value_and_get_value_ref_mut() {
+        #[derive(Clone)]
+        struct TestStruct {
+            value: String,
+        }
+
+        impl TestStruct {
+            pub fn new(value: &str) -> TestStruct {
+                TestStruct {
+                    value: value.to_string(),
+                }
+            }
+        }
+
+        let root = Node::new(TestStruct::new("root"));
+        root.borrow_mut().get_value_ref_mut().value = "new_root".to_string();
+        assert!(root.borrow().get_value().value == "new_root");
+    }
+
+    #[test]
+    fn test_set_value() {
+        let root = Node::new("root");
+        root.borrow_mut().set_value("new_root");
+        assert!(root.borrow().get_value() == "new_root");
+    }
+
+    #[test]
+    fn test_remove_child() {
+        let root = Node::new("root");
+        let child1 = Node::new("child1");
+        let child11 = Node::new("child11");
+        child1.borrow_mut().add_child(&child1, child11);
+        root.borrow_mut().add_child(&root, child1);
+        let child2 = Node::new("child2");
+        root.borrow_mut().add_child(&root, child2);
+
+        let children = root.borrow_mut().remove_child(0);
+
+        println!("{:?}", children[0].borrow().value);
+
+        assert!(children.len() == 1);
+        assert!(children[0].borrow().value == "child11");
+    }
 
     #[test]
     fn test_generate_mermaid() {
@@ -101,24 +153,6 @@ mod tests {
         println!("{}", result);
 
         assert!(expected == result);
-    }
-
-    #[test]
-    fn test_remove_child() {
-        let root = Node::new("root");
-        let child1 = Node::new("child1");
-        let child11 = Node::new("child11");
-        child1.borrow_mut().add_child(&child1, child11);
-        root.borrow_mut().add_child(&root, child1);
-        let child2 = Node::new("child2");
-        root.borrow_mut().add_child(&root, child2);
-
-        let children = root.borrow_mut().remove_child(0);
-
-        println!("{:?}", children[0].borrow().value);
-
-        assert!(children.len() == 1);
-        assert!(children[0].borrow().value == "child11");
     }
 
     #[test]

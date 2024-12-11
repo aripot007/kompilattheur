@@ -16,7 +16,7 @@ pub enum Symbol {
 pub struct SymbolTable {
     pub table: HashMap<usize, (Symbol,)>,
     pub index: usize,
-    pub last_given_index: usize,
+    last_given_index: usize,
 }
 
 impl Display for SymbolTable {
@@ -73,27 +73,27 @@ impl SymbolTable {
 
 impl Node<SymbolTable> {
     /// # Insert a symbol into the symbol table
-    /// 
+    ///
     /// ## Arguments
     /// * `key` - The key of the symbol
     /// * `value` - The value of the symbol
-    /// 
+    ///
     /// ## Example
     /// ```
     /// let (node, root) = init_symbol_table();
     /// node.borrow_mut().insert_symbol(1, (Symbol::Function(),));
     /// ```
     pub fn insert_symbol(&mut self, key: usize, value: (Symbol,)) {
-        self.value.table.insert(key, value);
+        self.get_value_ref_mut().table.insert(key, value);
     }
 
     fn set_last_given_index(&mut self, last_given_index: usize) {
-        self.value.last_given_index = last_given_index;
+        self.get_value_ref_mut().last_given_index = last_given_index;
     }
 }
 
 /// # Create a new symbol table
-/// 
+///
 /// ## Returns
 /// * `node` - current node of the symbol table
 /// * `root` - root node of the symbol table
@@ -133,12 +133,12 @@ pub fn enter_scope(parent: Rc<RefCell<Node<SymbolTable>>>) -> Rc<RefCell<Node<Sy
 ///
 /// ## Returns
 /// * `node` - A counted reference to the parent node, if it doesn't have a parent, it returns itself
-/// 
+///
 /// ## Example
 /// ```
 /// let (node, root) = init_symbol_table();
 /// let node = exit_scope(node); // gives node
-/// 
+///
 /// let (node, root) = init_symbol_table();
 /// let node = enter_scope(node);
 /// let node = exit_scope(node); // gives root
@@ -164,7 +164,7 @@ pub fn exit_scope(node: Rc<RefCell<Node<SymbolTable>>>) -> Rc<RefCell<Node<Symbo
 ///
 /// ## Returns
 /// * `node` / `None` - A counted reference to the node with the given index, if it exists, otherwise None
-/// 
+///
 /// ## Example
 /// ```
 /// let (node, root) = init_symbol_table();
@@ -222,14 +222,17 @@ fn get_scope_rec(
 /// ## Returns
 /// * `base` - the node given as an argument
 /// * `symbol` / `None` - the symbol if it exists, otherwise None
-pub fn get_symbol(node: Rc<RefCell<Node<SymbolTable>>>, key: &usize) -> (Rc<RefCell<Node<SymbolTable>>>,Option<(Symbol,)>) {
+pub fn get_symbol(
+    node: Rc<RefCell<Node<SymbolTable>>>,
+    key: &usize,
+) -> (Rc<RefCell<Node<SymbolTable>>>, Option<(Symbol,)>) {
     let base = node.clone();
     let symbol = get_symbol_rec(node, key);
     (base, symbol)
 }
 
 fn get_symbol_rec(node: Rc<RefCell<Node<SymbolTable>>>, key: &usize) -> Option<(Symbol,)> {
-        if let Some(sym) = node.borrow().get_value().table.get(key) {
+    if let Some(sym) = node.borrow().get_value().table.get(key) {
         return Some(sym.clone());
     } else {
         match node.borrow().get_parent() {
@@ -238,7 +241,6 @@ fn get_symbol_rec(node: Rc<RefCell<Node<SymbolTable>>>, key: &usize) -> Option<(
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -264,7 +266,7 @@ mod tests {
 
         let node = enter_scope(node);
 
-        let node = exit_scope(node);    
+        let node = exit_scope(node);
 
         let res = root.borrow().generate_unsafe_mermaid();
 
@@ -312,10 +314,12 @@ mod tests {
 "]
 0 --> 2
 "#;
-        assert_eq!(res,expected);
-        assert_eq!(node.borrow().get_value().index, root.borrow().get_value().index);
+        assert_eq!(res, expected);
+        assert_eq!(
+            node.borrow().get_value().index,
+            root.borrow().get_value().index
+        );
     }
-
 
     #[test]
     fn test_get_scope() {
@@ -331,7 +335,10 @@ mod tests {
         assert_eq!(node.borrow().get_value().index, 1);
 
         let node = get_scope(node, 0).unwrap();
-        assert_eq!(node.borrow().get_value().index, root.borrow().get_value().index);
+        assert_eq!(
+            node.borrow().get_value().index,
+            root.borrow().get_value().index
+        );
 
         let node = get_scope(node, 3);
         assert!(node.is_none());
@@ -394,9 +401,10 @@ mod tests {
         let node = enter_scope(node);
         let node = exit_scope(node);
 
-        
-        
-        assert_eq!(node.borrow().get_value().index, root.borrow().get_value().index);
+        assert_eq!(
+            node.borrow().get_value().index,
+            root.borrow().get_value().index
+        );
 
         let (node, symbol) = get_symbol(node, &1);
         let res = format!("{:?}", symbol);
@@ -421,5 +429,4 @@ mod tests {
         let res = root.borrow().generate_unsafe_mermaid();
         println!("{}", res);
     }
-
 }

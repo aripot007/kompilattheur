@@ -68,10 +68,12 @@ fn compile(args: CompileArgs) {
         return;
     }
 
-    generate_ast(tree.clone());
+    let ast = generate_ast(tree.clone());
+
+    let display_ast: Tree<String> = ast.into();
 
     let mut output_file = File::create(&args.output_file).expect("Error opening output file");
-    write!(output_file, "{}", tree.borrow().generate_html()).expect("error writing to output");
+    write!(output_file, "{}", display_ast.borrow().generate_html()).expect("error writing to output");
 
     if let Some(output_path_str) = &args.output_file.to_str() {
         if webbrowser::open(output_path_str).is_err() {

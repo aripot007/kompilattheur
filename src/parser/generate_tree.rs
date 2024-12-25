@@ -1,15 +1,18 @@
 use colored:: Colorize;
 
-use crate::{common::{diagnostic::{Diagnostic, DiagnosticGravity}, types::file_element}, lexer::Lexer};
+use crate::{common::{diagnostic::{Diagnostic, DiagnosticGravity}, types::{file_element::{self, file_element_from}, FileElement}}, lexer::Lexer};
 use super::lexem::Lexem;
 use crate::analysis_table::AnalysisTable;
 use std::cell::RefCell;
 use std::rc::Rc;
 use crate::common::types::{Token, Node};
 
-pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<RefCell<Node<Lexem>>>, bool, bool) {
-    let tree: Rc<RefCell<Node<Lexem>>> = Node::new(Lexem::NonTerminal(0));
-    let mut stack: Vec<Rc<RefCell<Node<Lexem>>>> = vec![tree.clone()];
+pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<RefCell<Node<FileElement<Lexem>>>>, bool, bool) {
+    
+    let tree: Rc<RefCell<Node<FileElement<Lexem>>>> = Node::new(
+        FileElement { line: 0, start_char: 0, len: 0, element: Lexem::NonTerminal(0) }
+    );
+    let mut stack: Vec<Rc<RefCell<Node<FileElement<Lexem>>>>> = vec![tree.clone()];
     let mut error = false;
     let mut accept = false;
     let mut input = lexer.next().unwrap_or(file_element::EOF);
@@ -21,12 +24,12 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
         //println!("Node: {:?}", x);
         match x {
             Some(node) => {
-                let lexem = node.borrow_mut().value.clone();
-                match lexem {
+                let file_elem = node.borrow_mut().value.clone();
+                match file_elem.element {
                     Lexem::Terminal(token) => {
                         if token.is_same_type(&input.element) {
                             //println!("Input: {:?}", input);
-                            node.borrow_mut().value = Lexem::Terminal(input.element.clone());
+                            node.borrow_mut().value = file_element_from!(input, Lexem::Terminal(input.element.clone()));
                             input = lexer.next().unwrap_or(file_element::EOF);
                         } else {
                             error = true;
@@ -53,7 +56,14 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
                         match entry {
                             Some(lexems) => {
                                 for lexem in lexems.iter().rev() {
-                                    let new_node = Node::new((*lexem).clone());
+                                    let new_node = Node::new(
+                                        FileElement {
+                                            len: 0,
+                                            line: 0,
+                                            start_char: 0,
+                                            element: (*lexem).clone(),
+                                        }
+                                    );
                                     stack.push(new_node.clone());
                                     node.borrow_mut().insert_child(0, new_node.clone());
                                 }

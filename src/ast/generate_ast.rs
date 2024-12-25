@@ -1,7 +1,7 @@
-use crate::{common::types::Tree, parser::Lexem};
+use crate::{common::types::{FileElement, Tree}, parser::Lexem};
 
 
 
-pub fn generate_ast(cst: Tree<Lexem>) {
+pub fn generate_ast(cst: Tree<FileElement<Lexem>>) {
     
 }

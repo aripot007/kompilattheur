@@ -8,7 +8,7 @@ mod reader;
 use analysis_table::{get_analysis_table, setup_analysis_table, AnalysisTable};
 use clap::{CommandFactory, Parser};
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs};
-use common::types::Tree;
+use common::types::{FileElement, Tree};
 use ast::generate_ast;
 use lexer::Lexer;
 use parser::{generate_tree, Lexem};
@@ -52,7 +52,7 @@ fn compile(args: CompileArgs) {
     setup_analysis_table(args.alternative_grammar.as_deref());
 
     let table = get_analysis_table();
-    let (tree, accept, error): (Tree<Lexem>, bool, bool) =
+    let (tree, accept, error): (Tree<FileElement<Lexem>>, bool, bool) =
         generate_tree(lexer, &table);
     println!("Accepted: {}, Error: {}", accept, error);
     if args.syntax_tree {

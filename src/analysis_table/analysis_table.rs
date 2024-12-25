@@ -58,6 +58,11 @@ impl AnalysisTable {
         return &self.non_terminal_names[id];
     }
 
+    /// Renvoie le non terminal correspondant à un id
+    pub fn get_non_terminal(&self, id: usize) -> &NonTerminal {
+        return &self.non_terminal_enums[id];
+    }
+
 }
 
 impl From<&Grammar> for AnalysisTable {

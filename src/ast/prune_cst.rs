@@ -1,8 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    common::types::{Node, Token},
-    parser::Lexem,
+    analysis_table::{get_analysis_table, NonTerminal}, common::types::{Node, Token}, parser::Lexem
 };
 
 /*
@@ -49,7 +48,7 @@ fn remove_empty_non_terminals(node: Rc<RefCell<Node<Lexem>>>) -> Option<Rc<RefCe
 
 fn is_non_terminal(node: &Rc<RefCell<Node<Lexem>>>) -> bool {
     match node.borrow().value {
-        Lexem::NonTerminal(_) => true,
+        Lexem::NonTerminal(id) => get_analysis_table().get_non_terminal(id) != &NonTerminal::Const,
         _ => false,
     }
 }

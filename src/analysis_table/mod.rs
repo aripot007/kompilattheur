@@ -8,6 +8,7 @@ use std::path::Path;
 use std::sync::OnceLock;
 pub use analysis_table_generator::generate_analysis_table;
 pub use analysis_table::AnalysisTable;
+pub use generated_table::NonTerminal;
 
 static ANALYSIS_TABLE: OnceLock<AnalysisTable> = OnceLock::new();
 

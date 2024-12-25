@@ -6,16 +6,15 @@ mod lexer;
 mod parser;
 mod reader;
 use analysis_table::{get_analysis_table, setup_analysis_table, AnalysisTable};
-use ast::generate_ast;
 use clap::{CommandFactory, Parser};
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs};
-use common::types::Node;
+use common::types::Tree;
+use ast::generate_ast;
 use lexer::Lexer;
 use parser::{generate_tree, Lexem};
 use std::fs::File;
 use std::io::{self, stdout, Write};
 use std::sync::OnceLock;
-use std::{cell::RefCell, rc::Rc};
 use webbrowser;
 
 static FILE_PATH: OnceLock<String> = OnceLock::new();
@@ -53,7 +52,7 @@ fn compile(args: CompileArgs) {
     setup_analysis_table(args.alternative_grammar.as_deref());
 
     let table = get_analysis_table();
-    let (tree, accept, error): (Rc<RefCell<Node<Lexem>>>, bool, bool) =
+    let (tree, accept, error): (Tree<Lexem>, bool, bool) =
         generate_tree(lexer, &table);
     println!("Accepted: {}, Error: {}", accept, error);
     if args.syntax_tree {

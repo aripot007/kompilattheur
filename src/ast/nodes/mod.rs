@@ -48,4 +48,4 @@ pub (super) fn parse_list<T, U>(root: Tree<T>, parse_U: fn(Tree<T>) -> U) -> Vec
 /// Un noeud d'ast doit pouvoir être créé depuis l'arbre concret correspondant, et
 /// doit pouvoir être convertit en arbre de String représentant chaque noeud, pour
 /// faciliter l'affichage.
-pub trait AstNode: From<Tree<FileElement<Lexem>>> + Into<Tree<String>> {}
+trait AstNode: From<Tree<FileElement<Lexem>>> + Into<Tree<String>> {}

@@ -48,9 +48,9 @@ impl Into<Tree<String>> for Factor {
         let s = match self {
             Factor::Integer(file_element) => format!("{}", file_element.element),
             Factor::String(file_element) => format!("{}", file_element.element.escape_debug()),
-            Factor::True(_) => String::from("True"),
-            Factor::False(_) => String::from("False"),
-            Factor::None(_) => String::from("None"),
+            Factor::True(_file_element) => String::from("True"),
+            Factor::False(_file_element) => String::from("False"),
+            Factor::None(_file_element) => String::from("None"),
         };
         
         let root = Node::new(s);

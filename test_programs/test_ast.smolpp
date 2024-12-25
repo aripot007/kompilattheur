@@ -1,1 +1,4 @@
-None
+def foo(a, b, c, d, e):
+    print("Hello")
+
+foo(1,2,3,4,5)

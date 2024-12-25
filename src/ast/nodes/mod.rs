@@ -1,15 +1,17 @@
 mod factor;
 use std::fmt::Display;
 
-pub use factor::*;
+pub use factor::Factor;
 mod defs;
-pub use defs::*;
+pub use defs::Defs;
 mod def;
-pub use def::*;
+pub use def::Def;
 mod root;
-pub use root::*;
+pub use root::Root;
 mod block;
-pub use block::*;
+pub use block::Block;
+mod param;
+pub use param::Param;
 
 use crate::{common::types::{FileElement, Tree}, parser::Lexem};
 
@@ -21,12 +23,28 @@ use crate::{common::types::{FileElement, Tree}, parser::Lexem};
 /// - soit un fils gauche avec un élément, et un noeud de liste en fils droit
 /// - soit aucun fils, dans ce cas la liste est vide
 /// 
-/// parse_U est une fonction convertissant un Tree<T> en élément U, qui sera appelée sur les
+/// parse_u est une fonction convertissant un Tree<T> en élément U, qui sera appelée sur les
 /// noeuds représentant les éléments de la liste
-pub (super) fn parse_list<T, U>(root: Tree<T>, parse_U: fn(Tree<T>) -> U) -> Vec<U> {
+pub (super) fn parse_list<T, U>(root: Tree<T>, parse_u: fn(Tree<T>) -> U) -> Vec<U> {
+    return parse_list_filter(root, parse_u, |_| true);
+}
+
+/// Transforme un arbre représentant une liste (arg list, statement list ...) en un vec
+/// contenant les blocks de l'AST correspondant, en appliquant un filtre.
+/// 
+/// L'arbre représentant une liste doit respecter le schéma suivant :
+/// Un noeud représentant la liste contient :
+/// - soit un fils gauche avec un élément, et un noeud de liste en fils droit
+/// - soit aucun fils, dans ce cas la liste est vide
+/// 
+/// parse_u est une fonction convertissant un Tree<T> en élément U, qui sera appelée sur les
+/// noeuds représentant les éléments de la liste pour lesquels filter_t renvoie True.
+/// 
+/// Les noeuds pour lesquels filter_t renvoient False sont ignorés.
+pub (super) fn parse_list_filter<T, U>(root: Tree<T>, parse_u: fn(Tree<T>) -> U, filter_t: fn(Tree<T>) -> bool) -> Vec<U> {
     let mut values: Vec<U> =  Vec::new();
 
-    fn parse<T, U>(node: Tree<T>, values: &mut Vec<U>, parse_U: fn(Tree<T>) -> U) {
+    fn parse<T, U>(node: Tree<T>, values: &mut Vec<U>, parse_u: fn(Tree<T>) -> U, filter_t: fn(Tree<T>) -> bool) {
 
         let nb_children = node.borrow().childs.len();
 
@@ -36,12 +54,14 @@ pub (super) fn parse_list<T, U>(root: Tree<T>, parse_U: fn(Tree<T>) -> U) -> Vec
             panic!("Malformed list tree : found {} children instead of 0 or 2.", nb_children);
         }
 
-        values.push(parse_U(node.borrow().childs[0].clone()));
+        if filter_t(node.clone()) {
+            values.push(parse_u(node.borrow().childs[0].clone()));
+        }
 
-        parse(node.borrow().childs[1].clone(), values, parse_U);
+        parse(node.borrow().childs[1].clone(), values, parse_u, filter_t);
     }
 
-    parse(root, &mut values, parse_U);
+    parse(root, &mut values, parse_u, filter_t);
     return values;
 }
 

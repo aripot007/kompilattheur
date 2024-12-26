@@ -1,4 +1,9 @@
-def foo(a, b, c, d, e):
-    print("Hello")
+def foo(a, b):
+    print(a)
+    print(b)
+    if a:
+        B
+    return b
 
-foo(1,2,3,4,5)
+foo(a)
+print(foo(a))

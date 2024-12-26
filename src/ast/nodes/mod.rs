@@ -14,6 +14,8 @@ mod statement;
 pub use statement::Statement;
 mod expression;
 pub use expression::Expression;
+mod for_loop;
+pub use for_loop::For;
 
 use crate::{common::types::{FileElement, Tree}, parser::Lexem};
 

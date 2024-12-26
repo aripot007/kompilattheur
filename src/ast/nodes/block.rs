@@ -1,4 +1,4 @@
-use crate::{analysis_table::{self, get_analysis_table, NonTerminal}, common::types::{file_element, FileElement, Node, Tree}, parser::Lexem};
+use crate::{analysis_table::{get_analysis_table, NonTerminal}, common::types::{FileElement, Node, Tree}, parser::Lexem};
 
 use super::{parse_list, AstNode, Statement};
 

@@ -1,11 +1,12 @@
 use crate::{analysis_table::{get_analysis_table, NonTerminal}, common::types::{FileElement, Node, Token, Tree}, parser::Lexem};
 
-use super::{root, AstNode, Expression};
+use super::{AstNode, Expression, For};
 
 
 pub enum Statement {
     Print(Expression),
     Return(Expression),
+    For(For),
     NotImplemented,
 }
 
@@ -29,6 +30,7 @@ impl From<Tree<FileElement<Lexem>>> for Statement {
 
         match left_child_elem {
             Lexem::NonTerminal(id) if analysis_table.get_non_terminal(id) == &NonTerminal::SimpleStmt => return parse_simple(root.borrow().get_children()[0].clone()),
+            Lexem::Terminal(Token::For) => return Statement::For(For::from(root)),
             _ => return Statement::NotImplemented,
         }
     }
@@ -46,10 +48,6 @@ fn parse_simple(root: Tree<FileElement<Lexem>>) -> Statement {
     
 }
 
-fn parse_print(root: Tree<FileElement<Lexem>>) -> Statement {
-    return Statement::NotImplemented;
-}
-
 impl Into<Tree<String>> for Statement {
     fn into(self) -> Tree<String> {
         match self {
@@ -64,6 +62,7 @@ impl Into<Tree<String>> for Statement {
                 r.borrow_mut().add_child(expr.into());
                 return r
             }
+            Statement::For(for_loop) => return for_loop.into(),
 
         };
     }

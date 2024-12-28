@@ -96,7 +96,7 @@ pub fn generate_tree(
                                 for lexem in lexems.iter().rev() {
                                     let new_node = Node::new((*lexem).clone());
                                     stack.push(new_node.clone());
-                                    node.borrow_mut().insert_child(0, new_node.clone());
+                                    node.borrow_mut().insert_child(&node, 0, new_node.clone());
                                 }
                             }
                             None => {

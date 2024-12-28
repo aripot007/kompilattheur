@@ -22,8 +22,8 @@ pub fn generate_ast(tree: Rc<RefCell<Node<Lexem>>>) {
 fn simplify_terminal_nodes(node: Rc<RefCell<Node<Lexem>>>) {
     let children = node.borrow().get_children().clone();
     if children.len() == 1 && !is_non_terminal(&children[0]) {
-        let terminal_value = children[0].borrow().value.clone();
-        node.borrow_mut().value = terminal_value;
+        let terminal_value = children[0].borrow().get_value().clone();
+        node.borrow_mut().set_value(terminal_value);
         node.borrow_mut().set_children(&node, vec![]);
     } else {
         for child in children {
@@ -48,7 +48,7 @@ fn remove_empty_non_terminals(node: Rc<RefCell<Node<Lexem>>>) -> Option<Rc<RefCe
 }
 
 fn is_non_terminal(node: &Rc<RefCell<Node<Lexem>>>) -> bool {
-    match node.borrow().value {
+    match node.borrow().get_value() {
         Lexem::NonTerminal(_) => true,
         _ => false,
     }
@@ -81,7 +81,7 @@ fn remove_syntax_terminals(node: Rc<RefCell<Node<Lexem>>>) {
 }
 
 fn is_syntax_terminal(node: Rc<RefCell<Node<Lexem>>>) -> bool {
-    match node.borrow().value {
+    match node.borrow().get_value() {
         Lexem::Terminal(ref t) => match t {
             Token::Begin
             | Token::CloseBracket
@@ -99,4 +99,3 @@ fn is_syntax_terminal(node: Rc<RefCell<Node<Lexem>>>) -> bool {
         _ => false,
     }
 }
-

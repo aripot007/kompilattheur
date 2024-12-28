@@ -34,12 +34,13 @@ pub fn generate_tree(
         //println!("Node: {:?}", x);
         match x {
             Some(node) => {
-                let lexem = node.borrow_mut().value.clone();
+                let lexem = node.borrow_mut().get_value();
                 match lexem {
                     Lexem::Terminal(token) => {
                         if token.is_same_type(&input.element) {
                             //println!("Input: {:?}", input);
-                            node.borrow_mut().value = Lexem::Terminal(input.element.clone());
+                            node.borrow_mut()
+                                .set_value(Lexem::Terminal(input.element.clone()));
                             input = lexer.next().unwrap_or(file_element::EOF);
                             error = false;
                         } else {

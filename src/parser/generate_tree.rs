@@ -21,9 +21,13 @@ pub fn generate_tree(
     let mut stack: Vec<Rc<RefCell<Node<Lexem>>>> = vec![tree.clone()];
     let mut error = false;
     let mut accept = false;
+    let mut is_acceptable = true;
     let mut input = lexer.next().unwrap_or(file_element::EOF);
 
-    while !error && !accept {
+    while !accept {
+        if error {
+            is_acceptable = false;
+        }
         //println!("Stack: {:?}, Input: {}", stack, input);
         let x = stack.pop();
         //println!("Tree: {:?}", tree.borrow());
@@ -37,7 +41,25 @@ pub fn generate_tree(
                             //println!("Input: {:?}", input);
                             node.borrow_mut().value = Lexem::Terminal(input.element.clone());
                             input = lexer.next().unwrap_or(file_element::EOF);
+                            error = false;
                         } else {
+                            if error {
+                                //println!("2: Error: {} Stack: {}", input.element, token);
+                                if token == Token::Newline {
+                                    while input.element != Token::Newline && input.element != Token::EOF {
+                                        input = lexer.next().unwrap_or(file_element::EOF);
+                                    }
+                                    error = false;
+                                    input = lexer.next().unwrap_or(file_element::EOF);
+                                    //println!("3: Error: {} Stack: {}", input.element, token);
+                                    continue;
+                                }
+                                if stack.is_empty() {
+                                    break;
+                                }
+                                input = lexer.next().unwrap_or(file_element::EOF);
+                                continue;
+                            }
                             error = true;
                             let line = if input.element == Token::Newline && input.line > 0 {
                                 input.line - 1
@@ -70,6 +92,7 @@ pub fn generate_tree(
                         let entry = analysis_table.get(&id, &input.element);
                         match entry {
                             Some(lexems) => {
+                                error = false;
                                 for lexem in lexems.iter().rev() {
                                     let new_node = Node::new((*lexem).clone());
                                     stack.push(new_node.clone());
@@ -77,6 +100,11 @@ pub fn generate_tree(
                                 }
                             }
                             None => {
+                                if error {
+                                    //println!("Error: {} Stack: {}", input.element, Lexem::NonTerminal(id));
+                                    //input = lexer.next().unwrap_or(file_element::EOF);
+                                    continue;
+                                }
                                 error = true;
                                 let expected_tokens = analysis_table.get_expected_tokens(&id);
                                 let expected_tokens = expected_tokens
@@ -115,6 +143,7 @@ pub fn generate_tree(
                                     .to_string(),
                                 )
                                 .display();
+                                input = lexer.next().unwrap_or(file_element::EOF);
                                 //println!("Error: No entry for {} and {}", analysis_table.get_non_terminal_name(id), input.element);
                             }
                         }
@@ -144,6 +173,10 @@ pub fn generate_tree(
     // Finish lexical analysis before returning
     if error {
         while let Some(_) = lexer.next() {}
+    }
+    if !is_acceptable {
+        accept = false;
+        error = true;
     }
 
     return (tree, accept, error);

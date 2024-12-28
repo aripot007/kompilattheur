@@ -8,7 +8,7 @@ mod reader;
 use analysis_table::{get_analysis_table, setup_analysis_table, AnalysisTable};
 use ast::generate_ast;
 use clap::{CommandFactory, Parser};
-use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs};
+use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs, TargetStep};
 use common::types::Node;
 use lexer::Lexer;
 use parser::{generate_tree, Lexem};
@@ -48,19 +48,30 @@ fn compile(args: CompileArgs) {
         .set(file_path.to_str().unwrap().to_string())
         .unwrap();
 
+    let mut output_file = File::create(&args.output_file).expect("Error opening output file");
+
     let lexer = Lexer::new(reader::new(&file_path));
+
+    if args.target_step == TargetStep::Lexing {
+        for token in lexer {
+            write!(output_file, "{} ", token.element).expect("error writing to output");
+        }
+        write!(output_file, "\n").expect("error writing to output");
+        return;
+    }
 
     setup_analysis_table(args.alternative_grammar.as_deref());
 
     let table = get_analysis_table();
     let (tree, accept, error): (Rc<RefCell<Node<Lexem>>>, bool, bool) =
         generate_tree(lexer, &table);
+
     println!("Accepted: {}, Error: {}", accept, error);
-    if args.syntax_tree {
-        let mut output_file = File::create(&args.output_file).expect("Error opening output file");
+
+    if args.target_step == TargetStep::ConcreteTree {
         write!(output_file, "{}", tree.borrow().generate_html()).expect("error writing to output");
         if let Some(output_path_str) = &args.output_file.to_str() {
-            if webbrowser::open(output_path_str).is_err() {
+            if args.run && webbrowser::open(output_path_str).is_err() {
                 eprintln!("Failed to open the HTML file in the web browser.");
             }
         } else {
@@ -75,7 +86,7 @@ fn compile(args: CompileArgs) {
     write!(output_file, "{}", tree.borrow().generate_html()).expect("error writing to output");
 
     if let Some(output_path_str) = &args.output_file.to_str() {
-        if webbrowser::open(output_path_str).is_err() {
+        if args.run && webbrowser::open(output_path_str).is_err() {
             eprintln!("Failed to open the HTML file in the web browser.");
         }
     } else {

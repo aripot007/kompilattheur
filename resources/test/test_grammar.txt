@@ -1,0 +1,5 @@
+"A" : "+" | "B" "<integer>" ;
+# this is a comment
+"B" : "A"       "for" 
+# this is a multi line rule
+            |                    ;

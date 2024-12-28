@@ -33,7 +33,10 @@ The **Kompilattheur Compiler** is "a MiniPython compiler designed to compile Min
 
 - **Cross-platform:** Runs on linux
 - **Optimization:** None yet
-- **Error Reporting:** Detailed syntax and semantic error messages
+- **Error Reporting:** Detailed syntax and semantic error message
+- **Analysis table generation:** Generate analysis tables with the `print-analysis-table` and `generate-analysis-table` commands
+- **Runtime optional grammar parsing:** You can use an alternative grammar at runtime with the `--alternative-grammar` option
+- **Shell autocompletion:** Generate autocompletion scripts for your shell
 
 ## Installation
 
@@ -64,6 +67,23 @@ For release build :
 cargo build --profile release
 ```
 
+### Installing auto-completion
+
+The compiler can generate auto-completion scripts for most shells :
+
+For bash
+```bash
+kompilattheur generate-autocompletion bash  > /usr/share/bash-completion/completions/kompilattheur.bash
+```
+
+```bash
+kompilattheur generate-autocompletion zsh  > /usr/local/share/zsh/site-functions/_kompilattheur
+```
+
+Currently supported shells are `bash`, `elvish`, `fish`, `powershell` and `zsh`.
+
+To install the auto-completion script, refer to your shell's manual.
+
 ## Usage
 
 ### Basic Command
@@ -76,7 +96,44 @@ $ kompillatheur [source-file]
 
 ### Command-line Options
 
-None yet
+Use `kompillatheur help` to see all command line options
+
+### Analysis tables
+
+#### Generating an analysis table
+
+You can generate an analysis table for a grammar with the `generate-analysis-table` subcommand.
+The grammar must be in a file that follows the [grammophone](https://mdaines.github.io/grammophone/#/) syntax.
+
+```bash
+kompilattheur generate-analysis-table grammaire.txt -o src/analysis_table/generated_table.rs
+```
+
+Optionnaly, you can make the generator add comments to the file for easier debugging wiht the `--with-comments` option.
+
+#### Printing an analysis table
+
+You can print the compiler's analysis table or a generated analysis table with the `print-analysis-table` subcommand.
+Printing is supported in different formats :
+- `plaintext` : Readable plain text
+- `markdown` : Markdown table format, most readable when rendered
+- `rust` : Rust source code, equivalent to using `generate-analysis-table`
+
+```bash
+# Print the built-in analysis table in markdown format to the analysis table.md file
+kompilattheur print-analysis-table --format markdown -o analysis_table.md
+
+# Generate and print an analysis table for the grammar_ex.txt grammar
+kompilattheur print-analysis-table -g grammaire_ex.txt
+```
+
+#### Using another grammar at runtime
+
+You can generate an analysis table to use for compilation from another grammar at runtime with the `--alternative-grammar` option :
+
+```bash
+kompilattheur -g grammaire_ex.txt test_programs/arithmetic.smolpp
+```
 
 ### Examples
 
@@ -85,6 +142,8 @@ None yet
 ```bash
 $ kompillatheur example.smolpp
 ```
+
+
 
 ## Examples
 

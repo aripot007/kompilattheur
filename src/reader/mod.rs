@@ -2,6 +2,7 @@ use std::collections::VecDeque;
 use std::fs::File;
 use std::io;
 use std::io::prelude::Read;
+use std::path::Path;
 
 pub struct Reader {
     bytes: Box<dyn Iterator<Item = Result<u8, io::Error>>>,
@@ -35,8 +36,8 @@ impl Iterator for Reader {
     }
 }
 
-pub fn new(file_path: String) -> Reader {
-    let file = match File::open(&file_path) {
+pub fn new(file_path: &Path) -> Reader {
+    let file = match File::open(file_path) {
         Ok(file) => file,
         Err(e) => panic!("Error opening file: {e}"),
     };

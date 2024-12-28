@@ -1,4 +1,4 @@
-use crate::common::types::token::{Token, IdToken};
+use crate::common::types::{Token, IdToken};
 use std::collections::HashMap;
 
 pub struct TokenTable {
@@ -37,13 +37,17 @@ impl TokenTable {
             });
         token.clone()
     }
+
+    pub fn get_ident_name(&self, id: usize) -> &String {
+        &self.id_names[id]
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::any::Any;
+    // use std::any::Any;
 
-    use super::*;
+    // use super::*;
 
     /*
 

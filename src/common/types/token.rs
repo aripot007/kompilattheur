@@ -1,9 +1,8 @@
 use std::fmt::Display;
 
-
-#[derive(Clone)]
+#[derive(Clone, Hash, Debug)]
 pub struct NumToken {
-    value: u64,
+    pub value: u64,
 }
 
 impl PartialEq for NumToken {
@@ -13,8 +12,7 @@ impl PartialEq for NumToken {
 }
 impl Eq for NumToken {}
 
-
-#[derive(Clone)]
+#[derive(Clone, Hash, Debug)]
 pub struct IdToken {
     pub id: usize,
 }
@@ -26,7 +24,7 @@ impl PartialEq for IdToken {
 }
 impl Eq for IdToken {}
 
-#[derive(Clone)]
+#[derive(Clone, Hash, Debug)]
 pub enum Token {
     Integer(NumToken),
     Identifier(IdToken),
@@ -61,6 +59,7 @@ pub enum Token {
     Not,
     Def,
     For,
+    In,
     If,
     Else,
     Return,
@@ -68,15 +67,13 @@ pub enum Token {
 }
 
 impl Display for Token {
-    
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Token::Identifier(_) => write!(f, "<Identifier, {}>", self.repr()),
-            Token::String(_) => write!(f, "<String, {}>", self.repr()),
+            Token::String(_) => write!(f, "<String, \"{}\">", self.repr()),
             Token::Integer(_) => write!(f, "<Int, {}>", self.repr()),
-            _ => write!(f, "<{}>", self.repr()),
+            _ => write!(f, "{}", self.repr()),
         }
-        
     }
 }
 
@@ -93,15 +90,18 @@ impl PartialEq for Token {
 impl Eq for Token {}
 
 impl Token {
+    pub fn is_same_type(&self, other: &Token) -> bool {
+        core::mem::discriminant(self) == core::mem::discriminant(other)
+    }
 
     pub fn integer(value: u64) -> Token {
-        Token::Integer(NumToken {value})
+        Token::Integer(NumToken { value })
     }
 
     /// Renvoie la représentation de ce token dans le code source
     /// Pour les tokens simples, les strings, les entiers et les mots clés réservés, renvoie le texte correspondant dans le code source.
     /// Pour les identifier, renvoie l'id de l'identifier
-    /// 
+    ///
     /// ```
     /// assert_eq!(Token::Add.repr(), "+".to_string());
     /// assert_eq!(Token::integer(42).repr(), "42".to_string());
@@ -112,7 +112,7 @@ impl Token {
         match self {
             Token::Integer(num_token) => num_token.value.to_string(),
             Token::Identifier(id_token) => id_token.id.to_string(),
-            Token::String(string) => format!("\"{}\"", string.escape_debug()),
+            Token::String(string) => format!("{}", string.escape_debug()),
             Token::Add => String::from("+"),
             Token::Sub => String::from("-"),
             Token::Mult => String::from("*"),
@@ -123,7 +123,7 @@ impl Token {
             Token::NotEqual => String::from("!="),
             Token::Less => String::from("<"),
             Token::Greater => String::from(">"),
-            Token::LessEq => String::from("="),
+            Token::LessEq => String::from("<="),
             Token::GreaterEq => String::from(">="),
             Token::Begin => String::from("BEGIN"),
             Token::End => String::from("END"),
@@ -137,6 +137,7 @@ impl Token {
             Token::Not => String::from("not"),
             Token::Def => String::from("def"),
             Token::For => String::from("for"),
+            Token::In => String::from("in"),
             Token::If => String::from("if"),
             Token::Else => String::from("else"),
             Token::Return => String::from("return"),

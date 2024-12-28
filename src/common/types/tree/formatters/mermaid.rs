@@ -60,6 +60,7 @@ impl<T: Display + ToString> Node<T> {
         result
     }
 
+    #[allow(dead_code)]
     pub fn generate_unsafe_mermaid(&self) -> String {
         let mut result = String::new();
         result.push_str("flowchart TD\n");

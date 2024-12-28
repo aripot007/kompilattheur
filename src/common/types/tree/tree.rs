@@ -1,37 +1,60 @@
 use std::cell::RefCell;
-use std::fmt::Display;
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 
 #[derive(Debug, Clone)]
 pub struct Node<T> {
-    pub value: T,
-    pub childs: Vec<Rc<RefCell<Node<T>>>>,
+    value: T,
+    parent: Option<Weak<RefCell<Node<T>>>>,
+    childs: Vec<Rc<RefCell<Node<T>>>>,
 }
 
 pub type Tree<T> = Rc<RefCell<Node<T>>>;
 
-impl<T: Display + ToString> Node<T> {
+impl<T> Node<T> {
     pub fn new(value: T) -> Rc<RefCell<Node<T>>> {
         Rc::new(RefCell::new(Node {
             value,
+            parent: None,
             childs: Vec::new(),
         }))
+    }
+
+    pub fn get_value_ref_mut(&mut self) -> &mut T {
+        &mut self.value
+    }
+
+    pub fn set_value(&mut self, value: T) {
+        self.value = value;
     }
 
     pub fn get_children(&self) -> Vec<Rc<RefCell<Node<T>>>> {
         self.childs.clone()
     }
 
-    pub fn set_children(&mut self, children: Vec<Rc<RefCell<Node<T>>>>) {
+    pub fn set_children(
+        &mut self,
+        parent: &Rc<RefCell<Node<T>>>,
+        children: Vec<Rc<RefCell<Node<T>>>>,
+    ) {
+        for child in children.iter() {
+            child.borrow_mut().parent = Some(Rc::downgrade(parent));
+        }
         self.childs = children;
     }
 
     #[allow(dead_code)]
-    pub fn add_child(&mut self, child: Rc<RefCell<Node<T>>>) {
+    pub fn add_child(&mut self, parent: &Rc<RefCell<Node<T>>>, child: Rc<RefCell<Node<T>>>) {
+        child.borrow_mut().parent = Some(Rc::downgrade(parent));
         self.childs.push(child);
     }
 
-    pub fn insert_child(&mut self, index: usize, child: Rc<RefCell<Node<T>>>) {
+    pub fn insert_child(
+        &mut self,
+        parent: &Rc<RefCell<Node<T>>>,
+        index: usize,
+        child: Rc<RefCell<Node<T>>>,
+    ) {
+        child.borrow_mut().parent = Some(Rc::downgrade(parent));
         self.childs.insert(index, child);
     }
 
@@ -43,9 +66,16 @@ impl<T: Display + ToString> Node<T> {
         }
         result
     }
+
+    pub fn get_parent(&self) -> Option<Rc<RefCell<Node<T>>>> {
+        match &self.parent {
+            Some(parent) => parent.upgrade(),
+            None => None,
+        }
+    }
 }
 
-impl <T: Display + ToString + Clone> Node<T> {
+impl <T: Clone> Node<T> {
     pub fn get_value(&self) -> T {
         self.value.clone()
     }
@@ -56,14 +86,72 @@ mod tests {
     use super::Node;
 
     #[test]
+    fn test_get_value_ref_mut() {
+        #[derive(Clone)]
+        struct TestStruct {
+            value: String,
+        }
+
+        impl TestStruct {
+            pub fn new(value: &str) -> TestStruct {
+                TestStruct {
+                    value: value.to_string(),
+                }
+            }
+        }
+
+        let root = Node::new(TestStruct::new("root"));
+        root.borrow_mut().get_value_ref_mut().value = "new_root".to_string();
+        assert!(root.borrow().get_value().value == "new_root");
+    }
+
+    #[test]
+    fn test_set_value() {
+        let root = Node::new("root");
+        root.borrow_mut().set_value("new_root");
+        assert!(root.borrow().get_value() == "new_root");
+    }
+
+    #[test]
+    fn test_set_children() {
+        let root = Node::new("root");
+        let child1 = Node::new("child1");
+        let child2 = Node::new("child2");
+        root.borrow_mut().set_children(&root, vec![child1, child2]);
+
+        let children = root.borrow().get_children();
+        assert!(children.len() == 2);
+        assert!(children[0].borrow().value == "child1");
+        assert!(children[1].borrow().value == "child2");
+    }
+
+    #[test]
+    fn test_remove_child() {
+        let root = Node::new("root");
+        let child1 = Node::new("child1");
+        let child11 = Node::new("child11");
+        child1.borrow_mut().add_child(&child1, child11);
+        root.borrow_mut().add_child(&root, child1);
+        let child2 = Node::new("child2");
+        root.borrow_mut().add_child(&root, child2);
+
+        let children = root.borrow_mut().remove_child(0);
+
+        println!("{:?}", children[0].borrow().value);
+
+        assert!(children.len() == 1);
+        assert!(children[0].borrow().value == "child11");
+    }
+
+    #[test]
     fn test_generate_mermaid() {
         let root = Node::new("root");
         let child1 = Node::new("child1");
         let child11 = Node::new("child11");
-        child1.borrow_mut().add_child(child11);
-        root.borrow_mut().add_child(child1);
+        child1.borrow_mut().add_child(&child1, child11);
+        root.borrow_mut().add_child(&root, child1);
         let child2 = Node::new("child2");
-        root.borrow_mut().add_child(child2);
+        root.borrow_mut().add_child(&root, child2);
 
         let result = root.borrow().generate_mermaid();
         let expected = concat!(
@@ -83,20 +171,32 @@ mod tests {
     }
 
     #[test]
-    fn test_remove_child() {
+    fn test_get_parent() {
         let root = Node::new("root");
         let child1 = Node::new("child1");
-        let child11 = Node::new("child11");
-        child1.borrow_mut().add_child(child11);
-        root.borrow_mut().add_child(child1);
-        let child2 = Node::new("child2");
-        root.borrow_mut().add_child(child2);
+        root.borrow_mut().add_child(&root, child1.clone());
 
-        let children = root.borrow_mut().remove_child(0);
+        let parent = child1.borrow().get_parent();
+        match parent {
+            Some(p) => {
+                let value = p.borrow().value;
+                println!("{}", value);
+                assert!(value == "root");
+            }
+            None => {
+                assert!(false);
+            }
+        }
 
-        println!("{:?}", children[0].borrow().value);
+        let result = root.borrow().generate_mermaid();
+        let expected = concat!(
+            "flowchart TD\n",
+            "0[\"root\"]\n",
+            "1[\"child1\"]\n",
+            "0 --> 1\n",
+        );
 
-        assert!(children.len() == 1);
-        assert!(children[0].borrow().value == "child11");
+        println!("{}", result);
+        assert!(expected == result);
     }
 }

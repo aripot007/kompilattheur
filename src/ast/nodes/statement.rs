@@ -56,12 +56,12 @@ impl Into<Tree<String>> for Statement {
             Statement::NotImplemented => return Node::new(String::from("STMT (NI)")),
             Statement::Print(expr) => {
                 let r = Node::new(String::from("PRINT"));
-                r.borrow_mut().add_child(expr.into());
+                r.borrow_mut().add_child(&r, expr.into());
                 return r
             },
             Statement::Return(expr) => {
                 let r = Node::new(String::from("RETURN"));
-                r.borrow_mut().add_child(expr.into());
+                r.borrow_mut().add_child(&r, expr.into());
                 return r
             },
             Statement::For(for_loop) => return for_loop.into(),

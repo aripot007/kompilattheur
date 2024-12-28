@@ -97,7 +97,45 @@ pub struct CompileArgs {
     #[arg(name = "output", short, long, default_value = "p.out")]
     pub output_file: PathBuf,
 
-    /// Génère l'arbre syntaxique concret uniquement
-    #[arg(long, alias("cst"), alias("st"), action)]
-    pub syntax_tree: bool,
+    /// Étape de compilation à laquelle le compilateur s'arrête
+    #[arg(short = 's', long, num_args = 0..=1, value_enum, default_value_t=TargetStep::AbstractTree, alias("step"))]
+    pub target_step: TargetStep,
+
+    /// Language de destination
+    #[arg(long, short, num_args = 0..=1, value_enum, default_value_t=TargetLanguage::Html)]
+    pub target: TargetLanguage,
+
+    /// Lance le programme compilé (ou ouvre le fichier résultant en fonction de l'étape de compilation)
+    #[arg(long, short, action)]
+    pub run: bool,
+
+}
+
+#[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TargetLanguage {
+
+    /// Arbre mermaid
+    #[value(alias("mmd"))]
+    Mermaid,
+
+    #[value()]
+    Html,
+
+}
+
+#[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TargetStep {
+
+    /// Analyse lexicale seulement
+    #[value(alias("lexer"), alias("tokens"))]
+    Lexing,
+
+    /// Arbre Syntaxique Concret
+    #[value(alias("st"), alias("cst"))]
+    ConcreteTree,
+
+    /// Arbre Syntaxique Abstrait
+    #[value(alias("ast"), alias("parsing"), alias("parser"))]
+    AbstractTree,
+
 }

@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use super::super::Node;
 
-impl<T: Display + ToString> Node<T> {
+impl<T: Display + ToString + Clone> Node<T> {
     pub fn generate_html(&self) -> String {
         let html_content = format!(
             r#"

@@ -1,3 +1,4 @@
 /target
 generated_table.rs
-p.out
+*.out
+p.html

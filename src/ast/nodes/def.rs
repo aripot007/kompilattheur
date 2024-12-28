@@ -49,18 +49,18 @@ impl Into<Tree<String>> for Def {
     fn into(self) -> Tree<String> {
         let root = Node::new(String::from("DEF"));
 
-        root.borrow_mut().add_child(Node::new(format!("Identifier {}", self.identifier.element.id)));
+        root.borrow_mut().add_child(&root, Node::new(format!("Identifier {}", self.identifier.element.id)));
 
 
         let params_root = Node::new(String::from("PARAMS"));
 
         for param in self.params {
-            params_root.borrow_mut().add_child(param.into());
+            params_root.borrow_mut().add_child(&root, param.into());
         }
 
-        root.borrow_mut().add_child(params_root);
+        root.borrow_mut().add_child(&root, params_root);
 
-        root.borrow_mut().add_child(self.block.into());
+        root.borrow_mut().add_child(&root, self.block.into());
 
         return root;
     }

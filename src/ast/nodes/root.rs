@@ -22,8 +22,8 @@ impl Into<Tree<String>> for Root {
     fn into(self) -> Tree<String> {
         let root = Node::new(String::from("ROOT"));
 
-        root.borrow_mut().add_child(self.defs.into());
-        root.borrow_mut().add_child(self.block.into());
+        root.borrow_mut().add_child(&root, self.defs.into());
+        root.borrow_mut().add_child(&root, self.block.into());
 
         return root;
     }

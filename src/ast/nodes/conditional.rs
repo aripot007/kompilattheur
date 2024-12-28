@@ -1,4 +1,4 @@
-use crate::{common::types::{file_element::file_element_from, FileElement, IdToken, Node, Token, Tree}, parser::Lexem};
+use crate::{common::types::{FileElement, Node, Token, Tree}, parser::Lexem};
 use super::{AstNode, Block, Expression};
 
 
@@ -45,12 +45,12 @@ impl Into<Tree<String>> for Conditional {
             false => Node::new(String::from("IF")),
         };
 
-        root.borrow_mut().add_child(self.condition.into());
+        root.borrow_mut().add_child(&root, self.condition.into());
 
-        root.borrow_mut().add_child(self.if_block.into());
+        root.borrow_mut().add_child(&root, self.if_block.into());
 
         if let Some(else_block) = self.else_block {
-            root.borrow_mut().add_child(else_block.into());
+            root.borrow_mut().add_child(&root, else_block.into());
         }
 
         return root;

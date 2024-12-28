@@ -27,7 +27,7 @@ impl Into<Tree<String>> for Param {
     fn into(self) -> Tree<String> {
         let root = Node::new(String::from("PARAM"));
 
-        root.borrow_mut().add_child(Node::new(format!("Identifier {}", self.identifier.element.id)));
+        root.borrow_mut().add_child(&root, Node::new(format!("Identifier {}", self.identifier.element.id)));
 
         return root;
     }

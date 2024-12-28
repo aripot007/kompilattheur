@@ -52,7 +52,7 @@ pub (super) fn parse_list_filter<T, U>(root: Tree<T>, parse_u: fn(Tree<T>) -> U,
 
     fn parse<T, U>(node: Tree<T>, values: &mut Vec<U>, parse_u: fn(Tree<T>) -> U, filter_t: fn(Tree<T>) -> bool) {
 
-        let nb_children = node.borrow().childs.len();
+        let nb_children = node.borrow().get_children().len();
 
         if nb_children == 0 {
             return;
@@ -61,10 +61,10 @@ pub (super) fn parse_list_filter<T, U>(root: Tree<T>, parse_u: fn(Tree<T>) -> U,
         }
 
         if filter_t(node.clone()) {
-            values.push(parse_u(node.borrow().childs[0].clone()));
+            values.push(parse_u(node.borrow().get_children()[0].clone()));
         }
 
-        parse(node.borrow().childs[1].clone(), values, parse_u, filter_t);
+        parse(node.borrow().get_children()[1].clone(), values, parse_u, filter_t);
     }
 
     parse(root, &mut values, parse_u, filter_t);

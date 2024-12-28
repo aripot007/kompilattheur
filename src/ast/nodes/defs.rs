@@ -21,7 +21,7 @@ impl Into<Tree<String>> for Defs {
         let root = Node::new(String::from("DEFS"));
 
         for def in self.defs {
-            root.borrow_mut().add_child(def.into());
+            root.borrow_mut().add_child(&root, def.into());
         }
 
         return root;

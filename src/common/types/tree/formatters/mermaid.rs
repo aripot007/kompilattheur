@@ -26,37 +26,71 @@ macro_rules! escape_mermaid {
     };
 }
 
-impl<T: Display + ToString> Node<T> {
+impl<T: Display + ToString + Clone> Node<T> {
     pub fn generate_mermaid(&self) -> String {
+        let mut result = String::new();
+        result.push_str("flowchart TD\n");
+
+        let mut counter: usize = 0;
+        result.push_str(&format!(
+            "{}[\"{}\"]\n",
+            counter,
+            escape_mermaid!(self.get_value().to_string())
+        ));
+
+        fn generate_child<T: Display + Clone>(node: &Node<T>, counter: &mut usize) -> String {
             let mut result = String::new();
-            result.push_str("flowchart TD\n");
-
-            let mut counter: usize = 0;
-            result.push_str(&format!(
-                "{}[\"{}\"]\n",
-                counter,
-                escape_mermaid!(self.value.to_string())
-            ));
-
-            fn generate_child<T: Display>(node: &Node<T>, counter: &mut usize) -> String {
-                let mut result = String::new();
-                let nb = *counter;
-                for child in node.get_children() {
-                    let child_borrowed = &*child.borrow();
-                    *counter += 1;
-                    result.push_str(&format!(
-                        "{}[\"{}\"]\n",
-                        counter,
-                        escape_mermaid!(child.borrow().value.to_string())
-                    ));
-                    result.push_str(&format!("{} --> {}\n", nb, counter));
-                    result.push_str(&generate_child(child_borrowed, counter));
-                }
-                result
+            let nb = *counter;
+            for child in node.get_children() {
+                let child_borrowed = &*child.borrow();
+                *counter += 1;
+                result.push_str(&format!(
+                    "{}[\"{}\"]\n",
+                    counter,
+                    escape_mermaid!(child.borrow().get_value().to_string())
+                ));
+                result.push_str(&format!("{} --> {}\n", nb, counter));
+                result.push_str(&generate_child(child_borrowed, counter));
             }
-
-            result.push_str(&generate_child(self, &mut counter));
-
             result
         }
+
+        result.push_str(&generate_child(self, &mut counter));
+
+        result
     }
+
+    #[allow(dead_code)]
+    pub fn generate_unsafe_mermaid(&self) -> String {
+        let mut result = String::new();
+        result.push_str("flowchart TD\n");
+
+        let mut counter: usize = 0;
+        result.push_str(&format!(
+            "{}[\"{}\"]\n",
+            counter,
+            self.get_value().to_string()
+        ));
+
+        fn generate_child<T: Display + Clone>(node: &Node<T>, counter: &mut usize) -> String {
+            let mut result = String::new();
+            let nb = *counter;
+            for child in node.get_children() {
+                let child_borrowed = &*child.borrow();
+                *counter += 1;
+                result.push_str(&format!(
+                    "{}[\"{}\"]\n",
+                    counter,
+                    child.borrow().get_value().to_string()
+                ));
+                result.push_str(&format!("{} --> {}\n", nb, counter));
+                result.push_str(&generate_child(child_borrowed, counter));
+            }
+            result
+        }
+
+        result.push_str(&generate_child(self, &mut counter));
+
+        result
+    }
+}

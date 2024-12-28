@@ -30,18 +30,18 @@ impl From<Tree<FileElement<Lexem>>> for Block {
             // Bloc global
 
             // Premier statement
-            statement_list_root.borrow_mut().add_child(root.borrow().get_children()[2].clone());
+            statement_list_root.borrow_mut().add_child(&root, root.borrow().get_children()[2].clone());
             // Suite du bloc
-            statement_list_root.borrow_mut().add_child(root.borrow().get_children()[3].clone());
+            statement_list_root.borrow_mut().add_child(&root, root.borrow().get_children()[3].clone());
 
         } else if root_non_terminal == &NonTerminal::Suite {
 
             // Bloc générique
 
             // Premier statement
-            statement_list_root.borrow_mut().add_child(root.borrow().get_children()[2].clone());
+            statement_list_root.borrow_mut().add_child(&root, root.borrow().get_children()[2].clone());
             // Suite du bloc
-            statement_list_root.borrow_mut().add_child(root.borrow().get_children()[3].clone());
+            statement_list_root.borrow_mut().add_child(&root, root.borrow().get_children()[3].clone());
 
         } else {
             panic!("Invalid NonTerminal for BLOCK root : expected File or Suite, got {}", root_non_terminal);
@@ -58,7 +58,7 @@ impl Into<Tree<String>> for Block {
         let root = Node::new(String::from("BLOCK"));
 
         for stmt in self.statements {
-            root.borrow_mut().add_child(stmt.into());
+            root.borrow_mut().add_child(&root, stmt.into());
         }
 
         return root;

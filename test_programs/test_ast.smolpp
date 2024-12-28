@@ -1,4 +1,10 @@
 
-for i in a:
+if a:
     print(b)
-    a = 12
+else:
+    print(a)
+
+
+if b:
+    print(b)
+    print(a)

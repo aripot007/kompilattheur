@@ -1,9 +1,11 @@
+def foo(a, b):
+    
+    print(a)
 
-def foo(a):
-    a = 12
-    if True:
-        a = 13
-    return a + b
+    if a == b:
+        return b
+    
+    for i in range(10):
+        print(i)
 
-b = 12
-print(foo(12))
+foo(18)

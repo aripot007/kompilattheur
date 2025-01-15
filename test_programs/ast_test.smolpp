@@ -1,11 +1,3 @@
-def foo(a, b):
-    
-    print(a)
-
-    if a == b:
-        return b
-    
-    for i in range(10):
-        print(i)
-
-foo(18)
+# a[1][1] = 3
+a[1] = 3
+a = 3

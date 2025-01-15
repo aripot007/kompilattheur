@@ -1,25 +1,42 @@
-use crate::{common::types::{FileElement, Node, Tree}, parser::Lexem};
+use crate::{
+    common::types::{FileElement, Node, Tree},
+    parser::Lexem,
+};
 
-use super::AstNode;
-
+use super::{AstNode, Factor};
 
 pub enum Expression {
     OR(Box<Expression>, Box<Expression>),
     AND(Box<Expression>, Box<Expression>),
     NOT(Box<Expression>),
     CMP(Box<Expression>, CmpOp, Box<Expression>),
-    ADD(Box<Expression>,AddOp, Box<Expression>),
-    MULT(Box<Expression>,MultOp, Box<Expression>),
+    ADD(Box<Expression>, AddOp, Box<Expression>),
+    MULT(Box<Expression>, MultOp, Box<Expression>),
     NEG(Box<Expression>),
+    Factor(Factor),
     NotImplemented,
 }
 
 #[derive(Debug, Copy, Clone)]
-pub enum CmpOp {LESS,LESSEQ, GREATER, GREATEREQ, EQ, NEQ}
+pub enum CmpOp {
+    LESS,
+    LESSEQ,
+    GREATER,
+    GREATEREQ,
+    EQ,
+    NEQ,
+}
 #[derive(Debug, Copy, Clone)]
-pub enum AddOp {ADD, SUB}
+pub enum AddOp {
+    ADD,
+    SUB,
+}
 #[derive(Debug, Copy, Clone)]
-pub enum MultOp {MULT, DIV, MOD}
+pub enum MultOp {
+    MULT,
+    DIV,
+    MOD,
+}
 
 impl Into<String> for CmpOp {
     fn into(self) -> String {
@@ -75,41 +92,44 @@ impl Into<Tree<String>> for &Expression {
                 root.borrow_mut().add_child(&root, e1.as_ref().into());
                 root.borrow_mut().add_child(&root, e2.as_ref().into());
                 root
-            },
+            }
             Expression::AND(e1, e2) => {
                 let root = Node::new(String::from("AND"));
                 root.borrow_mut().add_child(&root, e1.as_ref().into());
                 root.borrow_mut().add_child(&root, e2.as_ref().into());
                 root
-            },
+            }
             Expression::CMP(e1, op, e2) => {
                 let root = Node::new((*op).into());
                 root.borrow_mut().add_child(&root, e1.as_ref().into());
                 root.borrow_mut().add_child(&root, e2.as_ref().into());
                 root
-            },
+            }
             Expression::ADD(e1, op, e2) => {
                 let root = Node::new((*op).into());
                 root.borrow_mut().add_child(&root, e1.as_ref().into());
                 root.borrow_mut().add_child(&root, e2.as_ref().into());
                 root
-            },
+            }
             Expression::MULT(e1, op, e2) => {
                 let root = Node::new((*op).into());
                 root.borrow_mut().add_child(&root, e1.as_ref().into());
                 root.borrow_mut().add_child(&root, e2.as_ref().into());
                 root
-            },
+            }
             Expression::NEG(expression) => {
                 let root = Node::new(String::from("NEG"));
-                root.borrow_mut().add_child(&root, expression.as_ref().into());
+                root.borrow_mut()
+                    .add_child(&root, expression.as_ref().into());
                 root
-            },
+            }
             Expression::NOT(expression) => {
                 let root = Node::new(String::from("NOT"));
-                root.borrow_mut().add_child(&root, expression.as_ref().into());
+                root.borrow_mut()
+                    .add_child(&root, expression.as_ref().into());
                 root
-            },
+            }
+            Expression::Factor(factor) => factor.into(),
             Expression::NotImplemented => Node::new(String::from("EXPR (NI)")),
         }
     }

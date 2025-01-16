@@ -18,8 +18,6 @@ mod for_loop;
 pub use for_loop::For;
 mod conditional;
 pub use conditional::Conditional;
-mod memory;
-pub use memory::Memory;
 mod assign;
 pub use assign::Assign;
 

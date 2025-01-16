@@ -4,20 +4,21 @@ use crate::{
     parser::Lexem,
 };
 
-use super::{Expression, Memory};
+use super::Expression;
 
 pub struct Assign {
-    memory: Memory,
-    expression: Expression,
+    destination: Expression,
+    value: Expression,
 }
 
 impl AstNode for Assign {}
 
 impl From<Tree<FileElement<Lexem>>> for Assign {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {
-        let memory = Memory::from(root.clone());
 
-        let expression = Expression::from(
+        let dest = Expression::from(root.borrow().get_children()[0].clone());
+
+        let value = Expression::from(
             root.borrow() // simple statement
                 .get_children()[1]
                 .borrow() // simple statement identifier
@@ -25,7 +26,7 @@ impl From<Tree<FileElement<Lexem>>> for Assign {
                 .clone(),
         );
 
-        return Assign { memory, expression };
+        return Assign { destination: dest, value };
     }
 }
 
@@ -33,8 +34,8 @@ impl Into<Tree<String>> for Assign {
     fn into(self) -> Tree<String> {
         let root = Node::new(String::from("ASSIGN"));
 
-        root.borrow_mut().add_child(&root, self.memory.into());
-        root.borrow_mut().add_child(&root, self.expression.into());
+        root.borrow_mut().add_child(&root, self.destination.into());
+        root.borrow_mut().add_child(&root, self.value.into());
 
         return root;
     }

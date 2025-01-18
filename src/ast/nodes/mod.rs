@@ -13,7 +13,7 @@ pub use param::Param;
 mod statement;
 pub use statement::Statement;
 mod expression;
-pub use expression::Expression;
+pub use expression::*;
 mod for_loop;
 pub use for_loop::For;
 mod conditional;
@@ -91,6 +91,20 @@ pub(super) fn parse_list_filter<T, U>(
     parse(root, &mut values, parse_u, filter_t);
     return values;
 }
+
+macro_rules! list_into_tree {
+    ($root_str: expr, $elems_list: expr) => {
+        {
+            let root = Node::new(String::from($root_str));
+
+            for elem in $elems_list {
+                root.borrow_mut().add_child(&root, elem.into());
+            }
+            root
+        }
+    };
+}
+pub(super) use list_into_tree;
 
 /// Un noeud d'ast doit pouvoir être créé depuis l'arbre concret correspondant, et
 /// doit pouvoir être convertit en arbre de String représentant chaque noeud, pour

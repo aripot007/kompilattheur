@@ -1,5 +1,5 @@
 use crate::{common::types::{FileElement, Node, Tree}, parser::Lexem};
-use super::{parse_list, AstNode, Def};
+use super::{list_into_tree, parse_list, AstNode, Def};
 
 pub struct Defs {
     defs: Vec<Def>,
@@ -18,12 +18,6 @@ impl From<Tree<FileElement<Lexem>>> for Defs {
 
 impl Into<Tree<String>> for Defs {
     fn into(self) -> Tree<String> {
-        let root = Node::new(String::from("DEFS"));
-
-        for def in self.defs {
-            root.borrow_mut().add_child(&root, def.into());
-        }
-
-        return root;
+        list_into_tree!("DEFS", self.defs)
     }
 }

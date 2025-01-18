@@ -1,11 +1,14 @@
+
 use crate::analysis_table::NonTerminal;
+use crate::ast::nodes::parse_list_filter;
+use crate::common::types::IdToken;
 use crate::{
     analysis_table::get_analysis_table,
     common::types::{file_element::file_element_from, FileElement, Node, NumToken, Token, Tree},
     parser::Lexem,
 };
 
-use super::AstNode;
+use super::{list_into_tree, AstNode, Expression};
 
 pub enum Factor {
     Integer(FileElement<u64>),
@@ -13,58 +16,110 @@ pub enum Factor {
     True(FileElement<Token>),
     False(FileElement<Token>),
     None(FileElement<Token>),
-    Symbol(FileElement<Token>),
+    Identifier(usize),
+    List(Vec<Expression>),
+    Expr(Box<Expression>),
+    Call {
+        identifier: usize,
+        args: Vec<Expression>,
+    },
 }
 
 impl AstNode for Factor {}
 
 impl From<Tree<FileElement<Lexem>>> for Factor {
+
     fn from(root: Tree<FileElement<Lexem>>) -> Self {
+
+        // Check if a node from an expr list is an element or a separator
+        fn is_arg_node(node: Tree<FileElement<Lexem>>) -> bool {
+            match node.borrow().get_value().element {
+                Lexem::NonTerminal(id) => {
+                    let non_term = get_analysis_table().get_non_terminal(id);
+                    return non_term == &NonTerminal::ExprList || non_term == &NonTerminal::ExprListExpr;
+                },
+                _ => false,
+            }
+        }
+
         let table = get_analysis_table();
 
-        let non_terminal: &NonTerminal = match root.borrow().get_value().element {
-            Lexem::NonTerminal(id) => table.get_non_terminal(id),
-            Lexem::Terminal(Token::Identifier(id)) => {
-                return Factor::Symbol(file_element_from!(
-                    root.borrow().get_value(),
-                    Token::Identifier(id)
-                ))
-            }
-            Lexem::Terminal(token) => panic!("Cannot create factor from terminal '{}'", token),
-        };
+        if let Lexem::Terminal(Token::Identifier(IdToken {id})) = root.borrow().get_value().element {
+            return Factor::Identifier(id);
+        }
 
-        match non_terminal {
-            NonTerminal::Const => {
-                let val = root.borrow().get_children()[0].borrow().get_value();
-                match val.element {
-                    Lexem::Terminal(Token::Integer(NumToken { value })) => {
-                        return Factor::Integer(file_element_from!(val, value))
-                    }
-                    Lexem::Terminal(Token::String(string)) => {
-                        return Factor::String(file_element_from!(val, string))
-                    }
-                    Lexem::Terminal(Token::True) => {
-                        return Factor::True(file_element_from!(val, Token::True))
-                    }
-                    Lexem::Terminal(Token::False) => {
-                        return Factor::False(file_element_from!(val, Token::False))
-                    }
-                    Lexem::Terminal(Token::None) => {
-                        return Factor::None(file_element_from!(val, Token::None))
-                    }
-                    Lexem::Terminal(token) => panic!(
-                        "Malformed CST: Expected NumToken while parsing const, found {}",
-                        token
-                    ),
-                    Lexem::NonTerminal(id) => panic!(
-                        "Malformed CST: Expected NumToken while parsing const, found {}",
-                        table.get_non_terminal_name(id)
-                    ),
+        let children = root.borrow().get_children();
+
+        // Const
+        if children.len() == 1 {
+
+            let val = children[0].borrow().get_children()[0].borrow().get_value();
+
+            match val.element {
+                Lexem::Terminal(Token::Integer(NumToken { value })) => {
+                    return Factor::Integer(file_element_from!(val, value))
                 }
+                Lexem::Terminal(Token::String(string)) => {
+                    return Factor::String(file_element_from!(val, string))
+                }
+                Lexem::Terminal(Token::True) => {
+                    return Factor::True(file_element_from!(val, Token::True))
+                }
+                Lexem::Terminal(Token::False) => {
+                    return Factor::False(file_element_from!(val, Token::False))
+                }
+                Lexem::Terminal(Token::None) => {
+                    return Factor::None(file_element_from!(val, Token::None))
+                }
+                Lexem::Terminal(token) => panic!(
+                    "Malformed CST: Expected NumToken while parsing const, found {}",
+                    token
+                ),
+                Lexem::NonTerminal(id) => panic!(
+                    "Malformed CST: Expected NumToken while parsing const, found {}",
+                    table.get_non_terminal_name(id)
+                ),
             }
-            _ => panic!("Cannot create factor from '{}' node", non_terminal),
-        };
-    }
+    
+        } else if children.len() == 2 {
+            // Identifier or function call
+
+            let identifier = match children[0].borrow().get_value().element {
+                Lexem::Terminal(Token::Identifier(IdToken {id})) => id,
+                _ => panic!("Invalid identifier child for node {}", root.borrow().generate_html()),
+            };
+
+            let right_child_children = children[1].borrow().get_children();
+
+            if right_child_children.len() == 0 {
+                // Identifier only
+                return Factor::Identifier(identifier);
+            }
+
+            // Function call
+
+            let args: Vec<Expression> = parse_list_filter(
+                right_child_children[1].clone(),
+                Expression::from,
+                is_arg_node,
+            );
+
+            return Factor::Call { identifier, args};
+        
+        } else if children.len() == 3 {
+            // Expr or list
+            match children[0].borrow().get_value().element {
+                Lexem::Terminal(Token::OpenBracket) => return Factor::List(parse_list_filter(children[1].clone(), Expression::from, is_arg_node)),
+                Lexem::Terminal(Token::OpenParenthesis) => return Factor::Expr(Box::new(Expression::from(children[1].clone()))),
+                _ => panic!(),
+            }
+        }
+
+        println!("Not recognized : {}", root.borrow().generate_mermaid());
+
+        return Factor::Call { identifier: 99, args: Vec::new() };
+
+    }   
 }
 
 impl Into<Tree<String>> for Factor {
@@ -80,8 +135,18 @@ impl Into<Tree<String>> for &Factor {
             Factor::String(file_element) => format!("{}", file_element.element.escape_debug()),
             Factor::True(_file_element) => String::from("True"),
             Factor::False(_file_element) => String::from("False"),
-            Factor::Symbol(_file_element) => String::from("Symbol"),
+            Factor::Identifier(id) => format!("Identifier {id}"),
             Factor::None(_file_element) => String::from("None"),
+            Factor::List(vec) => return list_into_tree!("LIST", vec),
+            Factor::Expr(expression) => return (*expression).as_ref().into(),
+            Factor::Call { identifier, args } => {
+                let root = Node::new(String::from("CALL"));
+
+                root.borrow_mut().add_child(&root, Node::new(format!("Identifier : {}", identifier)));
+                root.borrow_mut().add_child(&root, list_into_tree!("ARGS", args));
+
+                return root;
+            },
         };
 
         let root = Node::new(s);

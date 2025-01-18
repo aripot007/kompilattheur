@@ -155,6 +155,7 @@ mod tests {
 
         let result = root.borrow().generate_mermaid();
         let expected = concat!(
+            "%%{ init: { 'flowchart': { 'curve': 'linear' } } }%%\n",
             "flowchart TD\n",
             "0[\"root\"]\n",
             "1[\"child1\"]\n",
@@ -190,6 +191,7 @@ mod tests {
 
         let result = root.borrow().generate_mermaid();
         let expected = concat!(
+            "%%{ init: { 'flowchart': { 'curve': 'linear' } } }%%\n",
             "flowchart TD\n",
             "0[\"root\"]\n",
             "1[\"child1\"]\n",

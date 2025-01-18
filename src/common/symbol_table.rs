@@ -270,7 +270,8 @@ mod tests {
 
         let res = root.borrow().generate_unsafe_mermaid();
 
-        let expected = r#"flowchart TD
+        let expected = r#"%%{ init: { 'flowchart': { 'curve': 'linear' } } }%%
+flowchart TD
 0["Node index: 0
 <table>
     <thead>

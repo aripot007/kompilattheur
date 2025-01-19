@@ -31,7 +31,25 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
                 let file_elem = node.borrow_mut().get_value().clone();
                 match file_elem.element {
                     Lexem::Terminal(token) => {
-                        if token.is_same_type(&input.element) {
+                        if token == Token::Newline && input.element == Token::EOF {
+                            Diagnostic::new(
+                                DiagnosticGravity::Warning,
+                                "ParserEndOfFileWarning :".to_string(),
+                                input.line,
+                                input.line,
+                                input.start_char,
+                                if input.len > 0 {
+                                    input.start_char + (input.len - 1) as u64
+                                } else {
+                                    input.start_char
+                                },
+                                "No Newline at the end of the file".to_string(),
+                            ).display();
+                            node.borrow_mut().set_value(file_element_from!(input, Lexem::Terminal(input.element.clone())));
+                            input = lexer.next().unwrap_or(file_element::EOF);
+                            error = false;
+                        } 
+                        else if token.is_same_type(&input.element) {
                             //println!("Input: {:?}", input);
                             node.borrow_mut().set_value(file_element_from!(input, Lexem::Terminal(input.element.clone())));
                             input = lexer.next().unwrap_or(file_element::EOF);

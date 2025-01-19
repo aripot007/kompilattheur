@@ -175,6 +175,9 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
     if error {
         while let Some(_) = lexer.next() {}
     }
+    if lexer.get_nb_errors() > 0 {
+        is_acceptable = false;
+    }
     if !is_acceptable {
         accept = false;
         error = true;

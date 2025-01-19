@@ -105,6 +105,10 @@ impl Lexer {
             diagnostics: Vec::new(),
         };
     }
+    
+    pub fn get_nb_errors(&self) -> usize {
+        return self.nb_errors;
+    }
 
     fn construct_file_elem(&self, token: Token) -> FileElement<Token> {
         let calc_len = match token {

@@ -1,6 +1,6 @@
 use super::AstNode;
 use crate::{
-    common::types::{FileElement, Node, Tree}, parser::Lexem
+    analysis_table::NonTerminal, common::types::{file_element::{empty_file_elt, file_element_from}, FileElement, Node, Tree}, parser::Lexem
 };
 
 use super::Expression;
@@ -30,48 +30,27 @@ impl From<Tree<FileElement<Lexem>>> for Assign {
         The tree can then be parsed by Expression::from
         */
 
-        /*
-        
-        let identifier_node = &root.borrow().get_children()[0];
-        
-        match identifier_node.borrow().get_value().element {
-            Lexem::Terminal(Token::Identifier(id)) => (),
-            _ => panic!("Unsupported assign from node :\n {}", root.borrow().generate_mermaid())
-        }
+        let right_child = root.borrow().get_children()[1].clone();
 
-        
+        let (destination, value): (Expression, Expression) =
+            match right_child.borrow().get_value().element {
+                // Real assignation to identifier
+                Lexem::NonTerminal(NonTerminal::SimpleStateIdent) => {
 
-        let right_child = &root.borrow().get_children()[1];
+                    let simple_state_ident_child2_elt = right_child.borrow().get_children()[1].borrow().get_value().element;
+                    
+                    if let Lexem::NonTerminal(NonTerminal::Expr) = simple_state_ident_child2_elt {
+                        // Simple id = expr assignment
+                        parse_simple_id_assign_tree(root)
+                    } else {
+                        // Complex expr1 = expr2 with identifier starting expr1
+                        parse_complex_id_assign_tree(root)
+                    }
+                }
+                _ => todo!()
+        };
 
-        if let Lexem::Terminal(Token::Assign) = right_child.borrow().get_children()[0].borrow().get_value().element {
-            // Simple assignment
-            return Statement::Assign(Assign::from(root.clone()));
-        }
-
-        let right_child_children = right_child.borrow().get_children();
-
-        if right_child_children.len() == 3 {
-
-            let simple_stmt_expr_node_childre = right_child_children[2].borrow().get_children();
-
-            if simple_stmt_expr_node_childre.len() == 6 {
-                // Complex assignment
-                return Statement::Assign(Assign::from(root));
-            }
-        }
-        */
-
-        let dest = Expression::from(root.borrow().get_children()[0].clone());
-
-        let value = Expression::from(
-            root.borrow() // simple statement
-                .get_children()[1]
-                .borrow() // simple statement identifier
-                .get_children()[1]
-                .clone(),
-        );
-
-        return Assign { destination: dest, value };
+        return Assign { destination, value };
     }
 }
 
@@ -84,6 +63,13 @@ macro_rules! descend_children {
     ($root: expr, $n: expr, $($children:expr),+) => {
         descend_children!(descend_children!($root, $n), $($children),+)
     }
+}
+
+/// Add a non terminal child with an empty fileelement to the given root
+macro_rules! add_nonterm_child {
+    ($root: expr, $nt: expr) => {
+        $root.borrow_mut().add_child(&$root, Node::new(empty_file_elt!(Lexem::NonTerminal($nt))));
+    };
 }
 
 /// The first case is a simple id = expr assignement, with the following tree :
@@ -99,12 +85,70 @@ macro_rules! descend_children {
 ///               factor
 ///              /      \
 ///             id      factor_id
-fn reconstruct_simple_assign_tree(root: Tree<FileElement<Lexem>>) -> (Tree<FileElement<Lexem>>, Tree<FileElement<Lexem>>) {
+fn parse_simple_id_assign_tree(root: Tree<FileElement<Lexem>>) -> (Expression, Expression) {
 
     let right_expr: Tree<FileElement<Lexem>> = descend_children!(root, 1, 1).clone();
     let ident_node: Tree<FileElement<Lexem>> = descend_children!(root, 0).clone();
-    todo!()
+    
+    let left_expr: Tree<FileElement<Lexem>> = Node::new(file_element_from!(ident_node.borrow().get_value(), Lexem::NonTerminal(NonTerminal::Factor)));
+
+    left_expr.borrow_mut().add_child(&left_expr, ident_node);
+    add_nonterm_child!(left_expr, NonTerminal::FactorIdent);
+
+    return (Expression::from(left_expr), Expression::from(right_expr));
 }
+
+/// The second case is a expr1 = expr2 assignement, with expr1 starting with an id the following tree :
+///
+///                         simple_stmt
+///                        /          \ 
+///                     id          simple_stmt_ident
+///                        ________/        |        \______________
+///                       /                 |                       \
+///                      /                  |                        \
+///             factor_id             expr2_no_access                simple_stmt_expr ___________
+///                                  /   |        \                 /    \          \___         \
+///                                or  expr_and  expr2_no_access   /      \              =S        \
+///                                                  ...       [ expr ]    access_suite            expr          
+///                                                                         /       \
+///                                                                             ...
+/// We move create a factor tree for the left identifier, embeded in a normal expr tree to handle the ors etc,
+/// and finally move the access exprs from the right to the access part of the rightmost factor in the leftmost expr 
+///
+///                         expr
+///                        /    \______
+///                       /            \
+///                      /              \
+///                   factor        expr2_no_access
+///                  /      \           ...
+///                id    factor_id  
+///   
+fn parse_complex_id_assign_tree(root: Tree<FileElement<Lexem>>) -> (Expression, Expression) {
+    
+    let value_expr: Tree<FileElement<Lexem>> = descend_children!(root, 1, 2, 5).clone();
+
+    let id_node = Node::new(empty_file_elt!(Lexem::NonTerminal(NonTerminal::Factor)));
+
+    // Move identifier
+    id_node.borrow_mut().add_child(&id_node, root.borrow().get_children()[0].clone());
+    
+    // Move factor id
+    id_node.borrow_mut().add_child(&id_node, descend_children!(root, 1, 0).clone());
+
+    // Make fake left expr tree, without access
+    let left_expr_tree: Tree<FileElement<Lexem>> = Node::new(empty_file_elt!(Lexem::NonTerminal(NonTerminal::Expr)));
+
+    // Add identifier as factor
+    left_expr_tree.borrow_mut().add_child(&left_expr_tree, id_node);
+
+    // Add the rest of the expression tree
+    left_expr_tree.borrow_mut().add_child(&left_expr_tree, descend_children!(root, 1, 1).clone());
+
+    let left_expr = Expression::from(left_expr_tree);
+
+    return (left_expr, Expression::from(value_expr));
+}
+
 
 impl Into<Tree<String>> for Assign {
     fn into(self) -> Tree<String> {

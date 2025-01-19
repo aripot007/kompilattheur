@@ -1,6 +1,3 @@
 # foo() or a
 # 1 + 2
-a or b or c[3] = b
-a[12][12] = 1
-a = a[12][12]
-a = a or b
+(a or b)[12] = b

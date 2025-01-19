@@ -1,6 +1,6 @@
 use super::AstNode;
 use crate::{
-    analysis_table::NonTerminal, common::types::{file_element::{empty_file_elt, file_element_from}, FileElement, Node, Tree}, parser::Lexem
+    analysis_table::NonTerminal, ast::nodes::parse_access, common::types::{file_element::{empty_file_elt, file_element_from}, FileElement, Node, Tree}, parser::Lexem
 };
 
 use super::Expression;
@@ -145,6 +145,28 @@ fn parse_complex_id_assign_tree(root: Tree<FileElement<Lexem>>) -> (Expression, 
     left_expr_tree.borrow_mut().add_child(&left_expr_tree, descend_children!(root, 1, 1).clone());
 
     let left_expr = Expression::from(left_expr_tree);
+
+    // Add the access expression to the rightmost factor
+
+    fn insert_access(expr: Expression, access_root: Tree<FileElement<Lexem>>) -> Expression {
+        match expr {
+            Expression::BINOP(e1, op, e2) => Expression::BINOP(e1, op, Box::new(insert_access(*e2, access_root))),
+            Expression::UNOP(op, e) => Expression::UNOP(op, Box::new(insert_access(*e, access_root))),
+            Expression::NotImplemented => Expression::NotImplemented,
+            Expression::Factor(_) => parse_access(access_root, expr),
+        }
+    }
+
+    // Construct fake access tree
+    let access_root: Tree<FileElement<Lexem>> = Node::new(empty_file_elt!(Lexem::NonTerminal(NonTerminal::ExprAccess)));
+
+    // Move the first 4 childs of the simple_stmt_expr
+    let simple_stmt_expr_children = descend_children!(root, 1, 2).borrow().get_children();
+    for i in 0 ..= 3 {
+        access_root.borrow_mut().add_child(&access_root, simple_stmt_expr_children[i].clone());
+    }
+
+    let left_expr = insert_access(left_expr, access_root);
 
     return (left_expr, Expression::from(value_expr));
 }

@@ -72,21 +72,21 @@ fn parse_binop_chain(root: Tree<FileElement<Lexem>>) -> Expression {
     return parse(root.borrow().get_children()[1].clone(), leftmost_expr);
 }
 
+/// Parse an access expression associated with a factor
+pub(in crate::ast::nodes) fn parse_access(access_root: Tree<FileElement<Lexem>>, left_expr: Expression) -> Expression {
+    let children = access_root.borrow().get_children();
+
+    if children.len() == 0 {
+        return left_expr;
+    } else {
+        let expr = Expression::from(children[1].clone());
+        return parse_access(children[3].clone(), Expression::BINOP(Box::from(left_expr), BinOp::ACCESS, Box::from(expr)));
+    }
+}
+
 fn parse_access_or_factor(root: Tree<FileElement<Lexem>>) -> Expression {
     let factor: Expression = Expression::Factor(Factor::from(root.borrow().get_children()[0].clone()));
-
-    fn parse(node: Tree<FileElement<Lexem>>, left_expr: Expression) -> Expression {
-        let children = node.borrow().get_children();
-
-        if children.len() == 0 {
-            return left_expr;
-        } else {
-            let expr = Expression::from(children[1].clone());
-            return parse(children[3].clone(), Expression::BINOP(Box::from(left_expr), BinOp::ACCESS, Box::from(expr)));
-        }
-    }
-
-    return parse(root.borrow().get_children()[1].clone(), factor);
+    return parse_access(root.borrow().get_children()[1].clone(), factor);
 }
 
 impl Into<Tree<String>> for Expression {

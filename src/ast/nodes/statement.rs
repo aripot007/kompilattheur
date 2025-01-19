@@ -1,6 +1,6 @@
 use crate::{
-    analysis_table::{get_analysis_table, NonTerminal},
-    common::types::{FileElement, Node, Token, Tree},
+    analysis_table::NonTerminal,
+    common::types::{file_element::file_element_from, FileElement, Node, Token, Tree},
     parser::Lexem,
 };
 
@@ -19,14 +19,13 @@ impl AstNode for Statement {}
 
 impl From<Tree<FileElement<Lexem>>> for Statement {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {
-        let analysis_table = get_analysis_table();
 
         let root_non_terminal = match root.borrow().get_value().element {
-            Lexem::NonTerminal(id) => analysis_table.get_non_terminal(id),
+            Lexem::NonTerminal(nt) => nt,
             _ => panic!("Trying to parse STATEMENT from terminal concrete node"),
         };
 
-        if root_non_terminal != &NonTerminal::Stmt {
+        if root_non_terminal != NonTerminal::Stmt {
             panic!("Cannot parse Statement from {} node", root_non_terminal);
         }
 
@@ -37,8 +36,8 @@ impl From<Tree<FileElement<Lexem>>> for Statement {
             .element;
 
         match left_child_elem {
-            Lexem::NonTerminal(id)
-                if analysis_table.get_non_terminal(id) == &NonTerminal::SimpleStmt =>
+            Lexem::NonTerminal(nt)
+                if nt == NonTerminal::SimpleStmt =>
             {
                 return parse_simple(root.borrow().get_children()[0].clone())
             }
@@ -63,9 +62,38 @@ fn parse_simple(root: Tree<FileElement<Lexem>>) -> Statement {
         Lexem::Terminal(Token::Return) => {
             Statement::Return(Expression::from(root.borrow().get_children()[1].clone()))
         }
-        Lexem::Terminal(Token::Identifier(_)) => Statement::Assign(Assign::from(root.clone())),
+        Lexem::Terminal(Token::Identifier(_)) => parse_ident_stmt(root),
         _ => return Statement::NotImplemented,
     }
+}
+
+/// Parse a statement beginning with an identifier token.
+/// Can be either an assignment, a function call or a noop
+fn parse_ident_stmt(root: Tree<FileElement<Lexem>>) -> Statement {
+
+    let identifier_lexem: FileElement<Lexem> = root.borrow().get_children()[0].borrow().get_value();
+    let identifier = file_element_from!(identifier_lexem, identifier_lexem.element);
+
+    let right_child = &root.borrow().get_children()[1];
+
+    if let Lexem::Terminal(Token::Assign) = right_child.borrow().get_children()[0].borrow().get_value().element {
+        // Simple assignment
+        return Statement::Assign(Assign::from(root.clone()));
+    }
+
+    let right_child_children = right_child.borrow().get_children();
+
+    if right_child_children.len() == 3 {
+
+        let simple_stmt_expr_node_childre = right_child_children[2].borrow().get_children();
+
+        if simple_stmt_expr_node_childre.len() == 6 {
+            // Complex assignment
+            return Statement::Assign(Assign::from(root));
+        }
+    }
+
+    return Statement::NotImplemented;
 }
 
 impl Into<Tree<String>> for Statement {

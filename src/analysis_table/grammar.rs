@@ -3,6 +3,8 @@ use core::fmt::Display;
 
 use crate::{common::types::{IdToken, Token}, parser::Lexem};
 
+use super::NonTerminal;
+
 /// Représente un lexem qui a été prsé de la grammaire
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ParsedLexem {
@@ -52,27 +54,22 @@ pub struct Grammar {
     pub rules: Vec<Rule>,
 
     /// Lexemes non terminaux
-    pub non_terminal_lexems: HashMap<String, ParsedLexem>,
-    next_non_terminal_id: usize,
+    pub non_terminal_lexems: HashSet<ParsedLexem>,
 
-    /// Non terminaux produisant le mot vide
-    #[allow(dead_code)]
-    empty_word_producers: Vec<ParsedLexem>,
-
-    /// Tableau contenant true pour les non terminaux produisant le mot vide
-    empty_word_producers_ids: Vec<bool>,
+    /// Set des non terminaux produisant le mot vide
+    empty_word_producers: HashSet<NonTerminal>,
 
     /// Permet de savoir si la liste des non terminaux produisant le mot vide a été calculée
     empty_word_producers_computed: bool,
 
     /// Liste des premiers pour les non terminaux
-    firsts: Vec<HashSet<Token>>,
+    firsts: HashMap<NonTerminal, HashSet<Token>>,
 
     /// Permet de savoir si la liste des premiers a été calculée
     firsts_computed: bool,
 
     /// Liste des suivants pour les non terminaux
-    follows: Vec<HashSet<Token>>,
+    follows: HashMap<NonTerminal, HashSet<Token>>,
 
     /// Permet de savoir si la liste des suivants a été calculée
     follows_computed: bool,
@@ -86,13 +83,12 @@ macro_rules! terminal {
     };
 }
 
-/// Renvoie l'id d'un ParsedLexem non terminal
-/// Panic si le ParsedLexem n'est pas un non terminal
-macro_rules! non_terminal_id {
-    ($parsed_lexem: expr) => {
-        match $parsed_lexem.lexem {
-            Lexem::Terminal(_) => panic!("Trying to get terminal id from non-terminal ParsedLexem"),
-            Lexem::NonTerminal(id) => id,
+/// Convertit un Lexem en NonTerminal. Panic si le lexem est terminal
+macro_rules! lexem_to_nonterm {
+    ($lexem: expr) => {
+        match $lexem {
+            Lexem::Terminal(t) => panic!("Cannot convert terminal lexem {} to non terminal", t),
+            Lexem::NonTerminal(nt) => nt,
         }
     };
 }
@@ -103,14 +99,12 @@ impl Grammar {
     pub fn new() -> Self {
         return Grammar {
             rules: Vec::new(),
-            next_non_terminal_id: 0,
-            non_terminal_lexems: HashMap::new(),
-            empty_word_producers: Vec::new(),
-            empty_word_producers_ids: Vec::new(),
+            non_terminal_lexems: HashSet::new(),
+            empty_word_producers: HashSet::new(),
             empty_word_producers_computed: false,
-            firsts: Vec::new(),
+            firsts: HashMap::new(),
             firsts_computed: false,
-            follows: Vec::new(),
+            follows: HashMap::new(),
             follows_computed: false,
         }
     }
@@ -170,20 +164,7 @@ impl Grammar {
             "print" => terminal!("print", Token::Print),
 
             // Le lexem est un non terminal
-            name => {
-                let name = String::from(name);
-                self.non_terminal_lexems
-                    .entry(name.clone())
-                    .or_insert_with(|| {
-                        let id = self.next_non_terminal_id;
-                        self.next_non_terminal_id += 1;
-                        ParsedLexem {
-                            name: name.clone(),
-                            lexem: Lexem::NonTerminal(id),
-                        }
-                    })
-                    .clone()
-            }
+            name => ParsedLexem {name: String::from(name), lexem: Lexem::NonTerminal(NonTerminal::from(String::from(name)))},
         }
     }
 
@@ -205,7 +186,7 @@ impl Grammar {
     }
 
     /// Renvois tous les non-terminaux produisant le mod vide, en les calculant si besoin.
-    pub fn empty_word_producers(&mut self) -> &Vec<ParsedLexem> {
+    pub fn empty_word_producers(&mut self) -> &HashSet<NonTerminal> {
 
         if !self.empty_word_producers_computed {
             self.compute_empty_word_producers();
@@ -217,10 +198,8 @@ impl Grammar {
     /// Calcule la liste des non-terminaux produisant le mot vide
     pub fn compute_empty_word_producers(&mut self) {
 
-        let nb_non_terminal = self.non_terminal_lexems.len();
-
-        // Tabeau de booléen des non terminaux produisant le mot vid
-        let mut producers: Vec<bool> = vec![false; nb_non_terminal];
+        // Set des non terminaux produisant le mot vid
+        let mut producers: HashSet<NonTerminal> = HashSet::new();
 
         loop {
 
@@ -228,25 +207,28 @@ impl Grammar {
 
             for rule in &self.rules {
 
-                let start_lexem_id = non_terminal_id!(rule.start);
+                let start_lexem = match &rule.start.lexem {
+                    Lexem::Terminal(_) => panic!(),
+                    Lexem::NonTerminal(nt) => nt
+                };
 
                 // Skip rules that starts with an empty word producer
-                if producers[start_lexem_id] {
+                if producers.contains(start_lexem) {
                     continue;
                 }
 
                 // Check if production is comprised of empty word producers only
                 let produces_empty_word = rule.production.iter()
                     .all(|lexem| {
-                        match lexem.lexem {
+                        match &lexem.lexem {
                             Lexem::Terminal(_) => false,
-                            Lexem::NonTerminal(id) => producers[id],
+                            Lexem::NonTerminal(nt) => producers.contains(nt),
                         }
                     });
 
                 if produces_empty_word {
                     changed = true;
-                    producers[start_lexem_id] = true;
+                    producers.insert(start_lexem.clone());
                 }
             }
 
@@ -261,15 +243,19 @@ impl Grammar {
         // Récupère les non terminaux correspondant
         self.empty_word_producers = self.non_terminal_lexems
             .iter()
-            .filter(|entry| producers[non_terminal_id!(entry.1)])
-            .map(|entry| entry.1.clone())
+            .filter_map(|entry| {
+                match &entry.lexem {
+                    Lexem::NonTerminal(nt) if producers.contains(&nt) => Some(nt.clone()),
+                    _ => None,
+                }
+            })
             .collect();
 
-        self.empty_word_producers_ids = producers;
+        self.empty_word_producers = producers;
     }
 
     /// Renvoie les premiers de tous les non terminaux
-    pub fn firsts(&mut self) -> &Vec<HashSet<Token>> {
+    pub fn firsts(&mut self) -> &HashMap<NonTerminal, HashSet<Token>> {
         if !self.firsts_computed {
             self.compute_firsts();
         }
@@ -278,14 +264,14 @@ impl Grammar {
 
     /// Renvoie les premiers pour un non terminal, sans les calculer si besoin
     /// Panique si les premiers n'ont pas déjà été calculés
-    pub fn get_firsts_unmut(&self, lexem: &Lexem) -> &HashSet<Token> {
+    pub fn get_firsts_unmut(&self, lexem: &Lexem) -> Option<&HashSet<Token>> {
         if !self.firsts_computed {
             panic!("Trying to get firsts without computing them")
         }
 
         match lexem {
             Lexem::Terminal(_) => panic!("Trying to get firsts for a terminal"),
-            Lexem::NonTerminal(id) => &self.firsts[*id],
+            Lexem::NonTerminal(nt) => self.firsts.get(nt),
         }
     }
 
@@ -302,7 +288,12 @@ impl Grammar {
                 break;
 
             } else {
-                firsts.extend(self.get_firsts_unmut(&lexem.lexem).iter().map(|t| t.clone()));
+                firsts.extend(
+                    self.get_firsts_unmut(&lexem.lexem)
+                        .unwrap_or(&HashSet::new())
+                        .iter()
+                        .map(|t| t.clone())
+                );
                 if !self.produces_empty_word_unmut(&lexem.lexem) {
                     break;
                 }
@@ -316,7 +307,7 @@ impl Grammar {
     pub fn compute_firsts(&mut self) {
 
         // Initialise des ensembles vides pour les premiers de chaque non terminal
-        let mut firsts: Vec<HashSet<Token>> = vec![HashSet::new(); self.non_terminal_lexems.len()];
+        let mut firsts: HashMap<NonTerminal, HashSet<Token>> = HashMap::new();
 
         // Calcule les producteurs de mots vide si ce n'est pas déjà fait
         // Nécessaire pour utiliser Self::produces_empty_word_unmut
@@ -329,20 +320,20 @@ impl Grammar {
 
             for rule in &self.rules {
 
-                let start_id = non_terminal_id!(rule.start);
+                let start_nt = lexem_to_nonterm!(&rule.start.lexem);
 
                 for lexem in &rule.production {
 
                     if let Lexem::Terminal(token) = &lexem.lexem {
-                        changed = firsts[start_id].insert(token.clone()) || changed;
+                        changed = firsts.entry(start_nt.clone()).or_default().insert(token.clone()) || changed;
                         break;
                     
-                    } else if let Lexem::NonTerminal(id) = &lexem.lexem {
+                    } else if let Lexem::NonTerminal(nt) = &lexem.lexem {
                         
-                        let firsts_copy: Vec<Token> = firsts[*id].iter().map(|t| t.clone()).collect();
+                        let firsts_copy: Vec<Token> = firsts.entry(nt.clone()).or_default().iter().map(|t| t.clone()).collect();
                         
                         for first in firsts_copy {
-                            changed = firsts[start_id].insert(first) || changed;
+                            changed = firsts.entry(start_nt.clone()).or_default().insert(first) || changed;
                         }
 
                         if !self.produces_empty_word_unmut(&lexem.lexem) {
@@ -369,7 +360,7 @@ impl Grammar {
         }
         match lexem {
             Lexem::Terminal(_) => false,
-            Lexem::NonTerminal(id) => *self.empty_word_producers_ids.get(*id).unwrap_or(&false),
+            Lexem::NonTerminal(nt) => self.empty_word_producers.contains(nt),
         }
     }
 
@@ -381,18 +372,17 @@ impl Grammar {
         }
 
         for lexem in word {
-            if let Lexem::Terminal(_) = &lexem.lexem {
-                return false;
-            }
-            if !self.empty_word_producers_ids[non_terminal_id!(lexem)] {
-                return false;
+            match &lexem.lexem {
+                Lexem::Terminal(_) => return false,
+                Lexem::NonTerminal(nt) if !self.empty_word_producers.contains(nt) => return false,
+                _ => ()
             }
         }
         return true;
     }
 
     /// Renvoie les suivants de la grammaire
-    pub fn follows(&mut self) -> &Vec<HashSet<Token>> {
+    pub fn follows(&mut self) -> &HashMap<NonTerminal, HashSet<Token>> {
         if !self.follows_computed {
             self.compute_follows();
         }
@@ -403,7 +393,12 @@ impl Grammar {
     pub fn compute_follows(&mut self) {
 
         // Initialise des ensembles vides pour les suivants de chaque non terminal
-        let mut follows: Vec<HashSet<Token>> = vec![HashSet::new(); self.non_terminal_lexems.len()];
+        let mut follows: HashMap<NonTerminal, HashSet<Token>> = HashMap::new();
+
+        for lexem in &self.non_terminal_lexems {
+            let nt: NonTerminal = lexem_to_nonterm!(lexem.lexem.clone());
+            follows.insert(nt, HashSet::new());
+        }
 
         // Préalcule les premiers si besoin
         if !self.firsts_computed {
@@ -417,7 +412,7 @@ impl Grammar {
         
         
         // Initialise l'axiome. On suppose que le "$" est représenté par le token EOF
-        follows[0].insert(Token::EOF);
+        follows.entry(NonTerminal::File).or_default().insert(Token::EOF);
 
 
         loop {
@@ -430,26 +425,26 @@ impl Grammar {
     
                 for lexem in &rule.production {
     
-                    let lexem_id = match &lexem.lexem {
+                    let current_nonterm = match &lexem.lexem {
                         Lexem::Terminal(_) => {
                             current_lexem_index += 1;
                             continue;
                         },
-                        Lexem::NonTerminal(id) => *id,
+                        Lexem::NonTerminal(nt) => nt.clone(),
                     };
     
                     // Le lexem actuel n'est pas terminal, on ajoute les premiers de la suite du mot aux suivants de ce lexem
                     for t in self.get_word_firsts_unmut(&rule.production[current_lexem_index + 1 ..]) {
-                        changed = follows[lexem_id].insert(t.clone()) || changed;
+                        changed = follows.entry(current_nonterm.clone()).or_default().insert(t.clone()) || changed;
                     }
 
                     // Si la suite du mot peut devenir le mot vide, on ajoute les suivants
                     // du terminal à gauche de la règle
                     if self.word_produces_empty_word_unmut(&rule.production[current_lexem_index + 1 ..]) {
                         
-                        let follows_copy: Vec<Token> = follows[non_terminal_id!(rule.start)].iter().cloned().collect();
+                        let follows_copy: Vec<Token> = follows.entry(lexem_to_nonterm!(&rule.start.lexem).clone()).or_default().iter().cloned().collect();
                         for t in follows_copy {
-                            changed = follows[lexem_id].insert(t.clone()) || changed;
+                            changed = follows.entry(current_nonterm.clone()).or_default().insert(t.clone()) || changed;
                         }
 
                     }
@@ -471,10 +466,10 @@ impl Grammar {
     /// Renvoie un HashSet des suivants d'un non terminal.
     /// Si les suivants n'ont pas encore été calculés, panique
     pub fn get_follows_unmut(&self, non_terminal: &ParsedLexem) -> &HashSet<Token> {
-        let Lexem::NonTerminal(id) = non_terminal.lexem else {
+        let Lexem::NonTerminal(nt) = &non_terminal.lexem else {
             panic!("Trying to get follows of a terminal");
         };
-        return &self.follows[id];
+        return &self.follows[nt]
     }
 
 }

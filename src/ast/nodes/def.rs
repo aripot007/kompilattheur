@@ -1,4 +1,4 @@
-use crate::{analysis_table::{get_analysis_table, NonTerminal}, ast::nodes::parse_list_filter, common::types::{file_element::file_element_from, FileElement, IdToken, Node, Token, Tree}, parser::Lexem};
+use crate::{analysis_table::NonTerminal, ast::nodes::parse_list_filter, common::types::{file_element::file_element_from, FileElement, IdToken, Node, Token, Tree}, parser::Lexem};
 use super::{AstNode, Block, Param};
 
 pub struct Def {
@@ -21,10 +21,8 @@ impl From<Tree<FileElement<Lexem>>> for Def {
 
         fn is_param_node(node: Tree<FileElement<Lexem>>) -> bool {
             match node.borrow().get_value().element {
-                Lexem::NonTerminal(id) => {
-                    let non_term = get_analysis_table().get_non_terminal(id);
-                    return non_term == &NonTerminal::IdentList || non_term == &NonTerminal::IdentListIdent;
-                },
+                Lexem::NonTerminal(NonTerminal::IdentList)
+                | Lexem::NonTerminal(NonTerminal::IdentListIdent) => true,
                 _ => false,
             }
         }

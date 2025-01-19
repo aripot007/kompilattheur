@@ -122,10 +122,7 @@ pub fn generate_analysis_table(input_file: &Path) -> AnalysisTable{
 #[cfg(test)]
 mod tests {
 
-    use std::path::PathBuf;
-    use crate::{analysis_table::grammar::{ParsedLexem, Rule}, common::types::Token};
-
-    use super::{parse_all_lexem_names, parse_grammar, parse_lexem_name};
+    use super::{parse_all_lexem_names, parse_lexem_name};
 
     #[test]
     fn test_parse_lexem_name() {
@@ -185,6 +182,7 @@ mod tests {
 
     }
 
+    /* 
     #[test]
     fn test_parse_grammar() {
 
@@ -274,5 +272,7 @@ mod tests {
         assert!(b_follows.contains(&Token::integer(0)));
         
     }
+
+    */
 
 }

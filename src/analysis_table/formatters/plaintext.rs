@@ -1,5 +1,5 @@
 use std::fmt;
-use crate::analysis_table::formatters::construct_string_table;
+use crate::analysis_table::{formatters::construct_string_table, NonTerminal};
 
 use super::super::analysis_table::AnalysisTable;
 
@@ -12,17 +12,19 @@ impl AnalysisTable {
 
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 
-                let (str_table, discriminant_names) = construct_string_table(&self.0);
+                let (str_table, term_discr_names, nonterm_list) = construct_string_table(&self.0);
                 
-                let nb_discriminants = discriminant_names.len();
+                let nonterm_names: Vec<String> = nonterm_list.iter().map(NonTerminal::to_string).collect();
+
+                let nb_discriminants = term_discr_names.len();
 
                 // Initialize column size with non terminal name
-                let mut column_sizes: Vec<usize> = discriminant_names.iter()
+                let mut column_sizes: Vec<usize> = term_discr_names.iter()
                                                     .map(String::len)
                                                     .collect();
         
                 // Compute column sizes
-                let nb_non_terminals = self.0.table.len();
+                let nb_non_terminals = nonterm_names.len();
         
                 for row in &str_table {
                     for (col, word) in row.iter().enumerate() {
@@ -37,7 +39,7 @@ impl AnalysisTable {
                 column_sizes = column_sizes.iter().map(|s| s + 2).collect();
         
                 // Starting non-terminal column size
-                let left_lexem_max_size = self.0.non_terminal_names
+                let left_lexem_max_size = nonterm_names
                     .iter()
                     .map(String::len)
                     .max()
@@ -60,7 +62,7 @@ impl AnalysisTable {
                 write!(f, "{}", sep_str)?;
         
                 write!(f, "+{:>width$}", "+", width=left_col_size+1)?;
-                for (i, name) in discriminant_names.iter().enumerate() {
+                for (i, name) in term_discr_names.iter().enumerate() {
                     write!(f, "{:^width$}+", name, width=column_sizes[i])?;
                 }
                 write!(f, "\n")?;
@@ -70,7 +72,7 @@ impl AnalysisTable {
                 // Print table
                 for i in 0..nb_non_terminals {
         
-                    write!(f, "|{:^width$}|", self.0.non_terminal_names[i], width=left_col_size)?;
+                    write!(f, "|{:^width$}|", nonterm_names[i], width=left_col_size)?;
         
                     for j in 0..nb_discriminants {
                         write!(f, "{:^width$}|", str_table[i][j], width=column_sizes[j])?;

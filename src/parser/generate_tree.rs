@@ -1,6 +1,6 @@
 use colored::Colorize;
 
-use crate::{common::{diagnostic::{Diagnostic, DiagnosticGravity}, types::{file_element::{self, file_element_from}, FileElement}}, lexer::Lexer};
+use crate::{analysis_table::NonTerminal, common::{diagnostic::{Diagnostic, DiagnosticGravity}, types::{file_element::{self, file_element_from}, FileElement}}, lexer::Lexer};
 use super::lexem::Lexem;
 use crate::analysis_table::AnalysisTable;
 use crate::common::types::{Node, Token};
@@ -10,7 +10,7 @@ use std::rc::Rc;
 pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<RefCell<Node<FileElement<Lexem>>>>, bool, bool) {
     
     let tree: Rc<RefCell<Node<FileElement<Lexem>>>> = Node::new(
-        FileElement { line: 0, start_char: 0, len: 0, element: Lexem::NonTerminal(0) }
+        FileElement { line: 0, start_char: 0, len: 0, element: Lexem::NonTerminal(NonTerminal::File) }
     );
     let mut stack: Vec<Rc<RefCell<Node<FileElement<Lexem>>>>> = vec![tree.clone()];
     let mut error = false;

@@ -3,7 +3,6 @@ use crate::analysis_table::NonTerminal;
 use crate::ast::nodes::parse_list_filter;
 use crate::common::types::IdToken;
 use crate::{
-    analysis_table::get_analysis_table,
     common::types::{file_element::file_element_from, FileElement, Node, NumToken, Token, Tree},
     parser::Lexem,
 };
@@ -34,15 +33,11 @@ impl From<Tree<FileElement<Lexem>>> for Factor {
         // Check if a node from an expr list is an element or a separator
         fn is_arg_node(node: Tree<FileElement<Lexem>>) -> bool {
             match node.borrow().get_value().element {
-                Lexem::NonTerminal(id) => {
-                    let non_term = get_analysis_table().get_non_terminal(id);
-                    return non_term == &NonTerminal::ExprList || non_term == &NonTerminal::ExprListExpr;
-                },
+                Lexem::NonTerminal(NonTerminal::ExprList)
+                | Lexem::NonTerminal(NonTerminal::ExprListExpr) => true,
                 _ => false,
             }
         }
-
-        let table = get_analysis_table();
 
         if let Lexem::Terminal(Token::Identifier(IdToken {id})) = root.borrow().get_value().element {
             return Factor::Identifier(id);
@@ -75,9 +70,9 @@ impl From<Tree<FileElement<Lexem>>> for Factor {
                     "Malformed CST: Expected NumToken while parsing const, found {}",
                     token
                 ),
-                Lexem::NonTerminal(id) => panic!(
+                Lexem::NonTerminal(nt) => panic!(
                     "Malformed CST: Expected NumToken while parsing const, found {}",
-                    table.get_non_terminal_name(id)
+                    nt
                 ),
             }
     

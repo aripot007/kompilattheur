@@ -1,6 +1,6 @@
 
 use crate::{
-    analysis_table::{get_analysis_table, NonTerminal}, common::types::{FileElement, Node, Token, Tree}, parser::Lexem
+    analysis_table::NonTerminal, common::types::{FileElement, Node, Token, Tree}, parser::Lexem
 };
 
 use super::{super::{AstNode, Factor}, BinOp, UnOp};
@@ -17,23 +17,21 @@ impl AstNode for Expression {}
 impl From<Tree<FileElement<Lexem>>> for Expression {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {
 
-        let analysis_table = get_analysis_table();
-
         let root_elem = root.borrow().get_value().element;
         let root_elem = match root_elem {
             Lexem::Terminal(Token::Identifier(_)) => return Expression::Factor(Factor::from(root)),
             Lexem::Terminal(token) => panic!("Cannot convert terminal {token} to EXPR"),
-            Lexem::NonTerminal(id) => analysis_table.get_non_terminal(id),
+            Lexem::NonTerminal(nt) => nt,
         };
 
         // Check if expression is access :
-        if root_elem == &NonTerminal::ExprAccess {
+        if root_elem == NonTerminal::ExprAccess {
             return parse_access_or_factor(root);
         }
 
         match root_elem {
-            &NonTerminal::ExprNeg | &NonTerminal::ExprNegNoAccess | &NonTerminal::ExprNegNoIdentNoAccess
-            | &NonTerminal::ExprNot | &NonTerminal::ExprNotNoAccess | &NonTerminal::ExprNotNoIdentNoAccess
+            NonTerminal::ExprNeg | NonTerminal::ExprNegNoAccess | NonTerminal::ExprNegNoIdentNoAccess
+            | NonTerminal::ExprNot | NonTerminal::ExprNotNoAccess | NonTerminal::ExprNotNoIdentNoAccess
             => {
                 let children = root.borrow().get_children();
                 if children.len() == 2 {
@@ -45,7 +43,7 @@ impl From<Tree<FileElement<Lexem>>> for Expression {
                 }
                 return Expression::from(children[0].clone());
             },
-            &NonTerminal::ExprAccess => return parse_access_or_factor(root),
+            NonTerminal::ExprAccess => return parse_access_or_factor(root),
             _ => return parse_binop_chain(root),
         }
     }

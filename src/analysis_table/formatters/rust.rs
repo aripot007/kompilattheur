@@ -2,10 +2,14 @@ use std::collections::HashSet;
 use std::fmt;
 use indoc::writedoc;
 
+use crate::analysis_table::formatters::construct_string_table;
+use crate::analysis_table::NonTerminal;
 use crate::common::types::Token;
 use crate::parser::Lexem;
 use super::generic_token_repr;
 use super::super::analysis_table::AnalysisTable;
+
+//TODO: Add enum Display + From<String> (see generated_table.rs)
 
 /// Get the string of the rust code that constructs the given token
 macro_rules! token_constructor {
@@ -54,7 +58,11 @@ impl AnalysisTable {
         impl<'a> fmt::Display for RustAnalysisTable<'a> {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 
-                let non_terminal_enum_names: Vec<String> = self.table.non_terminal_names
+                let (_, _, nonterm_list) = construct_string_table(&self.table);
+
+                let non_terminal_names: Vec<String> = nonterm_list.iter().map(NonTerminal::to_string).collect();
+
+                let non_terminal_enum_names: Vec<String> = non_terminal_names
                     .iter()
                     .map(non_terminal_to_enum_name)
                     .collect();
@@ -70,11 +78,11 @@ impl AnalysisTable {
                     use crate::common::types::{{IdToken, NumToken, Token}};
                     use crate::parser::Lexem;
                     use super::analysis_table::AnalysisTable;
-                    use std::collections::HashMap;
+                    use std::collections::{{HashMap, HashSet}};
                     use std::mem::{{discriminant, Discriminant}};
                     use std::fmt::Display;
 
-                    #[derive(Clone, PartialEq, Eq, Debug)]
+                    #[derive(Clone, PartialEq, Eq, Debug, Hash)]
                     pub enum NonTerminal {{
                 "#)?;
 
@@ -93,7 +101,7 @@ impl AnalysisTable {
                 "#)?;
 
                 for i in 0..non_terminal_enum_names.len() {
-                    let name = &self.table.non_terminal_names[i];
+                    let name = &non_terminal_names[i];
                     let enum_name = &non_terminal_enum_names[i];
                     writeln!(f, "           NonTerminal::{} => write!(f, \"{}\"),", enum_name, name.escape_debug())?;
                 }
@@ -103,33 +111,41 @@ impl AnalysisTable {
                 writeln!(f, "}}\n")?;
 
                 writedoc!(f, r#"
+                    impl From<String> for NonTerminal {{
+                        fn from(value: String) -> Self {{
+                            match value.as_str() {{
+                "#)?;
+
+                for i in 0..non_terminal_enum_names.len() {
+                    let name = &non_terminal_names[i];
+                    let enum_name = &non_terminal_enum_names[i];
+                    writeln!(f, "           \"{}\" => NonTerminal::{},", name.escape_debug(), enum_name)?;
+                }
+                writeln!(f, "           name => panic!(\"Invalid non terminal {{}}\", name),")?;
+
+                writeln!(f, "        }}")?;
+                writeln!(f, "    }}")?;
+                writeln!(f, "}}\n")?;
+
+                writedoc!(f, r#"
 
                     pub fn get_analysis_table() -> AnalysisTable {{
 
-                        let non_terminal_names: Vec<String> = vec![
                 "#)?;
 
-
-                // Non terminal names
-                for name in &self.table.non_terminal_names {
-                    writeln!(f, "        String::from(\"{}\"),", name.escape_debug())?;
-                }
-
-                writeln!(f, "    ];\n")?;
-
-                // non terminal enum
-                writeln!(f, "    let non_terminal_enums: Vec<NonTerminal> = vec![")?;
+                // Used non terminals
+                writeln!(f, "    let used_non_terminals: HashSet<NonTerminal> = HashSet::from([")?;
 
                 for name in &non_terminal_enum_names {
                     writeln!(f, "        NonTerminal::{},", name)?;
                 }
 
-                writeln!(f, "    ];\n")?;
+                writeln!(f, "    ]);\n")?;
 
                 // discriminant tokens
-                writeln!(f, "    let discriminant_tokens: HashMap<Discriminant<Token>, Token> = HashMap::from([")?;
+                writeln!(f, "    let tokens_discriminants: HashMap<Discriminant<Token>, Token> = HashMap::from([")?;
                 
-                let used_tokens: HashSet<Token> = HashSet::from_iter(self.table.discriminant_tokens.values().cloned());
+                let used_tokens: HashSet<Token> = HashSet::from_iter(self.table.tokens_discriminants.values().cloned());
 
                 for token in used_tokens {
                     write!(f, "        ")?;
@@ -139,16 +155,16 @@ impl AnalysisTable {
 
                 
                 // table
-                writeln!(f, "    let table: Vec<HashMap<Discriminant<Token>, Vec<Lexem>>> = vec![")?;
+                writeln!(f, "    let table: HashMap<NonTerminal, HashMap<Discriminant<Token>, Vec<Lexem>>> = HashMap::from([")?;
 
-                for (id, row) in self.table.table.iter().enumerate() {
+                for (nonterm, row) in &self.table.table {
 
                     // Add comment with the name of the current non terminal
                     if self.with_comments {
-                        writeln!(f, "\n        // {}", self.table.non_terminal_names[id])?;
+                        writeln!(f, "\n        // {}", nonterm.to_string())?;
                     }
 
-                    writeln!(f, "        HashMap::from([")?;
+                    writeln!(f, "        (NonTerminal::{}, HashMap::from([", non_terminal_to_enum_name(&nonterm.to_string()))?;
 
 
                     for (discr, word) in row {
@@ -158,7 +174,7 @@ impl AnalysisTable {
                             let word_str: String = word.iter()
                                 .map(|lexem| {
                                     match lexem {
-                                        Lexem::NonTerminal(id) => self.table.non_terminal_names[*id].clone(),
+                                        Lexem::NonTerminal(nt) => nt.to_string(),
                                         Lexem::Terminal(token) => generic_token_repr!(token),
                                     }
                                 })
@@ -166,18 +182,18 @@ impl AnalysisTable {
 
                             // Ex :
                             // // <E> -> <E>*<F>
-                            writeln!(f, "\n            // {} : {} -> {}", self.table.discriminant_tokens[discr], self.table.non_terminal_names[id], word_str)?;
+                            writeln!(f, "\n            // {} : {} -> {}", self.table.tokens_discriminants[&discr], nonterm.to_string(), word_str)?;
                         }
 
                         writeln!(f, "            (")?;
-                        writeln!(f, "                discriminant(&{}),", token_constructor!(self.table.discriminant_tokens[discr]))?;
+                        writeln!(f, "                discriminant(&{}),", token_constructor!(self.table.tokens_discriminants[&discr]))?;
 
                         writeln!(f, "                vec![")?;
 
                         for lexem in word {
                             write!(f, "                    ")?;
                             match lexem {
-                                Lexem::NonTerminal(id) => writeln!(f, "Lexem::NonTerminal({id}),"),
+                                Lexem::NonTerminal(nt) => writeln!(f, "Lexem::NonTerminal(NonTerminal::{}),", non_terminal_to_enum_name(&nt.to_string())),
                                 Lexem::Terminal(token) => writeln!(f, "Lexem::Terminal({}),", token_constructor!(token)),
                             }?;
                         }
@@ -186,19 +202,18 @@ impl AnalysisTable {
                         writeln!(f, "            ),")?;
                     }
 
-                    writeln!(f, "        ]),")?;
+                    writeln!(f, "        ])),")?;
                 }
 
-                writeln!(f, "    ];\n")?;
+                writeln!(f, "    ]);\n")?;
 
 
                 // Return generated table
                 writedoc!(f, r#"
                         return AnalysisTable {{
                             table,
-                            non_terminal_names,
-                            discriminant_tokens,
-                            non_terminal_enums,
+                            tokens_discriminants,
+                            used_non_terminals,
                         }};
                     }}
                 "#)?;

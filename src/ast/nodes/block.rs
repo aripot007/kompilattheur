@@ -1,4 +1,4 @@
-use crate::{analysis_table::{get_analysis_table, NonTerminal}, common::types::{FileElement, Node, Tree}, parser::Lexem};
+use crate::{analysis_table::NonTerminal, common::types::{FileElement, Node, Tree}, parser::Lexem};
 
 use super::{parse_list, AstNode, Statement};
 
@@ -11,21 +11,19 @@ impl AstNode for Block {}
 
 impl From<Tree<FileElement<Lexem>>> for Block {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {
-    
-        let analysis_table = get_analysis_table();
 
         let root_non_terminal = match root.borrow().get_value().element {
-            Lexem::NonTerminal(id) => analysis_table.get_non_terminal(id),
+            Lexem::NonTerminal(nt) => nt,
             _ => panic!("Trying to parse BLOCK from terminal concrete node"),
         };
 
         let statement_list_root: Tree<FileElement<Lexem>> = Node::new(
-            FileElement {len: 0, line: 0, start_char: 0, element: Lexem::NonTerminal(0)}
+            FileElement {len: 0, line: 0, start_char: 0, element: Lexem::NonTerminal(NonTerminal::File)}
         );
 
         // Différencie entre le bloc global, qui part d'un noeud <file>, et 
         // un bloc allieurs dans le programme, qui part d'un noeud <suite>
-        if root_non_terminal == &NonTerminal::File {
+        if root_non_terminal == NonTerminal::File {
 
             // Bloc global
 
@@ -34,7 +32,7 @@ impl From<Tree<FileElement<Lexem>>> for Block {
             // Suite du bloc
             statement_list_root.borrow_mut().add_child(&root, root.borrow().get_children()[3].clone());
 
-        } else if root_non_terminal == &NonTerminal::Suite {
+        } else if root_non_terminal == NonTerminal::Suite {
 
             // Bloc générique
 

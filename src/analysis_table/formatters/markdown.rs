@@ -1,4 +1,6 @@
 use std::fmt;
+use crate::analysis_table::NonTerminal;
+
 use super::construct_string_table;
 use super::super::analysis_table::AnalysisTable;
 
@@ -26,14 +28,17 @@ impl AnalysisTable {
         impl<'a> fmt::Display for MarkdownAnalysisTable<'a> {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 
-                let (str_table, discriminant_names) = construct_string_table(&self.0);
+                let (str_table, term_discr_names, nonterm_list) = construct_string_table(&self.0);
 
-                let nb_discriminants = discriminant_names.len();
+                let nonterm_names: Vec<String> = nonterm_list.iter().map(NonTerminal::to_string).collect();
+
+
+                let nb_discriminants = term_discr_names.len();
                 let nb_non_terminals = self.0.table.len();
 
                 // Print header
                 write!(f, "| |")?;
-                for (_, name) in discriminant_names.iter().enumerate() {
+                for (_, name) in term_discr_names.iter().enumerate() {
                     write!(f, "{}|", escape_markdown!(name))?;
                 }
                 write!(f, "\n")?;
@@ -48,7 +53,7 @@ impl AnalysisTable {
                 // Print table
                 for i in 0..nb_non_terminals {
 
-                    write!(f, "|{}|", escape_markdown!(self.0.non_terminal_names[i]))?;
+                    write!(f, "|{}|", escape_markdown!(nonterm_names[i]))?;
 
                     for j in 0..nb_discriminants {
                         write!(f, "{}|", escape_markdown!(str_table[i][j]))?;

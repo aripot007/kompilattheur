@@ -1,6 +1,6 @@
 use crate::{
     analysis_table::NonTerminal,
-    common::types::{file_element::file_element_from, FileElement, Node, Token, Tree},
+    common::types::{FileElement, Node, Token, Tree},
     parser::Lexem,
 };
 
@@ -70,9 +70,6 @@ fn parse_simple(root: Tree<FileElement<Lexem>>) -> Statement {
 /// Parse a statement beginning with an identifier token.
 /// Can be either an assignment, a function call or a noop
 fn parse_ident_stmt(root: Tree<FileElement<Lexem>>) -> Statement {
-
-    let identifier_lexem: FileElement<Lexem> = root.borrow().get_children()[0].borrow().get_value();
-    let identifier = file_element_from!(identifier_lexem, identifier_lexem.element);
 
     let right_child = &root.borrow().get_children()[1];
 

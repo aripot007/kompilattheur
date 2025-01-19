@@ -66,6 +66,13 @@ macro_rules! file_element_from {
 
 pub (crate) use file_element_from;
 
+macro_rules! empty_file_elt {
+    ($elt: expr) => {
+        FileElement {len: 0, line: 0, start_char: 0, element: $elt}
+    };
+}
+
+pub (crate) use empty_file_elt;
 
 #[cfg(test)]
 mod tests {

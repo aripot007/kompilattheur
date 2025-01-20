@@ -39,7 +39,7 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
                                 input.line,
                                 input.start_char,
                                 if input.len > 0 {
-                                    input.start_char + (input.len - 1) as u64
+                                    input.start_char + (input.len - 1)
                                 } else {
                                     input.start_char
                                 },

@@ -4,6 +4,8 @@ use std::io::{self, BufRead};
 
 use crate::FILE_PATH;
 
+use super::types::FileElement;
+
 const ERROR_COLOR:(u8,u8,u8) = (255, 0, 0);
 const WARNING_COLOR:(u8,u8,u8) = (255, 180, 0);
 const HIGHLIGHT_ERROR_COLOR:(u8,u8,u8) = (200, 0, 0);
@@ -19,11 +21,23 @@ pub enum DiagnosticGravity {
 pub struct Diagnostic {
     pub gravity: DiagnosticGravity,
     kind: String,
-    start_line: u64,
-    end_line: u64,
-    start_column: u64,
-    end_column: u64,
+    start_line: usize,
+    end_line: usize,
+    start_column: usize,
+    end_column: usize,
     message: String,
+}
+
+pub fn from_fileelement<T>(elem: FileElement<T>, gravity: DiagnosticGravity, kind: String, message: String) -> Diagnostic {
+    return Diagnostic {
+        gravity,
+        kind,
+        start_line: elem.line,
+        end_line: elem.line,
+        start_column: elem.start_char,
+        end_column: elem.start_char + elem.len,
+        message,
+    };
 }
 
 impl Diagnostic {
@@ -41,10 +55,10 @@ impl Diagnostic {
     pub fn new(
         gravity: DiagnosticGravity,
         kind: String,
-        start_line: u64,
-        end_line: u64,
-        start_column: u64,
-        end_column: u64,
+        start_line: usize,
+        end_line: usize,
+        start_column: usize,
+        end_column: usize,
         message: String,
     ) -> Self {
         Self {
@@ -57,6 +71,8 @@ impl Diagnostic {
             message,
         }
     }
+
+    
 
     /// Display the diagnostic in the terminal
     pub fn display(&self) {

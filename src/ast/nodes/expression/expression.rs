@@ -44,6 +44,7 @@ impl From<Tree<FileElement<Lexem>>> for Expression {
                 return Expression::from(children[0].clone());
             },
             NonTerminal::ExprAccess => return parse_access_or_factor(root),
+            NonTerminal::Factor | NonTerminal::FactorNoIdent => return Expression::Factor(Factor::from(root)),
             _ => return parse_binop_chain(root),
         }
     }

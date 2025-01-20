@@ -53,8 +53,8 @@ pub struct Lexer {
     /// Vrai une fois que le token EOF a été émis
     emmitted_eof: bool,
 
-    line_num: u64,
-    char_num: u64,
+    line_num: usize,
+    char_num: usize,
 
     token_table: TokenTable,
     
@@ -118,7 +118,7 @@ impl Lexer {
         };
         FileElement {
             line: self.line_num,
-            start_char: self.char_num - calc_len as u64,
+            start_char: self.char_num - calc_len,
             len: calc_len,
             element: token,
         }
@@ -399,7 +399,7 @@ impl Lexer {
     /// Skip le token actuel en émettant l'erreur donnée, et passe au token suivant
     /// Considère que le token se trouve sur la ligne actuelle du lexer, commence
     /// au caractère `start_char` et se termine après l'appel à `self::skip_current_token`.
-    fn skip_with_error(&mut self, error: String, msg: String, start_char: u64, ) -> Option<FileElement<Token>> {
+    fn skip_with_error(&mut self, error: String, msg: String, start_char: usize, ) -> Option<FileElement<Token>> {
 
         self.skip_current_token();
 

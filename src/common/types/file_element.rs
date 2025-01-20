@@ -16,10 +16,10 @@ use super::Token;
 pub struct FileElement<T> {
 
     /// La ligne 
-    pub line: u64,
+    pub line: usize,
 
     /// Le numéro du caractère de début
-    pub start_char: u64,
+    pub start_char: usize,
 
     /// La longueur de l'élément en caractères
     pub len: usize,

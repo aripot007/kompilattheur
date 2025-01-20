@@ -1,3 +1,6 @@
 # foo() or a
 # 1 + 2
-(a or b)[12] = b
+a or b
+a or b or b[1] = 1
+1 or 2
+1 or 2[3] = 12

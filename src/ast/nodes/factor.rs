@@ -110,7 +110,7 @@ impl From<Tree<FileElement<Lexem>>> for Factor {
             }
         }
 
-        println!("Not recognized : {}", root.borrow().generate_mermaid());
+        println!("Not recognized : {}\n", root.borrow().generate_mermaid());
 
         return Factor::Call { identifier: 99, args: Vec::new() };
 

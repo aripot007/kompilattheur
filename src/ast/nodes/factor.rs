@@ -39,7 +39,7 @@ impl From<Tree<FileElement<Lexem>>> for Factor {
             }
         }
 
-        if let Lexem::Terminal(Token::Identifier(IdToken {id})) = root.borrow().get_value().element {
+        if let Lexem::Terminal(Token::Identifier(IdToken {id, name: _})) = root.borrow().get_value().element {
             return Factor::Identifier(id);
         }
 
@@ -80,7 +80,7 @@ impl From<Tree<FileElement<Lexem>>> for Factor {
             // Identifier or function call
 
             let identifier = match children[0].borrow().get_value().element {
-                Lexem::Terminal(Token::Identifier(IdToken {id})) => id,
+                Lexem::Terminal(Token::Identifier(IdToken {id, name:_})) => id,
                 _ => panic!("Invalid identifier child for node {}", root.borrow().generate_html()),
             };
 

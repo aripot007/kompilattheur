@@ -146,7 +146,7 @@ impl Grammar {
 
             "<integer>" => terminal!("<integer>", Token::integer(0)),
             "<string>" => terminal!("<string>", Token::String(String::new())),
-            "<ident>" => terminal!("<ident>", Token::Identifier(IdToken {id: 0})),
+            "<ident>" => terminal!("<ident>", Token::Identifier(IdToken {id: 0, name: String::new()})),
 
             // Keywords
             "True" => terminal!("True", Token::True),

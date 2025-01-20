@@ -15,6 +15,7 @@ impl Eq for NumToken {}
 #[derive(Clone, Hash, Debug)]
 pub struct IdToken {
     pub id: usize,
+    pub name: String,
 }
 
 impl PartialEq for IdToken {
@@ -111,7 +112,7 @@ impl Token {
     pub fn repr(&self) -> String {
         match self {
             Token::Integer(num_token) => num_token.value.to_string(),
-            Token::Identifier(id_token) => id_token.id.to_string(),
+            Token::Identifier(id_token) => id_token.name.clone(),
             Token::String(string) => format!("{}", string.escape_debug()),
             Token::Add => String::from("+"),
             Token::Sub => String::from("-"),

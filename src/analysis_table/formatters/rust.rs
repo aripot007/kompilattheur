@@ -17,7 +17,7 @@ macro_rules! token_constructor {
         match &$token {
             Token::Integer(n) => format!("Token::Integer(NumToken {{value: {}}})", n.value),
             Token::String(s) => format!("Token::String(String::from(\"{}\"))", s.escape_debug()),
-            Token::Identifier(idt) => format!("Token::Identifier(IdToken {{id: {}}})", idt.id),
+            Token::Identifier(idt) => format!("Token::Identifier(IdToken {{id: {}, name: String::new()}})", idt.id),
             _ => format!("Token::{:?}", $token),
         }
     };
@@ -240,7 +240,7 @@ mod tests {
         assert_eq!("Token::Add", token_constructor!(Token::Add));
         assert_eq!("Token::EOF", token_constructor!(Token::EOF));
         assert_eq!("Token::Integer(NumToken {value: 42})", token_constructor!(Token::Integer(NumToken {value: 42})));
-        assert_eq!("Token::Identifier(IdToken {id: 12})", token_constructor!(Token::Identifier(IdToken {id: 12})));
+        assert_eq!("Token::Identifier(IdToken {id: 12, name: String::new()})", token_constructor!(Token::Identifier(IdToken {id: 12, name: String::new()})));
         assert_eq!("Token::String(String::from(\"Hello, World !\"))", token_constructor!(Token::String(String::from("Hello, World !"))));
         assert_eq!("Token::String(String::from(\"Escape \\\" \\n \\\\ chars\"))", token_constructor!(Token::String(String::from("Escape \" \n \\ chars"))));
     }

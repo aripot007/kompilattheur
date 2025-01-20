@@ -34,7 +34,6 @@ pub fn get_operator_token(op: &str) -> Option<Token> {
         _ => None,
     }
 }
-
 pub struct Lexer {
     reader: reader::Reader,
 
@@ -112,7 +111,7 @@ impl Lexer {
 
     fn construct_file_elem(&self, token: Token) -> FileElement<Token> {
         let calc_len = match token {
-            Token::Identifier(IdToken{id}) => self.token_table.get_ident_name(id).len(),
+            Token::Identifier(IdToken{id, name: _}) => self.token_table.get_ident_name(id).len(),
             Token::String(ref s) => s.len() + 2,
             Token::Newline => 0,
             Token::EOF => 0,

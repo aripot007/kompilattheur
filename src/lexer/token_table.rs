@@ -31,7 +31,7 @@ impl TokenTable {
             .known_tokens
             .entry(name.to_string())
             .or_insert_with(|| {
-                let token = Token::Identifier(IdToken {id: self.id_names.len()});
+                let token = Token::Identifier(IdToken {id: self.id_names.len(), name: name.clone()});
                 self.id_names.push(name.to_string());
                 token
             });

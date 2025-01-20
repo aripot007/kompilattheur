@@ -288,7 +288,7 @@ pub fn get_analysis_table() -> AnalysisTable {
         (discriminant(&Token::Return), Token::Return),
         (discriminant(&Token::For), Token::For),
         (discriminant(&Token::Comma), Token::Comma),
-        (discriminant(&Token::Identifier(IdToken {id: 0})), Token::Identifier(IdToken {id: 0})),
+        (discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})), Token::Identifier(IdToken {id: 0, name: String::new()})),
         (discriminant(&Token::Equal), Token::Equal),
         (discriminant(&Token::NotEqual), Token::NotEqual),
         (discriminant(&Token::Sub), Token::Sub),
@@ -317,7 +317,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess),
                 ]
@@ -473,7 +473,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::Expr),
                     Lexem::NonTerminal(NonTerminal::ExprListSuite),
@@ -501,7 +501,7 @@ pub fn get_analysis_table() -> AnalysisTable {
         ])),
         (NonTerminal::ExprAccess, HashMap::from([
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::Factor),
                     Lexem::NonTerminal(NonTerminal::ExprAccess2),
@@ -639,7 +639,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::NewlineOpt),
                     Lexem::NonTerminal(NonTerminal::Defs),
@@ -756,7 +756,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::ExprNot),
                     Lexem::NonTerminal(NonTerminal::ExprAnd2),
@@ -821,7 +821,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
                     Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
@@ -907,7 +907,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
                     Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
@@ -1082,7 +1082,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::Stmt),
                     Lexem::NonTerminal(NonTerminal::OptStmts),
@@ -1135,7 +1135,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::ExprAccess),
                 ]
@@ -1275,9 +1275,9 @@ pub fn get_analysis_table() -> AnalysisTable {
         ])),
         (NonTerminal::IdentListIdent, HashMap::from([
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
-                    Lexem::Terminal(Token::Identifier(IdToken {id: 0})),
+                    Lexem::Terminal(Token::Identifier(IdToken {id: 0, name: String::new()})),
                     Lexem::NonTerminal(NonTerminal::IdentListSuite),
                 ]
             ),
@@ -1370,7 +1370,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 discriminant(&Token::Def),
                 vec![
                     Lexem::Terminal(Token::Def),
-                    Lexem::Terminal(Token::Identifier(IdToken {id: 0})),
+                    Lexem::Terminal(Token::Identifier(IdToken {id: 0, name: String::new()})),
                     Lexem::Terminal(Token::OpenParenthesis),
                     Lexem::NonTerminal(NonTerminal::IdentList),
                     Lexem::Terminal(Token::CloseParenthesis),
@@ -1409,7 +1409,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::ExprNeg),
                     Lexem::NonTerminal(NonTerminal::ExprMult2),
@@ -1676,7 +1676,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::ExprAdd),
                     Lexem::NonTerminal(NonTerminal::ExprCmp2),
@@ -1745,7 +1745,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
                     Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
@@ -2257,7 +2257,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::SimpleStmt),
                     Lexem::Terminal(Token::Newline),
@@ -2433,7 +2433,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::ExprAnd),
                     Lexem::NonTerminal(NonTerminal::Expr2),
@@ -2503,9 +2503,9 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
-                    Lexem::Terminal(Token::Identifier(IdToken {id: 0})),
+                    Lexem::Terminal(Token::Identifier(IdToken {id: 0, name: String::new()})),
                     Lexem::NonTerminal(NonTerminal::IdentListSuite),
                 ]
             ),
@@ -2544,7 +2544,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::ExprCmp),
                 ]
@@ -2818,7 +2818,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::Expr),
                     Lexem::NonTerminal(NonTerminal::ExprListSuite),
@@ -2913,7 +2913,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                 ]
             ),
@@ -2955,7 +2955,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                 ]
             ),
@@ -3168,9 +3168,9 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
-                    Lexem::Terminal(Token::Identifier(IdToken {id: 0})),
+                    Lexem::Terminal(Token::Identifier(IdToken {id: 0, name: String::new()})),
                     Lexem::NonTerminal(NonTerminal::SimpleStateIdent),
                 ]
             ),
@@ -3272,7 +3272,7 @@ pub fn get_analysis_table() -> AnalysisTable {
         ])),
         (NonTerminal::Stmt, HashMap::from([
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::SimpleStmt),
                     Lexem::Terminal(Token::Newline),
@@ -3345,7 +3345,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 discriminant(&Token::For),
                 vec![
                     Lexem::Terminal(Token::For),
-                    Lexem::Terminal(Token::Identifier(IdToken {id: 0})),
+                    Lexem::Terminal(Token::Identifier(IdToken {id: 0, name: String::new()})),
                     Lexem::Terminal(Token::In),
                     Lexem::NonTerminal(NonTerminal::Expr),
                     Lexem::Terminal(Token::Sep),
@@ -3407,7 +3407,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::ExprMult),
                     Lexem::NonTerminal(NonTerminal::ExprAdd2),
@@ -3458,9 +3458,9 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
-                    Lexem::Terminal(Token::Identifier(IdToken {id: 0})),
+                    Lexem::Terminal(Token::Identifier(IdToken {id: 0, name: String::new()})),
                     Lexem::NonTerminal(NonTerminal::FactorIdent),
                 ]
             ),
@@ -3541,7 +3541,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
                     Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
@@ -3576,7 +3576,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                     Lexem::NonTerminal(NonTerminal::Factor),
                 ]
@@ -3671,7 +3671,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                 ]
             ),
             (
-                discriminant(&Token::Identifier(IdToken {id: 0})),
+                discriminant(&Token::Identifier(IdToken {id: 0, name: String::new()})),
                 vec![
                 ]
             ),

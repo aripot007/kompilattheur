@@ -32,7 +32,7 @@ impl Into<Tree<String>> for For {
     fn into(self) -> Tree<String> {
         let root = Node::new(String::from("FOR"));
 
-        root.borrow_mut().add_child(&root, Node::new(format!("Identifier {}", self.var.element.id)));
+        root.borrow_mut().add_child(&root, Node::new(format!("Identifier {}", self.var.element.name)));
 
         root.borrow_mut().add_child(&root, self.iterator.into());
 

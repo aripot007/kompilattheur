@@ -15,11 +15,11 @@ pub enum Factor {
     True(FileElement<Token>),
     False(FileElement<Token>),
     None(FileElement<Token>),
-    Identifier(usize),
+    Identifier(IdToken),
     List(Vec<Expression>),
     Expr(Box<Expression>),
     Call {
-        identifier: usize,
+        identifier: IdToken,
         args: Vec<Expression>,
     },
 }
@@ -39,7 +39,7 @@ impl From<Tree<FileElement<Lexem>>> for Factor {
             }
         }
 
-        if let Lexem::Terminal(Token::Identifier(IdToken {id, name: _})) = root.borrow().get_value().element {
+        if let Lexem::Terminal(Token::Identifier(id)) = root.borrow().get_value().element {
             return Factor::Identifier(id);
         }
 
@@ -80,7 +80,7 @@ impl From<Tree<FileElement<Lexem>>> for Factor {
             // Identifier or function call
 
             let identifier = match children[0].borrow().get_value().element {
-                Lexem::Terminal(Token::Identifier(IdToken {id, name:_})) => id,
+                Lexem::Terminal(Token::Identifier(id)) => id,
                 _ => panic!("Invalid identifier child for node {}", root.borrow().generate_html()),
             };
 
@@ -112,7 +112,7 @@ impl From<Tree<FileElement<Lexem>>> for Factor {
 
         println!("Not recognized : {}\n", root.borrow().generate_mermaid());
 
-        return Factor::Call { identifier: 99, args: Vec::new() };
+        return Factor::Call { identifier: IdToken { id: 999, name: String::from("NI") }, args: Vec::new() };
 
     }   
 }
@@ -130,14 +130,14 @@ impl Into<Tree<String>> for &Factor {
             Factor::String(file_element) => format!("{}", file_element.element.escape_debug()),
             Factor::True(_file_element) => String::from("True"),
             Factor::False(_file_element) => String::from("False"),
-            Factor::Identifier(id) => format!("Identifier {id}"),
+            Factor::Identifier(id) => format!("Identifier {}", id.name),
             Factor::None(_file_element) => String::from("None"),
             Factor::List(vec) => return list_into_tree!("LIST", vec),
             Factor::Expr(expression) => return (*expression).as_ref().into(),
             Factor::Call { identifier, args } => {
                 let root = Node::new(String::from("CALL"));
 
-                root.borrow_mut().add_child(&root, Node::new(format!("Identifier : {}", identifier)));
+                root.borrow_mut().add_child(&root, Node::new(format!("Identifier {}", identifier.name)));
                 root.borrow_mut().add_child(&root, list_into_tree!("ARGS", args));
 
                 return root;

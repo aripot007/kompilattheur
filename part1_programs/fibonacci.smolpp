@@ -1,0 +1,25 @@
+
+# This function computes fib_n recursively
+def fibonacci_rec(n):
+
+    if n == 0 or n == 1:
+        return 1
+
+    return fibonacci_rec(n - 1) + fibonacci_rec(n - 2)
+
+# This one computes fibonacci using a for loop
+def fibonacci_iter(n):
+
+    fn_1 = 0
+    fn = 1
+    
+    for i in range(n):
+        temp = fn
+        fn = fn_1 + fn
+        fn_1 = temp
+
+    return fn
+
+
+print("Fibonacci 10 : " + fibonacci_rec(10))
+print("Fibonacci 10 : " + fibonacci_iter(10))

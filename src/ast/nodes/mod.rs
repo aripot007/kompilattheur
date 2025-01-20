@@ -109,4 +109,5 @@ pub(super) use list_into_tree;
 /// Un noeud d'ast doit pouvoir être créé depuis l'arbre concret correspondant, et
 /// doit pouvoir être convertit en arbre de String représentant chaque noeud, pour
 /// faciliter l'affichage.
+#[allow(dead_code)]
 trait AstNode: From<Tree<FileElement<Lexem>>> + Into<Tree<String>> {}

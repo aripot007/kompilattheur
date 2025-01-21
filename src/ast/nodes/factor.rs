@@ -127,7 +127,7 @@ impl Into<Tree<String>> for &Factor {
     fn into(self) -> Tree<String> {
         let s = match self {
             Factor::Integer(file_element) => format!("{}", file_element.element),
-            Factor::String(file_element) => format!("{}", file_element.element.escape_debug()),
+            Factor::String(file_element) => format!("String : \"{}\"", file_element.element.escape_debug()),
             Factor::True(_file_element) => String::from("True"),
             Factor::False(_file_element) => String::from("False"),
             Factor::Identifier(id) => format!("Identifier {}", id.name),

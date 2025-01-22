@@ -27,6 +27,9 @@ pub enum Commands {
         #[arg()]
         shell: Shell,
     },
+
+    /// Affiche l'exemple de la table des symboles
+    SymbolTableExample,
 }
 
 #[derive(Debug, Args)]

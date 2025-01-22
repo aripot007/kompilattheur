@@ -8,6 +8,7 @@ mod reader;
 use analysis_table::{get_analysis_table, setup_analysis_table, AnalysisTable};
 use clap::{CommandFactory, Parser};
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs, TargetStep};
+use common::symbol_table::{enter_scope, exit_scope, get_scope, get_symbol, init_symbol_table, Symbol};
 use common::types::{FileElement, Tree};
 use ast::generate_ast;
 use lexer::Lexer;
@@ -32,7 +33,8 @@ fn main() {
             let name = cmd.get_name().to_string();
             clap_complete::generate(shell, &mut cmd, name, &mut io::stdout());
             return;
-        }
+        },
+        Some(Commands::SymbolTableExample) => symbol_table_example(),
         None => compile(args.compile),
     }
 }
@@ -134,4 +136,46 @@ fn _print_analysis_table(table: &AnalysisTable, args: PrintTableArgs) {
         cli::TableFormat::Rust => write!(out_handle, "{}", table.display_rust(false)),
     }
     .expect("Error while printing table");
+}
+
+fn symbol_table_example() {
+    let (node, root) = init_symbol_table();
+    node.borrow_mut().insert_symbol(1, (Symbol::Function(),));
+    node.borrow_mut().insert_symbol(2, (Symbol::Variable(),));
+
+    let node = enter_scope(node);
+    node.borrow_mut().insert_symbol(3, (Symbol::Parameter(),));
+    node.borrow_mut().insert_symbol(4, (Symbol::Variable(),));
+    node.borrow_mut().insert_symbol(5, (Symbol::Function(),));
+
+    let node = enter_scope(node);
+    node.borrow_mut().insert_symbol(6, (Symbol::Function(),));
+    node.borrow_mut().insert_symbol(7, (Symbol::Variable(),));
+
+    let node = exit_scope(node);
+    node.borrow_mut().insert_symbol(8, (Symbol::Function(),));
+
+    let node = enter_scope(node);
+
+    let node = get_scope(node, 0).unwrap();
+    node.borrow_mut().insert_symbol(9, (Symbol::Function(),));
+
+    let node = enter_scope(node);
+    node.borrow_mut().insert_symbol(10, (Symbol::Variable(),));
+
+    let node = exit_scope(node);
+
+    let node = enter_scope(node);
+    let node = exit_scope(node);
+
+    assert_eq!(
+        node.borrow().get_value().index,
+        root.borrow().get_value().index
+    );
+
+    let res = root.borrow().generate_unsafe_mermaid();
+    let mut output_file = File::create("p.out").expect("Error opening output file");
+    writeln!(output_file, "{}", res).expect("Error writing to output file");
+    println!("{}", res)
+
 }

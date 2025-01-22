@@ -1,0 +1,24 @@
+
+# This function computes fib_n recursively
+def fibonacci_rec(n):
+
+    if n == 0 or n == 1:
+        return 1
+
+    return fibonacci_rec(n - 1) + fibonacci_rec(n - 2)
+    
+# This one computes fib_n iteratively
+def fibonacci(n):
+
+    # Use an array to store the values
+    fn = [0, 1]
+
+    for i in range(n):
+            temp = fn[1]
+            fn[1] = fn[0] + fn[1]
+            fn[0] = temp
+
+    return fn[1]
+
+print("Fibonacci rec 10 : " + fibonacci_rec(10))
+print("Fibonacci 10 : " + fibonacci(10))

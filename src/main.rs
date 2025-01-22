@@ -15,6 +15,7 @@ use lexer::Lexer;
 use parser::{generate_tree, Lexem};
 use std::fs::File;
 use std::io::{self, stdout, Write};
+use std::process::exit;
 use std::sync::OnceLock;
 use webbrowser;
 
@@ -67,7 +68,7 @@ fn compile(args: CompileArgs) {
     let (tree, accept, error): (Tree<FileElement<Lexem>>, bool, bool) =
         generate_tree(lexer, &table);
 
-    println!("Accepted: {}, Error: {}", accept, error);
+    // println!("Accepted: {}, Error: {}", accept, error);
 
     if args.target_step == TargetStep::ConcreteTree {
         write!(output_file, "{}", tree.borrow().generate_html()).expect("error writing to output");
@@ -79,6 +80,11 @@ fn compile(args: CompileArgs) {
             eprintln!("Failed to convert output path to string.");
         }
         return;
+    }
+
+    if error || !accept {
+        eprintln!("Parsing ended with errors. Aborting");
+        exit(1);
     }
 
     let ast = generate_ast(tree.clone());

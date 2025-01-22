@@ -1,9 +1,0 @@
-def fibonacci(n):
-    fn = [0, 1]
-    for i in range(n):
-            temp = fn[1]
-            fn[1] = fn[0] + fn[1]
-            fn[0] = temp
-    return fn[1]
-
-print("Fibonacci 10 : " + fibonacci(10))

@@ -8,7 +8,7 @@ mod reader;
 use analysis_table::{get_analysis_table, setup_analysis_table, AnalysisTable};
 use clap::{CommandFactory, Parser};
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs, TargetStep};
-use common::symbol_table::{enter_scope, exit_scope, get_scope, get_symbol, init_symbol_table, Symbol};
+use common::symbol_table::{enter_scope, exit_scope, get_scope, init_symbol_table, Symbol};
 use common::types::{FileElement, Tree};
 use ast::generate_ast;
 use lexer::Lexer;

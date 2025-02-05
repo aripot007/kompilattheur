@@ -93,16 +93,14 @@ pub(super) fn parse_list_filter<T, U>(
 }
 
 macro_rules! list_into_tree {
-    ($root_str: expr, $elems_list: expr) => {
-        {
-            let root = Node::new(String::from($root_str));
+    ($root_str: expr, $elems_list: expr) => {{
+        let root = Node::new(String::from($root_str));
 
-            for elem in $elems_list {
-                root.borrow_mut().add_child(&root, elem.into());
-            }
-            root
+        for elem in $elems_list {
+            root.borrow_mut().add_child(&root, elem.into());
         }
-    };
+        root
+    }};
 }
 pub(super) use list_into_tree;
 

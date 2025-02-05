@@ -1,5 +1,8 @@
-use crate::{common::types::{FileElement, Node, Tree}, parser::Lexem};
 use super::{list_into_tree, parse_list, AstNode, Def};
+use crate::{
+    common::types::{FileElement, Node, Tree},
+    parser::Lexem,
+};
 
 pub struct Defs {
     defs: Vec<Def>,
@@ -9,10 +12,9 @@ impl AstNode for Defs {}
 
 impl From<Tree<FileElement<Lexem>>> for Defs {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {
-
         let defs: Vec<Def> = parse_list(root, Def::from);
-        
-        return Defs {defs};
+
+        return Defs { defs };
     }
 }
 

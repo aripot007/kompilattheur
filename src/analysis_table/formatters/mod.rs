@@ -3,12 +3,12 @@ mod plaintext;
 mod rust;
 use super::analysis_table::AnalysisTable;
 use super::NonTerminal;
-use std::{collections::HashMap, mem::Discriminant};
 use crate::common::types::Token;
 use crate::parser::Lexem;
+use std::{collections::HashMap, mem::Discriminant};
 
 /// Renvoie la représentation générique d'un token, ie le nom sans les informations du token.
-/// 
+///
 /// ```
 /// let t = Token::Add;
 /// assert_eq!(t.repr(), generic_token_repr!(t));
@@ -27,19 +27,20 @@ macro_rules! generic_token_repr {
     };
 }
 
-pub (super) use generic_token_repr;
+pub(super) use generic_token_repr;
 
 /// Construct a `Vec<Vec<String>>` with the text that should be in each cell of the table.
 /// Also returns a `discriminants_names` Vec that maps a discriminant id to their display name.
-/// 
+///
 /// ```text
 /// let table, term_discr_names, nonterm_discr_names = construct_string_table(&analysis_table);
-/// 
+///
 /// println!("Terminals : {?:}", discr_names);
 /// println!("String table : {?:}", table);
 /// ```
-fn construct_string_table(analysis_table: &AnalysisTable) -> (Vec<Vec<String>>, Vec<String>, Vec<NonTerminal>) {
-
+fn construct_string_table(
+    analysis_table: &AnalysisTable,
+) -> (Vec<Vec<String>>, Vec<String>, Vec<NonTerminal>) {
     // Map discriminants to an index to keep correct order in the table rows
     let mut term_discriminant_ids: HashMap<Discriminant<Token>, usize> = HashMap::new();
 
@@ -69,10 +70,10 @@ fn construct_string_table(analysis_table: &AnalysisTable) -> (Vec<Vec<String>>, 
     let nb_discriminants = term_discriminant_names.len();
 
     let nb_non_terminals = analysis_table.table.len();
-    let mut str_table: Vec<Vec<String>> = vec![vec![String::new(); nb_discriminants]; nb_non_terminals];
+    let mut str_table: Vec<Vec<String>> =
+        vec![vec![String::new(); nb_discriminants]; nb_non_terminals];
 
     for (nt, line) in &analysis_table.table {
-
         if !nonterm_ids.contains_key(&nt) {
             nonterm_ids.insert(nt.clone(), nonterm_list.len());
             nonterm_list.push(nt.clone());
@@ -81,16 +82,14 @@ fn construct_string_table(analysis_table: &AnalysisTable) -> (Vec<Vec<String>>, 
         let i = nonterm_ids[nt];
 
         for (discr, word) in line {
-
             let discr_id = term_discriminant_ids[discr];
 
             // Compute word string
-            let word_str: String = word.iter()
-                .map(|lexem| {
-                    match lexem {
-                        Lexem::NonTerminal(nt) => nt.to_string(),
-                        Lexem::Terminal(token) => generic_token_repr!(token),
-                    }
+            let word_str: String = word
+                .iter()
+                .map(|lexem| match lexem {
+                    Lexem::NonTerminal(nt) => nt.to_string(),
+                    Lexem::Terminal(token) => generic_token_repr!(token),
                 })
                 .collect();
             str_table[i][discr_id] = word_str;

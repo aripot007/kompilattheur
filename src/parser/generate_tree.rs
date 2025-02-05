@@ -1,17 +1,34 @@
 use colored::Colorize;
 
-use crate::{analysis_table::NonTerminal, common::{diagnostic::{Diagnostic, DiagnosticGravity}, types::{file_element::{self, file_element_from}, FileElement}}, lexer::Lexer};
 use super::lexem::Lexem;
 use crate::analysis_table::AnalysisTable;
 use crate::common::types::{Node, Token};
+use crate::{
+    analysis_table::NonTerminal,
+    common::{
+        diagnostic::{Diagnostic, DiagnosticGravity},
+        types::{
+            file_element::{self, file_element_from},
+            FileElement,
+        },
+    },
+    lexer::Lexer,
+};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<RefCell<Node<FileElement<Lexem>>>>, bool, bool) {
-    
-    let tree: Rc<RefCell<Node<FileElement<Lexem>>>> = Node::new(
-        FileElement { start_line: 0, start_char: 0, end_line: 0, end_char: 0, len: 0, element: Lexem::NonTerminal(NonTerminal::File) }
-    );
+pub fn generate_tree(
+    mut lexer: Lexer,
+    analysis_table: &AnalysisTable,
+) -> (Rc<RefCell<Node<FileElement<Lexem>>>>, bool, bool) {
+    let tree: Rc<RefCell<Node<FileElement<Lexem>>>> = Node::new(FileElement {
+        start_line: 0,
+        start_char: 0,
+        end_line: 0,
+        end_char: 0,
+        len: 0,
+        element: Lexem::NonTerminal(NonTerminal::File),
+    });
     let mut stack: Vec<Rc<RefCell<Node<FileElement<Lexem>>>>> = vec![tree.clone()];
     let mut error = false;
     let mut accept = false;
@@ -44,21 +61,29 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
                                     input.start_char
                                 },
                                 "No Newline at the end of the file".to_string(),
-                            ).display();
-                            node.borrow_mut().set_value(file_element_from!(input, Lexem::Terminal(input.element.clone())));
+                            )
+                            .display();
+                            node.borrow_mut().set_value(file_element_from!(
+                                input,
+                                Lexem::Terminal(input.element.clone())
+                            ));
                             input = lexer.next().unwrap_or(file_element::EOF);
                             error = false;
-                        } 
-                        else if token.is_same_type(&input.element) {
+                        } else if token.is_same_type(&input.element) {
                             //println!("Input: {:?}", input);
-                            node.borrow_mut().set_value(file_element_from!(input, Lexem::Terminal(input.element.clone())));
+                            node.borrow_mut().set_value(file_element_from!(
+                                input,
+                                Lexem::Terminal(input.element.clone())
+                            ));
                             input = lexer.next().unwrap_or(file_element::EOF);
                             error = false;
                         } else {
                             if error {
                                 //println!("2: Error: {} Stack: {}", input.element, token);
                                 if token == Token::Newline {
-                                    while input.element != Token::Newline && input.element != Token::EOF {
+                                    while input.element != Token::Newline
+                                        && input.element != Token::EOF
+                                    {
                                         input = lexer.next().unwrap_or(file_element::EOF);
                                     }
                                     error = false;
@@ -106,16 +131,14 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
                             Some(lexems) => {
                                 error = false;
                                 for lexem in lexems.iter().rev() {
-                                    let new_node = Node::new(
-                                        FileElement {
-                                            len: 0,
-                                            start_line: 0,
-                                            end_line: 0,
-                                            start_char: 0,
-                                            end_char: 0,
-                                            element: (*lexem).clone(),
-                                        }
-                                    );
+                                    let new_node = Node::new(FileElement {
+                                        len: 0,
+                                        start_line: 0,
+                                        end_line: 0,
+                                        start_char: 0,
+                                        end_char: 0,
+                                        element: (*lexem).clone(),
+                                    });
                                     stack.push(new_node.clone());
                                     node.borrow_mut().insert_child(&node, 0, new_node.clone());
                                 }

@@ -1,6 +1,7 @@
 use super::AstNode;
 use crate::{
-    common::types::{FileElement, Node, Tree}, parser::Lexem
+    common::types::{FileElement, Node, Tree},
+    parser::Lexem,
 };
 
 use super::Expression;
@@ -14,10 +15,7 @@ impl AstNode for Assign {}
 
 impl Assign {
     pub fn new(destination: Expression, value: Expression) -> Assign {
-        return Assign {
-            destination,
-            value,
-        };
+        return Assign { destination, value };
     }
 }
 
@@ -26,7 +24,6 @@ impl From<Tree<FileElement<Lexem>>> for Assign {
         panic!("Assign from tree is not implemented !");
     }
 }
-
 
 impl Into<Tree<String>> for Assign {
     fn into(self) -> Tree<String> {

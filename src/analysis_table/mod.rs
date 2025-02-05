@@ -1,14 +1,14 @@
-mod analysis_table_generator;
-mod grammar;
-mod generated_table;
 mod analysis_table;
+mod analysis_table_generator;
 mod formatters;
+mod generated_table;
+mod grammar;
 
+pub use analysis_table::AnalysisTable;
+pub use analysis_table_generator::generate_analysis_table;
+pub use generated_table::NonTerminal;
 use std::path::Path;
 use std::sync::OnceLock;
-pub use analysis_table_generator::generate_analysis_table;
-pub use analysis_table::AnalysisTable;
-pub use generated_table::NonTerminal;
 
 static ANALYSIS_TABLE: OnceLock<AnalysisTable> = OnceLock::new();
 
@@ -24,10 +24,9 @@ pub fn get_analysis_table() -> &'static AnalysisTable {
 /// Configure la grammaire utilisée par le compilateur. Si un fichier est spécifié, construit la table d'analyse en utilisant
 /// cette grammaire, sinon, utilise celle intégrée au compilateur.
 /// Cette fonction ne doit être appelée qu'une seule fois
-/// 
+///
 /// Renvoie la table d'analyse configurée
 pub fn setup_analysis_table(grammar_file: Option<&Path>) -> &'static AnalysisTable {
-
     let table = match grammar_file {
         Some(file) => generate_analysis_table(&file),
         None => generated_table::get_analysis_table(),

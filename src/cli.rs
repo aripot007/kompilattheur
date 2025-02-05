@@ -108,24 +108,20 @@ pub struct CompileArgs {
     /// Lance le programme compilé (ou ouvre le fichier résultant en fonction de l'étape de compilation)
     #[arg(long, short, action)]
     pub run: bool,
-
 }
 
 #[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TargetLanguage {
-
     /// Arbre mermaid
     #[value(alias("mmd"))]
     Mermaid,
 
     #[value()]
     Html,
-
 }
 
 #[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TargetStep {
-
     /// Analyse lexicale seulement
     #[value(alias("lexer"), alias("tokens"))]
     Lexing,
@@ -137,5 +133,4 @@ pub enum TargetStep {
     /// Arbre Syntaxique Abstrait
     #[value(alias("ast"), alias("parsing"), alias("parser"))]
     AbstractTree,
-
 }

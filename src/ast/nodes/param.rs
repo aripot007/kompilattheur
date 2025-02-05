@@ -1,5 +1,8 @@
-use crate::{common::types::{file_element::file_element_from, FileElement, IdToken, Node, Token, Tree}, parser::Lexem};
 use super::AstNode;
+use crate::{
+    common::types::{file_element::file_element_from, FileElement, IdToken, Node, Token, Tree},
+    parser::Lexem,
+};
 
 pub struct Param {
     identifier: FileElement<IdToken>,
@@ -9,17 +12,17 @@ impl AstNode for Param {}
 
 impl From<Tree<FileElement<Lexem>>> for Param {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {
-
         let id_elem = root.borrow().get_value();
         let id_token = match id_elem.element {
             Lexem::Terminal(Token::Identifier(id_t)) => id_t,
-            t => panic!("Unexpected root for param node : expected IdToken, got {}", t),
+            t => panic!(
+                "Unexpected root for param node : expected IdToken, got {}",
+                t
+            ),
         };
         let identifier: FileElement<IdToken> = file_element_from!(id_elem, id_token);
 
-        return Param {
-            identifier,
-        };
+        return Param { identifier };
     }
 }
 
@@ -27,7 +30,10 @@ impl Into<Tree<String>> for Param {
     fn into(self) -> Tree<String> {
         let root = Node::new(String::from("PARAM"));
 
-        root.borrow_mut().add_child(&root, Node::new(format!("Identifier {}", self.identifier.element.name)));
+        root.borrow_mut().add_child(
+            &root,
+            Node::new(format!("Identifier {}", self.identifier.element.name)),
+        );
 
         return root;
     }

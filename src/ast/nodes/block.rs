@@ -18,7 +18,7 @@ impl From<Tree<FileElement<Lexem>>> for Block {
         };
 
         let statement_list_root: Tree<FileElement<Lexem>> = Node::new(
-            FileElement {len: 0, line: 0, start_char: 0, element: Lexem::NonTerminal(NonTerminal::File)}
+            FileElement {len: 0, start_line: 0, end_line: 0, start_char: 0, end_char: 0, element: Lexem::NonTerminal(NonTerminal::File)}
         );
 
         // Différencie entre le bloc global, qui part d'un noeud <file>, et 

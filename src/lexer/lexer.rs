@@ -120,8 +120,10 @@ impl Lexer {
             _ => token.repr().len()
         };
         FileElement {
-            line: self.line_num,
+            start_line: self.line_num,
+            end_line: self.line_num,
             start_char: self.char_num - calc_len,
+            end_char: self.char_num,
             len: calc_len,
             element: token,
         }

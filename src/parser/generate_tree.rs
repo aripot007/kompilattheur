@@ -10,7 +10,7 @@ use std::rc::Rc;
 pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<RefCell<Node<FileElement<Lexem>>>>, bool, bool) {
     
     let tree: Rc<RefCell<Node<FileElement<Lexem>>>> = Node::new(
-        FileElement { line: 0, start_char: 0, len: 0, element: Lexem::NonTerminal(NonTerminal::File) }
+        FileElement { start_line: 0, start_char: 0, end_line: 0, end_char: 0, len: 0, element: Lexem::NonTerminal(NonTerminal::File) }
     );
     let mut stack: Vec<Rc<RefCell<Node<FileElement<Lexem>>>>> = vec![tree.clone()];
     let mut error = false;
@@ -35,8 +35,8 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
                             Diagnostic::new(
                                 DiagnosticGravity::Warning,
                                 "ParserEndOfFileWarning :".to_string(),
-                                input.line,
-                                input.line,
+                                input.start_line,
+                                input.start_line,
                                 input.start_char,
                                 if input.len > 0 {
                                     input.start_char + (input.len - 1)
@@ -73,16 +73,16 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
                                 continue;
                             }
                             error = true;
-                            let line = if input.element == Token::Newline && input.line > 0 {
-                                input.line - 1
+                            let line = if input.element == Token::Newline && input.start_line > 0 {
+                                input.start_line - 1
                             } else {
-                                input.line
+                                input.start_line
                             };
                             Diagnostic::new(
                                 DiagnosticGravity::Error,
                                 "ParserInputError :".to_string(),
                                 line,
-                                input.line,
+                                input.start_line,
                                 input.start_char,
                                 if input.len > 0 {
                                     input.start_char + input.len - 1
@@ -109,8 +109,10 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
                                     let new_node = Node::new(
                                         FileElement {
                                             len: 0,
-                                            line: 0,
+                                            start_line: 0,
+                                            end_line: 0,
                                             start_char: 0,
+                                            end_char: 0,
                                             element: (*lexem).clone(),
                                         }
                                     );
@@ -146,8 +148,8 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
                                 Diagnostic::new(
                                     DiagnosticGravity::Error,
                                     "ParserTableError :".to_string(),
-                                    input.line,
-                                    input.line,
+                                    input.start_line,
+                                    input.start_line,
                                     input.start_char,
                                     if input.len > 0 {
                                         input.start_char + input.len - 1
@@ -175,8 +177,8 @@ pub fn generate_tree(mut lexer: Lexer, analysis_table: &AnalysisTable) -> (Rc<Re
                     Diagnostic::new(
                         DiagnosticGravity::Error,
                         "ParserStackError :".to_string(),
-                        input.line,
-                        input.line,
+                        input.start_line,
+                        input.start_line,
                         input.start_char,
                         input.start_char + input.len - 1,
                         "Stack is empty and input is not EOF".to_string(),

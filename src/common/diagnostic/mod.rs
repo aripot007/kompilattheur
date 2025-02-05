@@ -32,8 +32,8 @@ pub fn from_fileelement<T>(elem: FileElement<T>, gravity: DiagnosticGravity, kin
     return Diagnostic {
         gravity,
         kind,
-        start_line: elem.line,
-        end_line: elem.line,
+        start_line: elem.start_line,
+        end_line: elem.start_line,
         start_column: elem.start_char,
         end_column: elem.start_char + elem.len,
         message,

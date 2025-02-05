@@ -5,15 +5,14 @@ use crate::analysis_table::AnalysisTable;
 use super::grammar::Grammar;
 
 /// Parse the first lexem name of a string
-fn parse_lexem_name(name: &str) -> &str{
-
+fn parse_lexem_name(name: &str) -> &str {
     let quote_indices: Vec<_> = name.match_indices("\"").collect();
 
     if quote_indices.len() < 2 {
         panic!("Could not parse lexem name '{}'", name);
     }
 
-    match name.get(quote_indices[0].0 + 1 .. quote_indices[1].0) {
+    match name.get(quote_indices[0].0 + 1..quote_indices[1].0) {
         Some(name) => return name,
         None => panic!("Could not parse lexem name '{}'", name),
     };
@@ -21,14 +20,12 @@ fn parse_lexem_name(name: &str) -> &str{
 
 /// Parse all lexem names in a string
 fn parse_all_lexem_names(names_str: &str) -> Vec<String> {
-
     let mut names: Vec<String> = Vec::new();
 
     let mut quote_open = false;
     let mut current_lexem = String::new();
 
     for c in names_str.chars() {
-
         if c == '"' {
             if quote_open {
                 // Finished reading lexem name
@@ -38,11 +35,9 @@ fn parse_all_lexem_names(names_str: &str) -> Vec<String> {
             } else {
                 quote_open = true;
             }
-
         } else if quote_open {
             current_lexem.push(c);
         }
-
     }
 
     if quote_open {
@@ -54,23 +49,24 @@ fn parse_all_lexem_names(names_str: &str) -> Vec<String> {
 
 /// Parse une grammaire
 fn parse_grammar(input_file: &Path) -> Grammar {
-
     let mut grammar = Grammar::new();
 
     let reader = match fs::read_to_string(input_file) {
         Ok(s) => s,
-        Err(e) =>  panic!("Erreur lors de l'ouverture du fichier {:?} : {}", input_file, e),
+        Err(e) => panic!(
+            "Erreur lors de l'ouverture du fichier {:?} : {}",
+            input_file, e
+        ),
     };
 
     let file_without_comments: String = reader
         .lines()
         .map(String::from)
-        .filter(|l| !l.starts_with("#"))  // Remove comments
+        .filter(|l| !l.starts_with("#")) // Remove comments
         .collect();
 
     let mut i = 0;
     for ruleset in file_without_comments.split(";") {
-
         if ruleset.len() == 0 {
             continue;
         }
@@ -79,7 +75,10 @@ fn parse_grammar(input_file: &Path) -> Grammar {
         let sep_indices: Vec<_> = ruleset.match_indices(":").collect();
 
         if sep_indices.len() == 0 {
-            panic!("Could not find starting non terminal for rule {} : '{}'", i, ruleset);
+            panic!(
+                "Could not find starting non terminal for rule {} : '{}'",
+                i, ruleset
+            );
         }
 
         let (start, products) = ruleset.split_at(sep_indices[0].0);
@@ -92,11 +91,9 @@ fn parse_grammar(input_file: &Path) -> Grammar {
         products.remove(0);
 
         for prod in products.split("|") {
-
             let produced_lexems = parse_all_lexem_names(prod);
 
             grammar.create_rule(start, produced_lexems);
-
         }
 
         i += 1;
@@ -111,13 +108,10 @@ fn parse_grammar(input_file: &Path) -> Grammar {
 }
 
 /// Génère une table d'analyse pour la grammaire contenue dans le fichier d'entrée
-pub fn generate_analysis_table(input_file: &Path) -> AnalysisTable{
-    
+pub fn generate_analysis_table(input_file: &Path) -> AnalysisTable {
     let grammar = parse_grammar(input_file);
     return AnalysisTable::from(&grammar);
-
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -129,7 +123,7 @@ mod tests {
         let s = "garbage \"thename\" garbage";
         assert_eq!("thename", parse_lexem_name(s));
     }
-    
+
     #[test]
     fn test_parse_lexem_name_multiple_quotes() {
         let s = "garbage \"thename\" not \" the \"\"name";
@@ -140,19 +134,18 @@ mod tests {
     #[should_panic]
     fn test_parse_lexem_name_invalid_quotes() {
         let s = "unterminated \"quote";
-        println!("Parsed name : '{}'", parse_lexem_name(s)) ;
+        println!("Parsed name : '{}'", parse_lexem_name(s));
     }
 
     #[test]
     #[should_panic]
     fn test_parse_lexem_name_no_quotes() {
         let s = "no quote here";
-        println!("Parsed name : '{}'", parse_lexem_name(s)) ;
+        println!("Parsed name : '{}'", parse_lexem_name(s));
     }
 
     #[test]
     fn test_parse_all_lexem_names() {
-
         // []
         let s = "the name is a lie";
         let lexems = parse_all_lexem_names(s);
@@ -168,21 +161,25 @@ mod tests {
         let s = "nothing \"lots\" garbage \"of\"\"names\"";
         let lexems = parse_all_lexem_names(s);
         assert_eq!(3, lexems.len());
-        assert_eq!(vec![String::from("lots"), String::from("of"), String::from("names")], lexems);
-
+        assert_eq!(
+            vec![
+                String::from("lots"),
+                String::from("of"),
+                String::from("names")
+            ],
+            lexems
+        );
     }
 
     #[test]
     #[should_panic]
     fn test_parse_all_lexem_names_panic() {
-
         let s = "\"names\" with \"unterminated quotes";
         let lexems = parse_all_lexem_names(s);
         println!("Parsed lexems : {:?}", lexems)
-
     }
 
-    /* 
+    /*
     #[test]
     fn test_parse_grammar() {
 
@@ -190,11 +187,11 @@ mod tests {
         grammar_file.push("resources/test/test_grammar.txt");
 
         /*
-        Grammar : 
+        Grammar :
 
         A -> + | B <integer>
         B -> A <for> | ^
-        
+
         Empty word producers = {B}
 
         P(A) = {+, <integer>}
@@ -270,9 +267,8 @@ mod tests {
         let b_follows = &g.get_follows_unmut(&b);
         assert_eq!(1, b_follows.len());
         assert!(b_follows.contains(&Token::integer(0)));
-        
+
     }
 
     */
-
 }

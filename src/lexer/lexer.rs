@@ -1,9 +1,9 @@
 use crate::{common::types::FileElement, reader};
 
 use super::token_table::TokenTable;
-use crate::common::types::{Token, IdToken};
-use colored::Colorize;
 use crate::common::diagnostic::*;
+use crate::common::types::{IdToken, Token};
+use colored::Colorize;
 
 pub fn get_operator_token(op: &str) -> Option<Token> {
     match op {
@@ -56,7 +56,7 @@ pub struct Lexer {
     char_num: usize,
 
     token_table: TokenTable,
-    
+
     nb_errors: usize,
     nb_warnings: usize,
 
@@ -83,7 +83,6 @@ fn init_token_table() -> TokenTable {
     return table;
 }
 
-
 impl Lexer {
     pub fn new(mut reader: reader::Reader) -> Lexer {
         // Initialise la pile d'indentation avec 0 pour avoir le niveau global
@@ -104,24 +103,26 @@ impl Lexer {
             diagnostics: Vec::new(),
         };
     }
-    
+
     pub fn get_nb_errors(&self) -> usize {
         return self.nb_errors;
     }
 
     fn construct_file_elem(&self, token: Token) -> FileElement<Token> {
         let calc_len = match token {
-            Token::Identifier(IdToken{id, name: _}) => self.token_table.get_ident_name(id).len(),
+            Token::Identifier(IdToken { id, name: _ }) => self.token_table.get_ident_name(id).len(),
             Token::String(ref s) => s.len() + 2,
             Token::Newline => 0,
             Token::EOF => 0,
             Token::Begin => 0,
             Token::End => 0,
-            _ => token.repr().len()
+            _ => token.repr().len(),
         };
         FileElement {
-            line: self.line_num,
+            start_line: self.line_num,
+            end_line: self.line_num,
             start_char: self.char_num - calc_len,
+            end_char: self.char_num,
             len: calc_len,
             element: token,
         }
@@ -164,27 +165,25 @@ impl Lexer {
 
     /// Consomme les caractères restants jusqu'au prochain caractère blanc,
     /// et renvoie le nombre de caractères lus.
-    /// 
+    ///
     /// Permet de finir la lecture du token actuel en cas d'erreur
     fn skip_current_token(&mut self) -> usize {
-
         let mut nb_read = 0;
 
         while self.peek.is_some_and(|c| !c.is_whitespace()) {
             nb_read += 1;
             self.read_next_char();
-        };
+        }
         return nb_read;
     }
 
     /*
-        Permet de gérer l'émission des tokens BEGIN et END.
-        S'il faut émettre un token BEGIN, passe `self.emit_begin` à true.
-        S'il faut émettre des tokens END, met à jour `end_token_count`
-        avec le nombre de tokens END restant à émettre.
-     */
+       Permet de gérer l'émission des tokens BEGIN et END.
+       S'il faut émettre un token BEGIN, passe `self.emit_begin` à true.
+       S'il faut émettre des tokens END, met à jour `end_token_count`
+       avec le nombre de tokens END restant à émettre.
+    */
     fn parse_indentation(&mut self, indentation_number: u64) {
-
         let top: u64 = *self.indentation_stack.last().unwrap_or(&0);
 
         if indentation_number == top {
@@ -219,7 +218,7 @@ impl Lexer {
                         self.diagnostics.push(diag);
                         self.nb_errors += 1;
                         break;
-                    },
+                    }
                 }
             }
         }
@@ -234,7 +233,6 @@ impl Lexer {
 
     // Parse un integer a partir du caractère courant
     fn parse_integer(&mut self) -> Result<FileElement<Token>, Diagnostic> {
-
         let mut number: u64 = 0;
 
         let starting_char = self.char_num;
@@ -243,8 +241,8 @@ impl Lexer {
             Some('0') => {
                 self.read_next_char();
                 return Ok(self.construct_file_elem(Token::integer(0)));
-            },
-            Some(c) if c.is_digit(10) => {},
+            }
+            Some(c) if c.is_digit(10) => {}
 
             // Ici on doit panic car la fonction parse_integer a été appelée par erreur du développeur et non
             // a cause d'une erreur lexicale
@@ -254,7 +252,6 @@ impl Lexer {
         let mut overflow = false;
 
         while self.peek.is_some_and(|c| c.is_digit(10)) {
-
             let v: u64 = self.peek.unwrap().to_digit(10).unwrap().into();
 
             // Calcule la valeur de l'entier en vérifiant qu'elle peut
@@ -291,7 +288,6 @@ impl Lexer {
     // Parse un identifier à partir du caractère courant
     // Ne vérifie pas que le premier caractère n'est pas un chiffre
     fn parse_identifier(&mut self) -> FileElement<Token> {
-        
         let mut identifier = String::new();
 
         while self
@@ -305,13 +301,11 @@ impl Lexer {
         let token = self.token_table.get_token(identifier);
 
         return self.construct_file_elem(token);
-
     }
 
     // Parse un string à partir du caractère courant.
     // Ne vérifie pas que le caractère courant est un '"'
     fn parse_string(&mut self) -> Result<FileElement<Token>, Vec<Diagnostic>> {
-
         let mut text = String::new();
 
         let mut diags: Vec<Diagnostic> = Vec::new();
@@ -340,7 +334,13 @@ impl Lexer {
                                 self.line_num,
                                 self.char_num - 1,
                                 self.char_num,
-                                format!("\\{} unkown, expected after \\ : '{}', '{}' or '{}'", other.unwrap().to_string().truecolor(255, 0, 0) , "\"".truecolor(0, 255, 0), "\\".truecolor(0, 255, 0), "n".truecolor(0, 255, 0))
+                                format!(
+                                    "\\{} unkown, expected after \\ : '{}', '{}' or '{}'",
+                                    other.unwrap().to_string().truecolor(255, 0, 0),
+                                    "\"".truecolor(0, 255, 0),
+                                    "\\".truecolor(0, 255, 0),
+                                    "n".truecolor(0, 255, 0)
+                                ),
                             );
                             diags.push(diag);
                         }
@@ -372,17 +372,21 @@ impl Lexer {
         return Ok(self.construct_file_elem(Token::String(text)));
     }
 
-
     /// Tente une opération de parsing qui peut échouer en émettant un diagnostic.
     /// Si un diagnostic est émis, l'affiche et tente de renvoyer le token suivant.
-    fn try_parse(&mut self, result: Result<FileElement<Token>, Diagnostic>) -> Option<FileElement<Token>> {
-        return self.try_parse_multiple(result.map_err(|e| vec![e])); 
+    fn try_parse(
+        &mut self,
+        result: Result<FileElement<Token>, Diagnostic>,
+    ) -> Option<FileElement<Token>> {
+        return self.try_parse_multiple(result.map_err(|e| vec![e]));
     }
 
     /// Tente une opération de parsing qui peut échouer en émettant plusieurs diagnostics.
     /// Si des diagnostics sont émis, les affiche et tente de renvoyer le token suivant.
-    fn try_parse_multiple(&mut self, result: Result<FileElement<Token>, Vec<Diagnostic>>) -> Option<FileElement<Token>> {
-
+    fn try_parse_multiple(
+        &mut self,
+        result: Result<FileElement<Token>, Vec<Diagnostic>>,
+    ) -> Option<FileElement<Token>> {
         match result {
             Ok(elem) => Some(elem),
             Err(diags) => {
@@ -396,14 +400,18 @@ impl Lexer {
                 }
                 return self.next();
             }
-        }   
+        }
     }
 
     /// Skip le token actuel en émettant l'erreur donnée, et passe au token suivant
     /// Considère que le token se trouve sur la ligne actuelle du lexer, commence
     /// au caractère `start_char` et se termine après l'appel à `self::skip_current_token`.
-    fn skip_with_error(&mut self, error: String, msg: String, start_char: usize, ) -> Option<FileElement<Token>> {
-
+    fn skip_with_error(
+        &mut self,
+        error: String,
+        msg: String,
+        start_char: usize,
+    ) -> Option<FileElement<Token>> {
         self.skip_current_token();
 
         let diag = Diagnostic::new(
@@ -420,33 +428,28 @@ impl Lexer {
         self.diagnostics.push(diag);
         self.nb_errors += 1;
 
-        return self.next()
+        return self.next();
     }
-
 }
 
 impl Iterator for Lexer {
-
     type Item = FileElement<Token>;
 
     fn next(&mut self) -> Option<Self::Item> {
-
         macro_rules! operator_file_elem {
             ($s: expr) => {
-               match get_operator_token($s) {
+                match get_operator_token($s) {
                     None => None,
                     Some(token) => Some(self.construct_file_elem(token)),
-               } 
+                }
             };
         }
 
         macro_rules! try_parse {
-            ($parse: expr) => {
-                {
-                    let res = $parse;
-                    self.try_parse(res)
-                }
-            };
+            ($parse: expr) => {{
+                let res = $parse;
+                self.try_parse(res)
+            }};
         }
 
         // Handle BEGIN and END tokens
@@ -490,20 +493,25 @@ impl Iterator for Lexer {
             // <string>
             Some('"') => {
                 let res = self.parse_string();
-                return self.try_parse_multiple(res)
+                return self.try_parse_multiple(res);
             }
 
             // !=
             Some('!') => match self.read_next_char() {
                 Some('=') => {
                     self.read_next_char();
-                    return operator_file_elem!("!=")
-                },
-                _ => return self.skip_with_error(
-                    String::from("InvalidToken"),
-                    format!("Unrecognized token, did you mean {} ?", "!=".truecolor(0, 255, 0)),
-                    self.char_num - 1
-                )
+                    return operator_file_elem!("!=");
+                }
+                _ => {
+                    return self.skip_with_error(
+                        String::from("InvalidToken"),
+                        format!(
+                            "Unrecognized token, did you mean {} ?",
+                            "!=".truecolor(0, 255, 0)
+                        ),
+                        self.char_num - 1,
+                    )
+                }
             },
 
             // //
@@ -512,18 +520,24 @@ impl Iterator for Lexer {
                     self.read_next_char();
                     return operator_file_elem!("//");
                 }
-                other => return self.skip_with_error(
-                    String::from("InvalidToken"),
-                    format!("Unrecognized token '{}', did you mean {} ?",format!("/{}", other.unwrap_or(' ')).truecolor(255, 0, 0), "//".truecolor(0, 255, 0)),
-                    self.char_num - 1
-                )
+                other => {
+                    return self.skip_with_error(
+                        String::from("InvalidToken"),
+                        format!(
+                            "Unrecognized token '{}', did you mean {} ?",
+                            format!("/{}", other.unwrap_or(' ')).truecolor(255, 0, 0),
+                            "//".truecolor(0, 255, 0)
+                        ),
+                        self.char_num - 1,
+                    )
+                }
             },
 
             // <, >, =, <=, >=, ==
             Some(c) if c == '<' || c == '>' || c == '=' => match self.read_next_char() {
                 Some('=') => {
                     self.read_next_char();
-                    return operator_file_elem!(format!("{}=",c).as_str())
+                    return operator_file_elem!(format!("{}=", c).as_str());
                 }
                 _ => return operator_file_elem!(c.to_string().as_str()),
             },
@@ -533,11 +547,16 @@ impl Iterator for Lexer {
                 self.read_next_char();
                 match get_operator_token(c.to_string().as_str()) {
                     Some(token) => return Some(self.construct_file_elem(token)),
-                    None => return self.skip_with_error(
-                        String::from("InvalidToken"),
-                        format!("Unrecognized token '{}'", c.to_string().truecolor(255, 0, 0)),
-                        self.char_num - 1
-                    )
+                    None => {
+                        return self.skip_with_error(
+                            String::from("InvalidToken"),
+                            format!(
+                                "Unrecognized token '{}'",
+                                c.to_string().truecolor(255, 0, 0)
+                            ),
+                            self.char_num - 1,
+                        )
+                    }
                 }
             }
             None => {
@@ -550,7 +569,11 @@ impl Iterator for Lexer {
 
 #[cfg(test)]
 mod tests {
-    use crate::{common::types::Token, lexer::lexer::{get_operator_token, init_token_table, Lexer}, reader::Reader};
+    use crate::{
+        common::types::Token,
+        lexer::lexer::{get_operator_token, init_token_table, Lexer},
+        reader::Reader,
+    };
 
     #[test]
     fn test_eof() {
@@ -569,7 +592,7 @@ mod tests {
         assert!(lexer.next().unwrap().element == Token::EOF);
         assert!(lexer.next() == None);
     }
-    
+
     #[test]
     fn test_identifier() {
         let mut lexer = Lexer::new(Reader::from("hello"));
@@ -579,7 +602,7 @@ mod tests {
         assert!(lexer.next().unwrap().element == Token::EOF);
         assert!(lexer.next() == None);
     }
-    
+
     #[test]
     fn test_string() {
         let mut lexer = Lexer::new(Reader::from("\"hello\""));
@@ -587,7 +610,7 @@ mod tests {
         assert!(lexer.next().unwrap().element == Token::EOF);
         assert!(lexer.next() == None);
     }
-    
+
     #[test]
     fn test_tokens() {
         let mut lexer = Lexer::new(Reader::from("+ - * // % == = != < > <= >= True False None and or not def for in if else return print , : ( ) [ ]"));

@@ -1,6 +1,8 @@
-use crate::{common::types::{FileElement, Node, Tree}, parser::Lexem};
 use super::{AstNode, Block, Defs};
-
+use crate::{
+    common::types::{FileElement, Node, Tree},
+    parser::Lexem,
+};
 
 pub struct Root {
     defs: Defs,
@@ -11,10 +13,12 @@ impl AstNode for Root {}
 
 impl From<Tree<FileElement<Lexem>>> for Root {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {
-
         let defs: Defs = Defs::from(root.borrow().get_children()[1].clone());
-        
-        return Root {defs, block: Block::from(root.clone())};
+
+        return Root {
+            defs,
+            block: Block::from(root.clone()),
+        };
     }
 }
 

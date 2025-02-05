@@ -75,7 +75,7 @@ impl<T> Node<T> {
     }
 }
 
-impl <T: Clone> Node<T> {
+impl<T: Clone> Node<T> {
     pub fn get_value(&self) -> T {
         self.value.clone()
     }

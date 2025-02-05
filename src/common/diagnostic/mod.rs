@@ -4,13 +4,13 @@ use std::io::{self, BufRead};
 
 use crate::FILE_PATH;
 
-use super::types::FileElement;
+use super::localizable::Localizable;
 
-const ERROR_COLOR:(u8,u8,u8) = (255, 0, 0);
-const WARNING_COLOR:(u8,u8,u8) = (255, 180, 0);
-const HIGHLIGHT_ERROR_COLOR:(u8,u8,u8) = (200, 0, 0);
-const HIGHLIGHT_WARN_COLOR: (u8,u8,u8) = (200, 150, 0);
-const SECONDARY_COLOR:(u8,u8,u8) = (125, 125, 125);
+const ERROR_COLOR: (u8, u8, u8) = (255, 0, 0);
+const WARNING_COLOR: (u8, u8, u8) = (255, 180, 0);
+const HIGHLIGHT_ERROR_COLOR: (u8, u8, u8) = (200, 0, 0);
+const HIGHLIGHT_WARN_COLOR: (u8, u8, u8) = (200, 150, 0);
+const SECONDARY_COLOR: (u8, u8, u8) = (125, 125, 125);
 
 #[allow(dead_code)]
 pub enum DiagnosticGravity {
@@ -28,23 +28,28 @@ pub struct Diagnostic {
     message: String,
 }
 
-pub fn from_fileelement<T>(elem: FileElement<T>, gravity: DiagnosticGravity, kind: String, message: String) -> Diagnostic {
+pub fn from_localizable<T: Localizable>(
+    localizable: T,
+    gravity: DiagnosticGravity,
+    kind: String,
+    message: String,
+) -> Diagnostic {
     return Diagnostic {
         gravity,
         kind,
-        start_line: elem.line,
-        end_line: elem.line,
-        start_column: elem.start_char,
-        end_column: elem.start_char + elem.len,
+        start_line: localizable.get_start_line(),
+        end_line: localizable.get_end_line(),
+        start_column: localizable.get_start_char(),
+        end_column: localizable.get_end_char(),
         message,
     };
 }
 
 impl Diagnostic {
     /// Create a new Diagnostic
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `gravity` - between Warning and Error
     /// * `kind` - describes the type of error, for example: "IntOverflow"
     /// * `start_line` - line where the error starts
@@ -72,36 +77,46 @@ impl Diagnostic {
         }
     }
 
-    
-
     /// Display the diagnostic in the terminal
     pub fn display(&self) {
         match self.gravity {
             DiagnosticGravity::Warning => {
                 println!(
                     "{} {} \n{}\n{} {}",
-                    "Warning :".truecolor(WARNING_COLOR.0,WARNING_COLOR.1,WARNING_COLOR.2).bold(),
+                    "Warning :"
+                        .truecolor(WARNING_COLOR.0, WARNING_COLOR.1, WARNING_COLOR.2)
+                        .bold(),
                     format!("at line {}:{} :", self.start_line, self.start_column).bold(),
                     self.format_source_line(HIGHLIGHT_WARN_COLOR),
-                    self.kind.truecolor(HIGHLIGHT_WARN_COLOR.0,HIGHLIGHT_WARN_COLOR.1,HIGHLIGHT_WARN_COLOR.2),
+                    self.kind.truecolor(
+                        HIGHLIGHT_WARN_COLOR.0,
+                        HIGHLIGHT_WARN_COLOR.1,
+                        HIGHLIGHT_WARN_COLOR.2
+                    ),
                     self.message
                 );
             }
             DiagnosticGravity::Error => {
                 println!(
                     "{} {} \n{}\n{} {}",
-                    "Error :".truecolor(ERROR_COLOR.0,ERROR_COLOR.1,ERROR_COLOR.2).bold(),
+                    "Error :"
+                        .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                        .bold(),
                     format!("at line {}:{} :", self.start_line, self.start_column).bold(),
                     self.format_source_line(HIGHLIGHT_ERROR_COLOR),
-                    self.kind.truecolor(HIGHLIGHT_ERROR_COLOR.0,HIGHLIGHT_ERROR_COLOR.1,HIGHLIGHT_ERROR_COLOR.2),
+                    self.kind.truecolor(
+                        HIGHLIGHT_ERROR_COLOR.0,
+                        HIGHLIGHT_ERROR_COLOR.1,
+                        HIGHLIGHT_ERROR_COLOR.2
+                    ),
                     self.message
                 );
             }
         }
         println!("");
     }
-    
-    fn format_source_line(&self, highlight : (u8,u8,u8)) -> String {
+
+    fn format_source_line(&self, highlight: (u8, u8, u8)) -> String {
         let mut result = String::new();
         if let Some(path) = FILE_PATH.get() {
             if let Ok(file) = File::open(path) {
@@ -109,37 +124,150 @@ impl Diagnostic {
                 let lines = reader.lines();
                 if self.start_line == self.end_line {
                     for (i, line) in lines.enumerate() {
-                        if i+1 == self.start_line as usize {
-                            result.push_str(format!("{} {} {}", (i+1).to_string().truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2),"|".truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2) , line.unwrap()).to_string().as_str());
+                        if i + 1 == self.start_line as usize {
+                            result.push_str(
+                                format!(
+                                    "{} {} {}",
+                                    (i + 1).to_string().truecolor(
+                                        SECONDARY_COLOR.0,
+                                        SECONDARY_COLOR.1,
+                                        SECONDARY_COLOR.2
+                                    ),
+                                    "|".truecolor(
+                                        SECONDARY_COLOR.0,
+                                        SECONDARY_COLOR.1,
+                                        SECONDARY_COLOR.2
+                                    ),
+                                    line.unwrap()
+                                )
+                                .to_string()
+                                .as_str(),
+                            );
                             result.push('\n');
-                            let spaces = self.start_column as usize+ i.to_string().len() + 2;
-                            result.push_str(format!("{:<spaces$}{:^>token_len$}", "", "", token_len = self.end_column as usize - self.start_column as usize + 1).truecolor(highlight.0, highlight.1, highlight.2).bold().to_string().as_str());
+                            let spaces = self.start_column as usize + i.to_string().len() + 2;
+                            result.push_str(
+                                format!(
+                                    "{:<spaces$}{:^>token_len$}",
+                                    "",
+                                    "",
+                                    token_len =
+                                        self.end_column as usize - self.start_column as usize + 1
+                                )
+                                .truecolor(highlight.0, highlight.1, highlight.2)
+                                .bold()
+                                .to_string()
+                                .as_str(),
+                            );
+                        }
+                    }
+                } else {
+                    for (i, line) in lines.enumerate() {
+                        let line = line.unwrap();
+                        if i + 1 == self.start_line as usize {
+                            result.push_str(
+                                format!(
+                                    "{} {} {}",
+                                    (i + 1).to_string().truecolor(
+                                        SECONDARY_COLOR.0,
+                                        SECONDARY_COLOR.1,
+                                        SECONDARY_COLOR.2
+                                    ),
+                                    "|".truecolor(
+                                        SECONDARY_COLOR.0,
+                                        SECONDARY_COLOR.1,
+                                        SECONDARY_COLOR.2
+                                    ),
+                                    line
+                                )
+                                .to_string()
+                                .as_str(),
+                            );
+                            result.push('\n');
+                            let spaces = self.start_column as usize + i.to_string().len() + 2;
+                            result.push_str(
+                                format!(
+                                    "{:<spaces$}{:^>token_len$}",
+                                    "",
+                                    "",
+                                    token_len = line.len() - self.start_column as usize
+                                )
+                                .truecolor(highlight.0, highlight.1, highlight.2)
+                                .bold()
+                                .to_string()
+                                .as_str(),
+                            );
+                            result.push('\n');
+                        } else if i + 1 > self.start_line as usize && i + 1 < self.end_line as usize
+                        {
+                            result.push_str(
+                                format!(
+                                    "{} {} {}",
+                                    (i + 1).to_string().truecolor(
+                                        SECONDARY_COLOR.0,
+                                        SECONDARY_COLOR.1,
+                                        SECONDARY_COLOR.2
+                                    ),
+                                    "|".truecolor(
+                                        SECONDARY_COLOR.0,
+                                        SECONDARY_COLOR.1,
+                                        SECONDARY_COLOR.2
+                                    ),
+                                    line
+                                )
+                                .to_string()
+                                .as_str(),
+                            );
+                            result.push('\n');
+                            let spaces = i.to_string().len() + 3;
+                            result.push_str(
+                                format!(
+                                    "{:<spaces$}{:^>token_len$}",
+                                    "",
+                                    "",
+                                    token_len = line.len()
+                                )
+                                .truecolor(highlight.0, highlight.1, highlight.2)
+                                .bold()
+                                .to_string()
+                                .as_str(),
+                            );
+                            result.push('\n');
+                        } else if i + 1 == self.end_line as usize {
+                            result.push_str(
+                                format!(
+                                    "{} {} {}",
+                                    (i + 1).to_string().truecolor(
+                                        SECONDARY_COLOR.0,
+                                        SECONDARY_COLOR.1,
+                                        SECONDARY_COLOR.2
+                                    ),
+                                    "|".truecolor(
+                                        SECONDARY_COLOR.0,
+                                        SECONDARY_COLOR.1,
+                                        SECONDARY_COLOR.2
+                                    ),
+                                    line
+                                )
+                                .to_string()
+                                .as_str(),
+                            );
+                            result.push('\n');
+                            let spaces = i.to_string().len() + 3;
+                            result.push_str(
+                                format!(
+                                    "{:<spaces$}{:^>token_len$}",
+                                    "",
+                                    "",
+                                    token_len = self.end_column as usize + 1
+                                )
+                                .truecolor(highlight.0, highlight.1, highlight.2)
+                                .bold()
+                                .to_string()
+                                .as_str(),
+                            );
                         }
                     }
                 }
-               else {
-                   for (i,line) in lines.enumerate() {
-                       let line = line.unwrap();
-                       if i+1 == self.start_line as usize {
-                            result.push_str(format!("{} {} {}", (i+1).to_string().truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2),"|".truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2) , line).to_string().as_str());
-                            result.push('\n');
-                            let spaces = self.start_column as usize+ i.to_string().len() + 2;
-                            result.push_str(format!("{:<spaces$}{:^>token_len$}", "", "", token_len = line.len() - self.start_column as usize).truecolor(highlight.0, highlight.1, highlight.2).bold().to_string().as_str());
-                            result.push('\n');
-                        } else if i+1 > self.start_line as usize && i+1 < self.end_line as usize {
-                            result.push_str(format!("{} {} {}", (i+1).to_string().truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2),"|".truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2) , line).to_string().as_str());
-                            result.push('\n');
-                            let spaces = i.to_string().len() + 3;
-                            result.push_str(format!("{:<spaces$}{:^>token_len$}", "", "", token_len = line.len()).truecolor(highlight.0, highlight.1, highlight.2).bold().to_string().as_str());
-                            result.push('\n');
-                        } else if i+1 == self.end_line as usize {
-                            result.push_str(format!("{} {} {}", (i+1).to_string().truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2),"|".truecolor(SECONDARY_COLOR.0, SECONDARY_COLOR.1, SECONDARY_COLOR.2) , line).to_string().as_str());
-                            result.push('\n');
-                            let spaces = i.to_string().len() + 3;
-                            result.push_str(format!("{:<spaces$}{:^>token_len$}", "", "", token_len = self.end_column as usize + 1).truecolor(highlight.0, highlight.1, highlight.2).bold().to_string().as_str());
-                        }
-                   }
-               } 
             }
         }
         result

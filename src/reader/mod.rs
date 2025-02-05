@@ -102,5 +102,4 @@ mod tests {
     fn test_long_utf8_char() {
         test_read!("こんにちは、世界!");
     }
-
 }

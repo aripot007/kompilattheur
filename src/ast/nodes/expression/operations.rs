@@ -34,7 +34,7 @@ impl From<Token> for BinOp {
             Token::Greater => BinOp::GREATER,
             Token::LessEq => BinOp::LESSEQ,
             Token::GreaterEq => BinOp::GREATEREQ,
-            _ => panic!("Cannot convert {} token to operation", value)
+            _ => panic!("Cannot convert {} token to operation", value),
         }
     }
 }

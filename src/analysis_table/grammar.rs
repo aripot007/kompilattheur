@@ -1,7 +1,10 @@
-use std::collections::{HashMap, HashSet};
 use core::fmt::Display;
+use std::collections::{HashMap, HashSet};
 
-use crate::{common::types::{IdToken, Token}, parser::Lexem};
+use crate::{
+    common::types::{IdToken, Token},
+    parser::Lexem,
+};
 
 use super::NonTerminal;
 
@@ -32,7 +35,7 @@ impl Into<Lexem> for ParsedLexem {
 pub struct Rule {
     pub id: usize,
     pub start: ParsedLexem,
-    pub production: Vec<ParsedLexem>
+    pub production: Vec<ParsedLexem>,
 }
 
 impl Display for Rule {
@@ -49,7 +52,6 @@ impl Display for Rule {
 
 /// Représente une grammaire
 pub struct Grammar {
-
     /// Règles de la grammaire
     pub rules: Vec<Rule>,
 
@@ -73,13 +75,15 @@ pub struct Grammar {
 
     /// Permet de savoir si la liste des suivants a été calculée
     follows_computed: bool,
-
 }
 
 /// Crée le ParsedLexem correspondant à un lexem terminal
 macro_rules! terminal {
     ($name: expr, $token: expr) => {
-        ParsedLexem {name: $name.to_string(), lexem: Lexem::Terminal($token)}
+        ParsedLexem {
+            name: $name.to_string(),
+            lexem: Lexem::Terminal($token),
+        }
     };
 }
 
@@ -94,7 +98,6 @@ macro_rules! lexem_to_nonterm {
 }
 
 impl Grammar {
-
     /// Crée une nouvelle grammaire vide
     pub fn new() -> Self {
         return Grammar {
@@ -106,7 +109,7 @@ impl Grammar {
             firsts_computed: false,
             follows: HashMap::new(),
             follows_computed: false,
-        }
+        };
     }
 
     /// Récupère le ParsedLexem correspondant au nom donné, le crée et l'ajoute à la grammaire si besoin
@@ -146,7 +149,13 @@ impl Grammar {
 
             "<integer>" => terminal!("<integer>", Token::integer(0)),
             "<string>" => terminal!("<string>", Token::String(String::new())),
-            "<ident>" => terminal!("<ident>", Token::Identifier(IdToken {id: 0, name: String::new()})),
+            "<ident>" => terminal!(
+                "<ident>",
+                Token::Identifier(IdToken {
+                    id: 0,
+                    name: String::new()
+                })
+            ),
 
             // Keywords
             "True" => terminal!("True", Token::True),
@@ -164,13 +173,16 @@ impl Grammar {
             "print" => terminal!("print", Token::Print),
 
             // Le lexem est un non terminal
-            name => ParsedLexem {name: String::from(name), lexem: Lexem::NonTerminal(NonTerminal::from(String::from(name)))},
+            name => ParsedLexem {
+                name: String::from(name),
+                lexem: Lexem::NonTerminal(NonTerminal::from(String::from(name))),
+            },
         }
     }
 
-    /// Ajoute une règle à la grammaire en utilisant les lexems 
+    /// Ajoute une règle à la grammaire en utilisant les lexems
     /// déjà parsés ou en en créant des nouveaux si besoin
-    /// 
+    ///
     /// Les producteurs de mot vide, premiers et suivants doivent être recalculés après l'appel à cette fonction
     pub fn create_rule(&mut self, start: &str, products: Vec<String>) {
         let r = Rule {
@@ -187,7 +199,6 @@ impl Grammar {
 
     /// Renvois tous les non-terminaux produisant le mod vide, en les calculant si besoin.
     pub fn empty_word_producers(&mut self) -> &HashSet<NonTerminal> {
-
         if !self.empty_word_producers_computed {
             self.compute_empty_word_producers();
         }
@@ -197,19 +208,16 @@ impl Grammar {
 
     /// Calcule la liste des non-terminaux produisant le mot vide
     pub fn compute_empty_word_producers(&mut self) {
-
         // Set des non terminaux produisant le mot vid
         let mut producers: HashSet<NonTerminal> = HashSet::new();
 
         loop {
-
             let mut changed = false;
 
             for rule in &self.rules {
-
                 let start_lexem = match &rule.start.lexem {
                     Lexem::Terminal(_) => panic!(),
-                    Lexem::NonTerminal(nt) => nt
+                    Lexem::NonTerminal(nt) => nt,
                 };
 
                 // Skip rules that starts with an empty word producer
@@ -218,13 +226,10 @@ impl Grammar {
                 }
 
                 // Check if production is comprised of empty word producers only
-                let produces_empty_word = rule.production.iter()
-                    .all(|lexem| {
-                        match &lexem.lexem {
-                            Lexem::Terminal(_) => false,
-                            Lexem::NonTerminal(nt) => producers.contains(nt),
-                        }
-                    });
+                let produces_empty_word = rule.production.iter().all(|lexem| match &lexem.lexem {
+                    Lexem::Terminal(_) => false,
+                    Lexem::NonTerminal(nt) => producers.contains(nt),
+                });
 
                 if produces_empty_word {
                     changed = true;
@@ -235,19 +240,17 @@ impl Grammar {
             if !changed {
                 break;
             }
-
         }
-        
+
         self.empty_word_producers_computed = true;
 
         // Récupère les non terminaux correspondant
-        self.empty_word_producers = self.non_terminal_lexems
+        self.empty_word_producers = self
+            .non_terminal_lexems
             .iter()
-            .filter_map(|entry| {
-                match &entry.lexem {
-                    Lexem::NonTerminal(nt) if producers.contains(&nt) => Some(nt.clone()),
-                    _ => None,
-                }
+            .filter_map(|entry| match &entry.lexem {
+                Lexem::NonTerminal(nt) if producers.contains(&nt) => Some(nt.clone()),
+                _ => None,
             })
             .collect();
 
@@ -278,21 +281,18 @@ impl Grammar {
     /// Calcule Premier(word) avec word un mot composé de terminaux et de non terminaux
     /// Panique si les premiers et les producteurs de mot vide ne sont pas précalculés
     pub fn get_word_firsts_unmut(&self, word: &[ParsedLexem]) -> HashSet<Token> {
-
         let mut firsts: HashSet<Token> = HashSet::new();
 
         for lexem in word {
-
             if let Lexem::Terminal(token) = &lexem.lexem {
                 firsts.insert(token.clone());
                 break;
-
             } else {
                 firsts.extend(
                     self.get_firsts_unmut(&lexem.lexem)
                         .unwrap_or(&HashSet::new())
                         .iter()
-                        .map(|t| t.clone())
+                        .map(|t| t.clone()),
                 );
                 if !self.produces_empty_word_unmut(&lexem.lexem) {
                     break;
@@ -305,7 +305,6 @@ impl Grammar {
 
     /// Calcule les premiers pour tous les non terminaux de la grammaire
     pub fn compute_firsts(&mut self) {
-
         // Initialise des ensembles vides pour les premiers de chaque non terminal
         let mut firsts: HashMap<NonTerminal, HashSet<Token>> = HashMap::new();
 
@@ -319,21 +318,27 @@ impl Grammar {
             let mut changed = false;
 
             for rule in &self.rules {
-
                 let start_nt = lexem_to_nonterm!(&rule.start.lexem);
 
                 for lexem in &rule.production {
-
                     if let Lexem::Terminal(token) = &lexem.lexem {
-                        changed = firsts.entry(start_nt.clone()).or_default().insert(token.clone()) || changed;
+                        changed = firsts
+                            .entry(start_nt.clone())
+                            .or_default()
+                            .insert(token.clone())
+                            || changed;
                         break;
-                    
                     } else if let Lexem::NonTerminal(nt) = &lexem.lexem {
-                        
-                        let firsts_copy: Vec<Token> = firsts.entry(nt.clone()).or_default().iter().map(|t| t.clone()).collect();
-                        
+                        let firsts_copy: Vec<Token> = firsts
+                            .entry(nt.clone())
+                            .or_default()
+                            .iter()
+                            .map(|t| t.clone())
+                            .collect();
+
                         for first in firsts_copy {
-                            changed = firsts.entry(start_nt.clone()).or_default().insert(first) || changed;
+                            changed = firsts.entry(start_nt.clone()).or_default().insert(first)
+                                || changed;
                         }
 
                         if !self.produces_empty_word_unmut(&lexem.lexem) {
@@ -375,7 +380,7 @@ impl Grammar {
             match &lexem.lexem {
                 Lexem::Terminal(_) => return false,
                 Lexem::NonTerminal(nt) if !self.empty_word_producers.contains(nt) => return false,
-                _ => ()
+                _ => (),
             }
         }
         return true;
@@ -391,7 +396,6 @@ impl Grammar {
 
     /// Calcule les suivants pour tous les non terminaux de la grammaire
     pub fn compute_follows(&mut self) {
-
         // Initialise des ensembles vides pour les suivants de chaque non terminal
         let mut follows: HashMap<NonTerminal, HashSet<Token>> = HashMap::new();
 
@@ -409,48 +413,59 @@ impl Grammar {
         if !self.empty_word_producers_computed {
             self.compute_empty_word_producers();
         }
-        
-        
-        // Initialise l'axiome. On suppose que le "$" est représenté par le token EOF
-        follows.entry(NonTerminal::File).or_default().insert(Token::EOF);
 
+        // Initialise l'axiome. On suppose que le "$" est représenté par le token EOF
+        follows
+            .entry(NonTerminal::File)
+            .or_default()
+            .insert(Token::EOF);
 
         loop {
-
             let mut changed = false;
 
             for rule in &self.rules {
-    
                 let mut current_lexem_index: usize = 0;
-    
+
                 for lexem in &rule.production {
-    
                     let current_nonterm = match &lexem.lexem {
                         Lexem::Terminal(_) => {
                             current_lexem_index += 1;
                             continue;
-                        },
+                        }
                         Lexem::NonTerminal(nt) => nt.clone(),
                     };
-    
+
                     // Le lexem actuel n'est pas terminal, on ajoute les premiers de la suite du mot aux suivants de ce lexem
-                    for t in self.get_word_firsts_unmut(&rule.production[current_lexem_index + 1 ..]) {
-                        changed = follows.entry(current_nonterm.clone()).or_default().insert(t.clone()) || changed;
+                    for t in self.get_word_firsts_unmut(&rule.production[current_lexem_index + 1..])
+                    {
+                        changed = follows
+                            .entry(current_nonterm.clone())
+                            .or_default()
+                            .insert(t.clone())
+                            || changed;
                     }
 
                     // Si la suite du mot peut devenir le mot vide, on ajoute les suivants
                     // du terminal à gauche de la règle
-                    if self.word_produces_empty_word_unmut(&rule.production[current_lexem_index + 1 ..]) {
-                        
-                        let follows_copy: Vec<Token> = follows.entry(lexem_to_nonterm!(&rule.start.lexem).clone()).or_default().iter().cloned().collect();
+                    if self
+                        .word_produces_empty_word_unmut(&rule.production[current_lexem_index + 1..])
+                    {
+                        let follows_copy: Vec<Token> = follows
+                            .entry(lexem_to_nonterm!(&rule.start.lexem).clone())
+                            .or_default()
+                            .iter()
+                            .cloned()
+                            .collect();
                         for t in follows_copy {
-                            changed = follows.entry(current_nonterm.clone()).or_default().insert(t.clone()) || changed;
+                            changed = follows
+                                .entry(current_nonterm.clone())
+                                .or_default()
+                                .insert(t.clone())
+                                || changed;
                         }
-
                     }
 
                     current_lexem_index += 1;
-
                 }
             }
 
@@ -469,9 +484,6 @@ impl Grammar {
         let Lexem::NonTerminal(nt) = &non_terminal.lexem else {
             panic!("Trying to get follows of a terminal");
         };
-        return &self.follows[nt]
+        return &self.follows[nt];
     }
-
 }
-
-

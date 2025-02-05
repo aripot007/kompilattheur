@@ -1,4 +1,4 @@
-use crate::common::types::{Token, IdToken};
+use crate::common::types::{IdToken, Token};
 use std::collections::HashMap;
 
 pub struct TokenTable {
@@ -10,7 +10,6 @@ pub struct TokenTable {
 }
 
 impl TokenTable {
-
     pub fn new() -> TokenTable {
         TokenTable {
             known_tokens: HashMap::new(),
@@ -20,10 +19,7 @@ impl TokenTable {
 
     pub fn reserve_word(&mut self, name: &str, token: Token) {
         // insertion d'un mot réservé
-        self.known_tokens.insert(
-            name.to_string(),
-            token,
-        );
+        self.known_tokens.insert(name.to_string(), token);
     }
 
     pub fn get_token(&mut self, name: String) -> Token {
@@ -31,7 +27,10 @@ impl TokenTable {
             .known_tokens
             .entry(name.to_string())
             .or_insert_with(|| {
-                let token = Token::Identifier(IdToken {id: self.id_names.len(), name: name.clone()});
+                let token = Token::Identifier(IdToken {
+                    id: self.id_names.len(),
+                    name: name.clone(),
+                });
                 self.id_names.push(name.to_string());
                 token
             });

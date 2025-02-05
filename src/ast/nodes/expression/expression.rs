@@ -1,9 +1,13 @@
-
 use crate::{
-    analysis_table::NonTerminal, common::types::{FileElement, Node, Token, Tree}, parser::Lexem
+    analysis_table::NonTerminal,
+    common::types::{FileElement, Node, Token, Tree},
+    parser::Lexem,
 };
 
-use super::{super::{AstNode, Factor}, BinOp, UnOp};
+use super::{
+    super::{AstNode, Factor},
+    BinOp, UnOp,
+};
 
 pub enum Expression {
     BINOP(Box<Expression>, BinOp, Box<Expression>),
@@ -16,7 +20,6 @@ impl AstNode for Expression {}
 
 impl From<Tree<FileElement<Lexem>>> for Expression {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {
-
         let root_elem = root.borrow().get_value().element;
         let root_elem = match root_elem {
             Lexem::Terminal(Token::Identifier(_)) => return Expression::Factor(Factor::from(root)),
@@ -30,32 +33,37 @@ impl From<Tree<FileElement<Lexem>>> for Expression {
         }
 
         match root_elem {
-            NonTerminal::ExprNeg | NonTerminal::ExprNegNoAccess | NonTerminal::ExprNegNoIdentNoAccess
-            | NonTerminal::ExprNot | NonTerminal::ExprNotNoAccess | NonTerminal::ExprNotNoIdentNoAccess
-            => {
+            NonTerminal::ExprNeg
+            | NonTerminal::ExprNegNoAccess
+            | NonTerminal::ExprNegNoIdentNoAccess
+            | NonTerminal::ExprNot
+            | NonTerminal::ExprNotNoAccess
+            | NonTerminal::ExprNotNoIdentNoAccess => {
                 let children = root.borrow().get_children();
                 if children.len() == 2 {
                     let op: UnOp = match children[0].borrow().get_value().element {
                         Lexem::Terminal(token) => UnOp::from(token),
-                        Lexem::NonTerminal(id) => panic!("Cannot convert non terminal node {id} to unary operator"),
+                        Lexem::NonTerminal(id) => {
+                            panic!("Cannot convert non terminal node {id} to unary operator")
+                        }
                     };
                     return Expression::UNOP(op, Box::from(Expression::from(children[1].clone())));
                 }
                 return Expression::from(children[0].clone());
-            },
+            }
             NonTerminal::ExprAccess => return parse_access_or_factor(root),
-            NonTerminal::Factor | NonTerminal::FactorNoIdent => return Expression::Factor(Factor::from(root)),
+            NonTerminal::Factor | NonTerminal::FactorNoIdent => {
+                return Expression::Factor(Factor::from(root))
+            }
             _ => return parse_binop_chain(root),
         }
     }
 }
 
 fn parse_binop_chain(root: Tree<FileElement<Lexem>>) -> Expression {
-
     let leftmost_expr: Expression = Expression::from(root.borrow().get_children()[0].clone());
 
     fn parse(node: Tree<FileElement<Lexem>>, left_expr: Expression) -> Expression {
-
         let children = node.borrow().get_children();
 
         if children.len() == 0 {
@@ -63,10 +71,15 @@ fn parse_binop_chain(root: Tree<FileElement<Lexem>>) -> Expression {
         } else {
             let op = match children[0].borrow().get_value().element {
                 Lexem::Terminal(token) => BinOp::from(token),
-                Lexem::NonTerminal(id) => panic!("Cannot convert non terminal {id} to binary operation"),
+                Lexem::NonTerminal(id) => {
+                    panic!("Cannot convert non terminal {id} to binary operation")
+                }
             };
             let expr = Expression::from(children[1].clone());
-            return parse(children[2].clone(), Expression::BINOP(Box::from(left_expr), op, Box::from(expr)));
+            return parse(
+                children[2].clone(),
+                Expression::BINOP(Box::from(left_expr), op, Box::from(expr)),
+            );
         }
     }
 
@@ -74,19 +87,26 @@ fn parse_binop_chain(root: Tree<FileElement<Lexem>>) -> Expression {
 }
 
 /// Parse an access expression associated with a factor
-pub(in crate::ast::nodes) fn parse_access(access_root: Tree<FileElement<Lexem>>, left_expr: Expression) -> Expression {
+pub(in crate::ast::nodes) fn parse_access(
+    access_root: Tree<FileElement<Lexem>>,
+    left_expr: Expression,
+) -> Expression {
     let children = access_root.borrow().get_children();
 
     if children.len() == 0 {
         return left_expr;
     } else {
         let expr = Expression::from(children[1].clone());
-        return parse_access(children[3].clone(), Expression::BINOP(Box::from(left_expr), BinOp::ACCESS, Box::from(expr)));
+        return parse_access(
+            children[3].clone(),
+            Expression::BINOP(Box::from(left_expr), BinOp::ACCESS, Box::from(expr)),
+        );
     }
 }
 
 fn parse_access_or_factor(root: Tree<FileElement<Lexem>>) -> Expression {
-    let factor: Expression = Expression::Factor(Factor::from(root.borrow().get_children()[0].clone()));
+    let factor: Expression =
+        Expression::Factor(Factor::from(root.borrow().get_children()[0].clone()));
     return parse_access(root.borrow().get_children()[1].clone(), factor);
 }
 
@@ -104,12 +124,13 @@ impl Into<Tree<String>> for &Expression {
                 root.borrow_mut().add_child(&root, (*e1).as_ref().into());
                 root.borrow_mut().add_child(&root, (*e2).as_ref().into());
                 return root;
-            },
+            }
             Expression::UNOP(un_op, expression) => {
                 let root = Node::new((*un_op).into());
-                root.borrow_mut().add_child(&root, (*expression).as_ref().into());
+                root.borrow_mut()
+                    .add_child(&root, (*expression).as_ref().into());
                 return root;
-            },
+            }
             Expression::Factor(f) => f.into(),
             Expression::NotImplemented => Node::new(String::from("EXPR (NI)")),
         }

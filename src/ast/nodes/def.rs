@@ -1,5 +1,10 @@
-use crate::{analysis_table::NonTerminal, ast::nodes::parse_list_filter, common::types::{file_element::file_element_from, FileElement, IdToken, Node, Token, Tree}, parser::Lexem};
 use super::{AstNode, Block, Param};
+use crate::{
+    analysis_table::NonTerminal,
+    ast::nodes::parse_list_filter,
+    common::types::{file_element::file_element_from, FileElement, IdToken, Node, Token, Tree},
+    parser::Lexem,
+};
 
 pub struct Def {
     identifier: FileElement<IdToken>,
@@ -11,11 +16,13 @@ impl AstNode for Def {}
 
 impl From<Tree<FileElement<Lexem>>> for Def {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {
-
         let id_elem = root.borrow().get_children()[1].borrow().get_value();
         let id_token = match id_elem.element {
             Lexem::Terminal(Token::Identifier(id_t)) => id_t,
-            t => panic!("Unexpected child #1 of <def> node : expected IdToken, got {}", t),
+            t => panic!(
+                "Unexpected child #1 of <def> node : expected IdToken, got {}",
+                t
+            ),
         };
         let identifier: FileElement<IdToken> = file_element_from!(id_elem, id_token);
 
@@ -47,8 +54,10 @@ impl Into<Tree<String>> for Def {
     fn into(self) -> Tree<String> {
         let root = Node::new(String::from("DEF"));
 
-        root.borrow_mut().add_child(&root, Node::new(format!("Identifier {}", self.identifier.element.name)));
-
+        root.borrow_mut().add_child(
+            &root,
+            Node::new(format!("Identifier {}", self.identifier.element.name)),
+        );
 
         let params_root = Node::new(String::from("PARAMS"));
 

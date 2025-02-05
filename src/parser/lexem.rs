@@ -21,7 +21,7 @@ impl Display for Lexem {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         match self {
             Lexem::Terminal(token) => write!(f, "{}", token),
-            Lexem::NonTerminal(non_terminal) => write!(f, "{}", non_terminal),   
+            Lexem::NonTerminal(non_terminal) => write!(f, "{}", non_terminal),
         }
     }
 }

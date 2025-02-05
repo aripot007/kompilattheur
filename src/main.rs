@@ -34,7 +34,7 @@ fn main() {
             let name = cmd.get_name().to_string();
             clap_complete::generate(shell, &mut cmd, name, &mut io::stdout());
             return;
-        },
+        }
         Some(Commands::SymbolTableExample) => symbol_table_example(),
         None => compile(args.compile),
     }
@@ -146,7 +146,8 @@ fn _print_analysis_table(table: &AnalysisTable, args: PrintTableArgs) {
 }
 
 fn symbol_table_example() {
-    let (node, root) = init_symbol_table();
+    let root = init_symbol_table();
+    let node = root.clone();
     node.borrow_mut().insert_symbol(1, (Symbol::Function(),));
     node.borrow_mut().insert_symbol(2, (Symbol::Variable(),));
 
@@ -184,5 +185,4 @@ fn symbol_table_example() {
     let mut output_file = File::create("p.out").expect("Error opening output file");
     writeln!(output_file, "{}", res).expect("Error writing to output file");
     println!("{}", res)
-
 }

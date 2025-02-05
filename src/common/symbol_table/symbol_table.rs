@@ -3,7 +3,9 @@ use std::collections::HashMap;
 use std::fmt::Display;
 use std::rc::Rc;
 
-use super::types::Node;
+use crate::common::types::Node;
+
+pub type SymbolTableRef = Rc<RefCell<Node<SymbolTable>>>;
 
 #[derive(Debug, Clone)]
 pub enum Symbol {
@@ -80,7 +82,7 @@ impl Node<SymbolTable> {
     ///
     /// ## Example
     /// ```
-    /// let (node, root) = init_symbol_table();
+    /// let node = init_symbol_table();
     /// node.borrow_mut().insert_symbol(1, (Symbol::Function(),));
     /// ```
     pub fn insert_symbol(&mut self, key: usize, value: (Symbol,)) {
@@ -95,14 +97,9 @@ impl Node<SymbolTable> {
 /// # Create a new symbol table
 ///
 /// ## Returns
-/// * `node` - current node of the symbol table
 /// * `root` - root node of the symbol table
-pub fn init_symbol_table() -> (
-    Rc<RefCell<Node<SymbolTable>>>,
-    Rc<RefCell<Node<SymbolTable>>>,
-) {
-    let node = Node::new(SymbolTable::new(0, 0));
-    (node.clone(), node)
+pub fn init_symbol_table() -> SymbolTableRef {
+    Node::new(SymbolTable::new(0, 0))
 }
 
 /// # Enter a new scope
@@ -115,7 +112,7 @@ pub fn init_symbol_table() -> (
 ///
 /// ## Example
 /// ```
-/// let (node, root) = init_symbol_table();
+/// let node = init_symbol_table();
 /// let node = enter_scope(node);
 /// ```
 pub fn enter_scope(parent: Rc<RefCell<Node<SymbolTable>>>) -> Rc<RefCell<Node<SymbolTable>>> {
@@ -136,10 +133,10 @@ pub fn enter_scope(parent: Rc<RefCell<Node<SymbolTable>>>) -> Rc<RefCell<Node<Sy
 ///
 /// ## Example
 /// ```
-/// let (node, root) = init_symbol_table();
+/// let node = init_symbol_table();
 /// let node = exit_scope(node); // gives node
 ///
-/// let (node, root) = init_symbol_table();
+/// let node = init_symbol_table();
 /// let node = enter_scope(node);
 /// let node = exit_scope(node); // gives root
 /// ```
@@ -167,13 +164,13 @@ pub fn exit_scope(node: Rc<RefCell<Node<SymbolTable>>>) -> Rc<RefCell<Node<Symbo
 ///
 /// ## Example
 /// ```
-/// let (node, root) = init_symbol_table();
+/// let node = init_symbol_table();
 /// let node = enter_scope(node);
 /// let node = exit_scope(node);
 /// let node = enter_scope(node);
 /// let node = exit_scope(node);
-/// let node = get_scope(root, 1); // gives node
-/// let node = get_scope(root, 3); // gives None
+/// let node = get_scope(node, 1); // gives node
+/// let node = get_scope(node, 3); // gives None
 /// ```
 pub fn get_scope(
     node: Rc<RefCell<Node<SymbolTable>>>,
@@ -257,7 +254,8 @@ mod tests {
 
     #[test]
     fn test_symbol_table_tree() {
-        let (node, root) = init_symbol_table();
+        let root = init_symbol_table();
+        let node = root.clone();
         node.borrow_mut().insert_symbol(1, (Symbol::Function(),));
 
         let node = enter_scope(node);
@@ -324,7 +322,8 @@ flowchart TD
 
     #[test]
     fn test_get_scope() {
-        let (node, root) = init_symbol_table();
+        let root = init_symbol_table();
+        let node = root.clone();
 
         let node = enter_scope(node);
         let node = exit_scope(node);
@@ -347,7 +346,7 @@ flowchart TD
 
     #[test]
     fn test_get_symbol() {
-        let (node, _root) = init_symbol_table();
+        let node = init_symbol_table();
         node.borrow_mut().insert_symbol(1, (Symbol::Function(),));
         node.borrow_mut().insert_symbol(2, (Symbol::Variable(),));
 
@@ -373,7 +372,8 @@ flowchart TD
 
     #[test]
     fn bigger_tree_and_all_functions() {
-        let (node, root) = init_symbol_table();
+        let root = init_symbol_table();
+        let node = root.clone();
         node.borrow_mut().insert_symbol(1, (Symbol::Function(),));
         node.borrow_mut().insert_symbol(2, (Symbol::Variable(),));
 

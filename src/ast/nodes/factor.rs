@@ -1,5 +1,6 @@
 use crate::analysis_table::NonTerminal;
 use crate::ast::nodes::parse_list_filter;
+use crate::common::localizable::Localizable;
 use crate::common::types::IdToken;
 use crate::{
     common::types::{file_element::file_element_from, FileElement, Node, NumToken, Token, Tree},
@@ -14,7 +15,7 @@ pub enum Factor {
     True(FileElement<Token>),
     False(FileElement<Token>),
     None(FileElement<Token>),
-    Identifier(IdToken),
+    Identifier(FileElement<IdToken>),
     List(Vec<Expression>),
     Expr(Box<Expression>),
     Call {
@@ -37,7 +38,7 @@ impl From<Tree<FileElement<Lexem>>> for Factor {
         }
 
         if let Lexem::Terminal(Token::Identifier(id)) = root.borrow().get_value().element {
-            return Factor::Identifier(id);
+            return Factor::Identifier(file_element_from!(root.borrow().get_value(), id));
         }
 
         let children = root.borrow().get_children();
@@ -86,7 +87,7 @@ impl From<Tree<FileElement<Lexem>>> for Factor {
 
             if right_child_children.len() == 0 {
                 // Identifier only
-                return Factor::Identifier(identifier);
+                return Factor::Identifier(file_element_from!(children[0].borrow().get_value(), identifier));
             }
 
             // Function call
@@ -142,7 +143,7 @@ impl Into<Tree<String>> for &Factor {
             }
             Factor::True(_file_element) => String::from("True"),
             Factor::False(_file_element) => String::from("False"),
-            Factor::Identifier(id) => format!("Identifier {}", id.name),
+            Factor::Identifier(id) => format!("Identifier {}", id.element.name),
             Factor::None(_file_element) => String::from("None"),
             Factor::List(vec) => return list_into_tree!("LIST", vec),
             Factor::Expr(expression) => return (*expression).as_ref().into(),
@@ -161,5 +162,51 @@ impl Into<Tree<String>> for &Factor {
         let root = Node::new(s);
 
         return root;
+    }
+}
+
+impl Localizable for Factor {
+    fn get_start_line(&self) -> usize {
+        (&self).get_start_line()
+    }
+
+    fn get_end_line(&self) -> usize {
+        (&self).get_end_line()
+    }
+
+    fn get_start_char(&self) -> usize {
+        (&self).get_start_char()
+    }
+
+    fn get_end_char(&self) -> usize {
+        (&self).get_end_char()
+    }
+}
+
+impl Localizable for &Factor {
+    fn get_start_line(&self) -> usize {
+        match self {
+            Factor::Integer(fe) => fe.get_start_line(),
+            Factor::String(fe) => fe.get_start_line(),
+            | Factor::True(fe)
+            | Factor::False(fe)
+            | Factor::None(fe) => fe.get_start_line(),
+            Factor::Identifier(fe) => fe.get_start_line(),
+            Factor::List(_expressions) => todo!(),
+            Factor::Expr(_expression) => todo!(),
+            Factor::Call { identifier: _, args: _ } => todo!(),
+        }
+    }
+
+    fn get_end_line(&self) -> usize {
+        todo!()
+    }
+
+    fn get_start_char(&self) -> usize {
+        todo!()
+    }
+
+    fn get_end_char(&self) -> usize {
+        todo!()
     }
 }

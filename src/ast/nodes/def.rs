@@ -2,7 +2,7 @@ use super::{AstNode, Block, Param};
 use crate::{
     analysis_table::NonTerminal,
     ast::nodes::parse_list_filter,
-    common::types::{file_element::file_element_from, FileElement, IdToken, Node, Token, Tree},
+    common::{localizable::Localizable, types::{file_element::file_element_from, FileElement, IdToken, Node, Token, Tree}},
     parser::Lexem,
 };
 
@@ -70,5 +70,23 @@ impl Into<Tree<String>> for Def {
         root.borrow_mut().add_child(&root, self.block.into());
 
         return root;
+    }
+}
+
+impl Localizable for Def {
+    fn get_start_line(&self) -> usize {
+        todo!()
+    }
+
+    fn get_end_line(&self) -> usize {
+        todo!()
+    }
+
+    fn get_start_char(&self) -> usize {
+        todo!()
+    }
+
+    fn get_end_char(&self) -> usize {
+        todo!()
     }
 }

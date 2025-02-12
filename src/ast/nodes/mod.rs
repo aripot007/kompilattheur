@@ -22,7 +22,7 @@ mod assign;
 pub use assign::Assign;
 
 use crate::{
-    common::types::{FileElement, Tree},
+    common::{localizable::Localizable, types::{FileElement, Tree}},
     parser::Lexem,
 };
 
@@ -108,4 +108,4 @@ pub(super) use list_into_tree;
 /// doit pouvoir être convertit en arbre de String représentant chaque noeud, pour
 /// faciliter l'affichage.
 #[allow(dead_code)]
-trait AstNode: From<Tree<FileElement<Lexem>>> + Into<Tree<String>> {}
+trait AstNode: From<Tree<FileElement<Lexem>>> + Into<Tree<String>> + Localizable {}

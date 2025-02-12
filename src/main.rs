@@ -5,6 +5,7 @@ mod common;
 mod lexer;
 mod parser;
 mod reader;
+mod typing;
 use analysis_table::{get_analysis_table, setup_analysis_table, AnalysisTable};
 use ast::generate_ast;
 use clap::{CommandFactory, Parser};

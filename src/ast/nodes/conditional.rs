@@ -1,6 +1,6 @@
 use super::{AstNode, Block, Expression};
 use crate::{
-    common::types::{FileElement, Node, Token, Tree},
+    common::{localizable::Localizable, types::{FileElement, Node, Token, Tree}},
     parser::Lexem,
 };
 
@@ -57,5 +57,23 @@ impl Into<Tree<String>> for Conditional {
         }
 
         return root;
+    }
+}
+
+impl Localizable for Conditional {
+    fn get_start_line(&self) -> usize {
+        todo!()
+    }
+
+    fn get_end_line(&self) -> usize {
+        todo!()
+    }
+
+    fn get_start_char(&self) -> usize {
+        todo!()
+    }
+
+    fn get_end_char(&self) -> usize {
+        todo!()
     }
 }

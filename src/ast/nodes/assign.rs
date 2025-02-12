@@ -1,6 +1,6 @@
 use super::AstNode;
 use crate::{
-    common::types::{FileElement, Node, Tree},
+    common::{localizable::Localizable, types::{FileElement, Node, Tree}},
     parser::Lexem,
 };
 
@@ -33,5 +33,23 @@ impl Into<Tree<String>> for Assign {
         root.borrow_mut().add_child(&root, self.value.into());
 
         return root;
+    }
+}
+
+impl Localizable for Assign {
+    fn get_start_line(&self) -> usize {
+        todo!()
+    }
+
+    fn get_end_line(&self) -> usize {
+        todo!()
+    }
+
+    fn get_start_char(&self) -> usize {
+        todo!()
+    }
+
+    fn get_end_char(&self) -> usize {
+        todo!()
     }
 }

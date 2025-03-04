@@ -2,11 +2,10 @@ use crate::{
     analysis_table::NonTerminal,
     ast::nodes::parse_access,
     common::{
-        diagnostic::{self, DiagnosticGravity},
-        types::{
+        diagnostic::{self, DiagnosticGravity}, localizable::Localizable, types::{
             file_element::{empty_file_elt, file_element_from},
             FileElement, Node, Token, Tree,
-        },
+        }
     },
     parser::Lexem,
 };
@@ -296,5 +295,23 @@ impl Into<Tree<String>> for Statement {
             Statement::Assign(assign) => return assign.into(),
             Statement::Expr(expression) => return expression.into(),
         };
+    }
+}
+
+impl Localizable for Statement {
+    fn get_start_line(&self) -> usize {
+        todo!()
+    }
+
+    fn get_end_line(&self) -> usize {
+        todo!()
+    }
+
+    fn get_start_char(&self) -> usize {
+        todo!()
+    }
+
+    fn get_end_char(&self) -> usize {
+        todo!()
     }
 }

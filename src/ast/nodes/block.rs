@@ -1,6 +1,6 @@
 use crate::{
     analysis_table::NonTerminal,
-    common::types::{FileElement, Node, Tree},
+    common::{localizable::Localizable, types::{FileElement, Node, Tree}},
     parser::Lexem,
 };
 
@@ -74,5 +74,23 @@ impl Into<Tree<String>> for Block {
         }
 
         return root;
+    }
+}
+
+impl Localizable for Block {
+    fn get_start_line(&self) -> usize {
+        todo!()
+    }
+
+    fn get_end_line(&self) -> usize {
+        todo!()
+    }
+
+    fn get_start_char(&self) -> usize {
+        todo!()
+    }
+
+    fn get_end_char(&self) -> usize {
+        todo!()
     }
 }

@@ -1,6 +1,6 @@
 use super::AstNode;
 use crate::{
-    common::types::{file_element::file_element_from, FileElement, IdToken, Node, Token, Tree},
+    common::{localizable::Localizable, types::{file_element::file_element_from, FileElement, IdToken, Node, Token, Tree}},
     parser::Lexem,
 };
 
@@ -36,5 +36,23 @@ impl Into<Tree<String>> for Param {
         );
 
         return root;
+    }
+}
+
+impl Localizable for Param {
+    fn get_start_line(&self) -> usize {
+        todo!()
+    }
+
+    fn get_end_line(&self) -> usize {
+        todo!()
+    }
+
+    fn get_start_char(&self) -> usize {
+        todo!()
+    }
+
+    fn get_end_char(&self) -> usize {
+        todo!()
     }
 }

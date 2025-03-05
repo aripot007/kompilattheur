@@ -28,21 +28,23 @@ pub struct Diagnostic {
     message: String,
 }
 
-pub fn from_localizable<T: Localizable>(
-    localizable: T,
-    gravity: DiagnosticGravity,
-    kind: String,
-    message: String,
-) -> Diagnostic {
-    return Diagnostic {
-        gravity,
-        kind,
-        start_line: localizable.get_start_line(),
-        end_line: localizable.get_end_line(),
-        start_column: localizable.get_start_char(),
-        end_column: localizable.get_end_char(),
-        message,
-    };
+impl Diagnostic {
+    pub fn from_localizable<T: Localizable>(
+        localizable: T,
+        gravity: DiagnosticGravity,
+        kind: String,
+        message: String,
+    ) -> Diagnostic {
+        return Diagnostic {
+            gravity,
+            kind,
+            start_line: localizable.get_start_line(),
+            end_line: localizable.get_end_line(),
+            start_column: localizable.get_start_char(),
+            end_column: localizable.get_end_char(),
+            message,
+        };
+    }
 }
 
 impl Diagnostic {

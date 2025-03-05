@@ -2,7 +2,7 @@ use crate::{
     analysis_table::NonTerminal,
     ast::nodes::parse_access,
     common::{
-        diagnostic::{self, DiagnosticGravity}, localizable::Localizable, types::{
+        diagnostic::{Diagnostic, DiagnosticGravity}, localizable::Localizable, types::{
             file_element::{empty_file_elt, file_element_from},
             FileElement, Node, Token, Tree,
         }
@@ -69,7 +69,7 @@ fn parse_simple(root: Tree<FileElement<Lexem>>) -> Statement {
         Lexem::Terminal(Token::Identifier(_))
         | Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess) => parse_complex(root),
         _ => {
-            diagnostic::from_localizable(
+            Diagnostic::from_localizable(
                 root.borrow().get_children()[0].borrow().get_value(),
                 DiagnosticGravity::Warning,
                 String::from("UnimplementedStatement"),
@@ -93,7 +93,7 @@ fn parse_complex(root: Tree<FileElement<Lexem>>) -> Statement {
         return parse_complex_stmt(root);
     }
 
-    diagnostic::from_localizable(
+    Diagnostic::from_localizable(
         root.borrow().get_children()[0].borrow().get_value(),
         DiagnosticGravity::Warning,
         String::from("UnimplementedStatement"),

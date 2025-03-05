@@ -109,3 +109,17 @@ pub(super) use list_into_tree;
 /// faciliter l'affichage.
 #[allow(dead_code)]
 trait AstNode: From<Tree<FileElement<Lexem>>> + Into<Tree<String>> + Localizable {}
+
+pub enum Ast {
+    Expression(Expression),
+    Assign(Assign),
+    Block(Block),
+    Conditional(Conditional),
+    Def(Def),
+    Defs(Defs),
+    Factor(Factor),
+    For(For),
+    Param(Param),
+    Root(Root),
+    Statement(Statement),
+}

@@ -5,9 +5,9 @@ use crate::{
 };
 
 pub struct For {
-    var: FileElement<IdToken>,
-    iterator: Expression,
-    block: Block,
+    pub var: FileElement<IdToken>,
+    pub iterator: Expression,
+    pub block: Block,
 }
 
 impl AstNode for For {}

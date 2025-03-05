@@ -9,7 +9,7 @@ use analysis_table::{get_analysis_table, setup_analysis_table, AnalysisTable};
 use ast::generate_ast;
 use clap::{CommandFactory, Parser};
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs, TargetStep};
-use common::symbol_table::{enter_scope, exit_scope, get_scope, init_symbol_table, Symbol};
+use common::symbol_table::{enter_scope, exit_scope, get_scope, init_symbol_table, Symbol, generate};
 use common::types::{FileElement, Tree};
 use lexer::Lexer;
 use parser::{generate_tree, Lexem};
@@ -89,11 +89,27 @@ fn compile(args: CompileArgs) {
 
     let ast = generate_ast(tree.clone());
 
-    let display_ast: Tree<String> = ast.into();
+    if args.show_symbol_table {
+        let (returned_ast, symbol_table) = generate(ast);
 
-    let mut output_file = File::create(&args.output_file).expect("Error opening output file");
-    write!(output_file, "{}", display_ast.borrow().generate_html())
-        .expect("error writing to output");
+        let mut symbol_table_file = File::create("symbol_table.mmd").expect("Error opening symbol table file");
+        write!(symbol_table_file, "{}", symbol_table.borrow().generate_unsafe_mermaid())
+            .expect("Error writing symbol table");
+        println!("Symbol table written to symbol_table.mmd");
+        
+
+        let display_ast: Tree<String> = returned_ast.into();
+
+        let mut output_file = File::create(&args.output_file).expect("Error opening output file");
+        write!(output_file, "{}", display_ast.borrow().generate_html())
+            .expect("error writing to output");
+    } else {
+        let display_ast: Tree<String> = ast.into();
+
+        let mut output_file = File::create(&args.output_file).expect("Error opening output file");
+        write!(output_file, "{}", display_ast.borrow().generate_html())
+            .expect("error writing to output");
+    }
 
     if let Some(output_path_str) = &args.output_file.to_str() {
         if args.run && webbrowser::open(output_path_str).is_err() {

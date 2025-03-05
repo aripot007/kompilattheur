@@ -5,7 +5,7 @@ use crate::{
 };
 
 pub struct Param {
-    identifier: FileElement<IdToken>,
+    pub identifier: FileElement<IdToken>,
 }
 
 impl AstNode for Param {}

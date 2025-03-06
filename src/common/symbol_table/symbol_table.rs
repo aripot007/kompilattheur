@@ -232,32 +232,19 @@ pub fn get_symbol(
     node: Rc<RefCell<Node<SymbolTable>>>,
     key: &usize,
 ) -> (Rc<RefCell<Node<SymbolTable>>>, Option<SymbolTableElement>) {
-    get_symbol_rec(node, key)
+    let base = node.clone();
+    let symbol = get_symbol_rec(node, key);
+    (base, symbol)
 }
 
-fn get_symbol_rec(
-    node: Rc<RefCell<Node<SymbolTable>>>,
-    key: &usize,
-) -> (Rc<RefCell<Node<SymbolTable>>>, Option<SymbolTableElement>) {
-    let symbol = {
-        let borrowed = node.borrow();
-        match borrowed.get_value().table.get(key) {
-            Some(sym) => Some(SymbolTableElement {
-                symbol: sym.symbol.clone(),
-                name: sym.name.clone(),
-            }),
-            _ => None,
+fn get_symbol_rec(node: Rc<RefCell<Node<SymbolTable>>>, key: &usize) -> Option<SymbolTableElement> {
+    if let Some(sym) = node.borrow().get_value().table.get(key) {
+        return Some(sym.clone());
+    } else {
+        match node.borrow().get_parent() {
+            Some(parent) => return get_symbol_rec(parent, key),
+            _ => return None,
         }
-    };
-
-    if symbol.is_some() {
-        return (node, symbol);
-    }
-
-    let parent = node.borrow().get_parent();
-    match parent {
-        Some(parent_node) => get_symbol_rec(parent_node, key),
-        _ => (node, None),
     }
 }
 

@@ -359,7 +359,8 @@ flowchart TD
 
     #[test]
     fn test_get_symbol() {
-        let node = init_symbol_table();
+        let root = init_symbol_table();
+        let node = root.clone();
         node.borrow_mut().insert_symbol(1, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func2") });
         node.borrow_mut().insert_symbol(2, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("var2") });
 
@@ -368,15 +369,15 @@ flowchart TD
 
         let (node, symbol) = get_symbol(node, &1);
         let res = format!("{:?}", symbol);
-        assert_eq!(res, "Some(SymbolTableElement { symbol: Function(), name: \"func2\" })");
+        assert_eq!(res, "Some(SymbolTableElement { symbol: Function, name: \"func2\" })");
 
         let (node, symbol) = get_symbol(node, &2);
         let res = format!("{:?}", symbol);
-        assert_eq!(res, "Some(SymbolTableElement { symbol: Variable(), name: \"var2\" })");
+        assert_eq!(res, "Some(SymbolTableElement { symbol: Variable, name: \"var2\" })");
 
         let (node, symbol) = get_symbol(node, &3);
         let res = format!("{:?}", symbol);
-        assert_eq!(res, "Some(SymbolTableElement { symbol: Parameter(), name: \"param2\" })");
+        assert_eq!(res, "Some(SymbolTableElement { symbol: Parameter, name: \"param2\" })");
 
         let node = exit_scope(node);
         let (_node, symbol) = get_symbol(node, &3);

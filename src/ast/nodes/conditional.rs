@@ -5,9 +5,9 @@ use crate::{
 };
 
 pub struct Conditional {
-    condition: Expression,
-    if_block: Block,
-    else_block: Option<Block>,
+    pub condition: Expression,
+    pub if_block: Block,
+    pub else_block: Option<Block>,
 }
 
 impl AstNode for Conditional {}

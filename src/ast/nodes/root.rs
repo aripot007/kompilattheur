@@ -5,8 +5,8 @@ use crate::{
 };
 
 pub struct Root {
-    defs: Defs,
-    block: Block,
+    pub defs: Defs,
+    pub block: Block,
 }
 
 impl AstNode for Root {}

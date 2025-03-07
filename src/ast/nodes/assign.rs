@@ -7,8 +7,8 @@ use crate::{
 use super::Expression;
 
 pub struct Assign {
-    destination: Expression,
-    value: Expression,
+    pub destination: Expression,
+    pub value: Expression,
 }
 
 impl AstNode for Assign {}

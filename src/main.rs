@@ -10,7 +10,7 @@ use analysis_table::{get_analysis_table, setup_analysis_table, AnalysisTable};
 use ast::generate_ast;
 use clap::{CommandFactory, Parser};
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs, TargetStep};
-use common::symbol_table::{enter_scope, exit_scope, get_scope, init_symbol_table, Symbol};
+use common::symbol_table::{enter_scope, exit_scope, get_scope, init_symbol_table, Symbol, generate, SymbolTableElement};
 use common::types::{FileElement, Tree};
 use lexer::Lexer;
 use parser::{generate_tree, Lexem};
@@ -35,9 +35,9 @@ fn main() {
             let name = cmd.get_name().to_string();
             clap_complete::generate(shell, &mut cmd, name, &mut io::stdout());
             return;
-        },
+        }
         Some(Commands::SymbolTableExample) => symbol_table_example(),
-        None => compile(args.compile),
+        _ => compile(args.compile),
     }
 }
 
@@ -88,13 +88,22 @@ fn compile(args: CompileArgs) {
         exit(1);
     }
 
-    let ast = generate_ast(tree.clone());
+    let ast: ast::nodes::Root = generate_ast(tree.clone());
 
-    let display_ast: Tree<String> = ast.into();
+    let (returned_ast, symbol_table) = generate(ast);
+
+    if args.show_symbol_table {
+        let mut symbol_table_file = File::create("symbol_table.mmd").expect("Error opening symbol table file");
+        write!(symbol_table_file, "{}", symbol_table.borrow().generate_unsafe_mermaid())
+            .expect("Error writing symbol table");
+        println!("Symbol table written to symbol_table.mmd");
+    }
+
+    let display_ast: Tree<String> = returned_ast.into();
 
     let mut output_file = File::create(&args.output_file).expect("Error opening output file");
     write!(output_file, "{}", display_ast.borrow().generate_html())
-        .expect("error writing to output");
+        .expect("error writing to output"); 
 
     if let Some(output_path_str) = &args.output_file.to_str() {
         if args.run && webbrowser::open(output_path_str).is_err() {
@@ -135,7 +144,7 @@ fn print_analysis_table(args: PrintTableArgs) {
 fn _print_analysis_table(table: &AnalysisTable, args: PrintTableArgs) {
     let mut out_handle: Box<dyn std::io::Write> = match args.output_file {
         Some(file) => Box::new(File::create(file).expect("Error opening output file")),
-        None => Box::new(stdout()),
+        _ => Box::new(stdout()),
     };
 
     match args.format {
@@ -147,29 +156,30 @@ fn _print_analysis_table(table: &AnalysisTable, args: PrintTableArgs) {
 }
 
 fn symbol_table_example() {
-    let (node, root) = init_symbol_table();
-    node.borrow_mut().insert_symbol(1, (Symbol::Function(),));
-    node.borrow_mut().insert_symbol(2, (Symbol::Variable(),));
+    let root = init_symbol_table();
+    let node = root.clone();
+    node.borrow_mut().insert_symbol(1, SymbolTableElement { symbol: Symbol::Function(), name: String::from("main") });
+    node.borrow_mut().insert_symbol(2, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("x") });
 
     let node = enter_scope(node);
-    node.borrow_mut().insert_symbol(3, (Symbol::Parameter(),));
-    node.borrow_mut().insert_symbol(4, (Symbol::Variable(),));
-    node.borrow_mut().insert_symbol(5, (Symbol::Function(),));
+    node.borrow_mut().insert_symbol(3, SymbolTableElement { symbol: Symbol::Parameter(), name: String::from("param1") });
+    node.borrow_mut().insert_symbol(4, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("y") });
+    node.borrow_mut().insert_symbol(5, SymbolTableElement { symbol: Symbol::Function(), name: String::from("helper") });
 
     let node = enter_scope(node);
-    node.borrow_mut().insert_symbol(6, (Symbol::Function(),));
-    node.borrow_mut().insert_symbol(7, (Symbol::Variable(),));
+    node.borrow_mut().insert_symbol(6, SymbolTableElement { symbol: Symbol::Function(), name: String::from("nested") });
+    node.borrow_mut().insert_symbol(7, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("z") });
 
     let node = exit_scope(node);
-    node.borrow_mut().insert_symbol(8, (Symbol::Function(),));
+    node.borrow_mut().insert_symbol(8, SymbolTableElement { symbol: Symbol::Function(), name: String::from("sibling") });
 
     let node = enter_scope(node);
 
     let node = get_scope(node, 0).unwrap();
-    node.borrow_mut().insert_symbol(9, (Symbol::Function(),));
+    node.borrow_mut().insert_symbol(9, SymbolTableElement { symbol: Symbol::Function(), name: String::from("outer") });
 
     let node = enter_scope(node);
-    node.borrow_mut().insert_symbol(10, (Symbol::Variable(),));
+    node.borrow_mut().insert_symbol(10, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("w") });
 
     let node = exit_scope(node);
 
@@ -185,5 +195,4 @@ fn symbol_table_example() {
     let mut output_file = File::create("p.out").expect("Error opening output file");
     writeln!(output_file, "{}", res).expect("Error writing to output file");
     println!("{}", res)
-
 }

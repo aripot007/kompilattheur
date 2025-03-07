@@ -4,6 +4,7 @@ use std::fmt::Display;
 use std::rc::Rc;
 
 use crate::common::types::Node;
+use crate::typing::Type;
 
 pub type SymbolTableRef = Rc<RefCell<Node<SymbolTable>>>;
 
@@ -18,6 +19,7 @@ pub enum Symbol {
 pub struct SymbolTableElement {
     pub symbol: Symbol,
     pub name: String,
+    pub symbol_type: Type,
 }
 
 #[derive(Debug, Clone)]
@@ -255,8 +257,8 @@ mod tests {
     #[test]
     fn test_symbol_table() {
         let mut symbol_table = SymbolTable::new(0, 0);
-        symbol_table.update_symbol(1, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("var1") });
-        symbol_table.update_symbol(2, SymbolTableElement { symbol: Symbol::Parameter(), name: String::from("param1") });
+        symbol_table.update_symbol(1, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("var1"), symbol_type: Type::Int });
+        symbol_table.update_symbol(2, SymbolTableElement { symbol: Symbol::Parameter(), name: String::from("param1"), symbol_type: Type::Any });
 
         print!("{}", symbol_table);
     }
@@ -265,7 +267,7 @@ mod tests {
     fn test_symbol_table_tree() {
         let root = init_symbol_table();
         let node = root.clone();
-        node.borrow_mut().insert_symbol(1, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func1") });
+        node.borrow_mut().insert_symbol(1, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func1"), symbol_type: Type::Any });
 
         let node = enter_scope(node);
 
@@ -361,23 +363,23 @@ flowchart TD
     fn test_get_symbol() {
         let root = init_symbol_table();
         let node = root.clone();
-        node.borrow_mut().insert_symbol(1, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func2") });
-        node.borrow_mut().insert_symbol(2, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("var2") });
+        node.borrow_mut().insert_symbol(1, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func2"), symbol_type: Type::Any });
+        node.borrow_mut().insert_symbol(2, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("var2"), symbol_type: Type::Any });
 
         let node = enter_scope(node);
-        node.borrow_mut().insert_symbol(3, SymbolTableElement { symbol: Symbol::Parameter(), name: String::from("param2") });
+        node.borrow_mut().insert_symbol(3, SymbolTableElement { symbol: Symbol::Parameter(), name: String::from("param2"), symbol_type: Type::Any });
 
         let (node, symbol) = get_symbol(node, &1);
         let res = format!("{:?}", symbol);
-        assert_eq!(res, "Some(SymbolTableElement { symbol: Function, name: \"func2\" })");
+        assert_eq!(res, "Some(SymbolTableElement { symbol: Function, name: \"func2\", symbol_type: Any })");
 
         let (node, symbol) = get_symbol(node, &2);
         let res = format!("{:?}", symbol);
-        assert_eq!(res, "Some(SymbolTableElement { symbol: Variable, name: \"var2\" })");
+        assert_eq!(res, "Some(SymbolTableElement { symbol: Variable, name: \"var2\", symbol_type: Any })");
 
         let (node, symbol) = get_symbol(node, &3);
         let res = format!("{:?}", symbol);
-        assert_eq!(res, "Some(SymbolTableElement { symbol: Parameter, name: \"param2\" })");
+        assert_eq!(res, "Some(SymbolTableElement { symbol: Parameter, name: \"param2\", symbol_type: Any })");
 
         let node = exit_scope(node);
         let (_node, symbol) = get_symbol(node, &3);
@@ -388,28 +390,28 @@ flowchart TD
     fn bigger_tree_and_all_functions() {
         let root = init_symbol_table();
         let node = root.clone();
-        node.borrow_mut().insert_symbol(1, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func1") });
-        node.borrow_mut().insert_symbol(2, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("var1") });
+        node.borrow_mut().insert_symbol(1, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func1"), symbol_type: Type::Any });
+        node.borrow_mut().insert_symbol(2, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("var1"), symbol_type: Type::Any });
 
         let node = enter_scope(node);
-        node.borrow_mut().insert_symbol(3, SymbolTableElement { symbol: Symbol::Parameter(), name: String::from("param1") });
-        node.borrow_mut().insert_symbol(4, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("var2") });
-        node.borrow_mut().insert_symbol(5, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func2") });
+        node.borrow_mut().insert_symbol(3, SymbolTableElement { symbol: Symbol::Parameter(), name: String::from("param1"), symbol_type: Type::Any });
+        node.borrow_mut().insert_symbol(4, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("var2"), symbol_type: Type::Any });
+        node.borrow_mut().insert_symbol(5, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func2"), symbol_type: Type::Any });
 
         let node = enter_scope(node);
-        node.borrow_mut().insert_symbol(6, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func3") });
-        node.borrow_mut().insert_symbol(7, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("var3") });
+        node.borrow_mut().insert_symbol(6, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func3"), symbol_type: Type::Any });
+        node.borrow_mut().insert_symbol(7, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("var3"), symbol_type: Type::Any });
 
         let node = exit_scope(node);
-        node.borrow_mut().insert_symbol(8, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func4") });
+        node.borrow_mut().insert_symbol(8, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func4"), symbol_type: Type::Any });
 
         let node = enter_scope(node);
 
         let node = get_scope(node, 0).unwrap();
-        node.borrow_mut().insert_symbol(9, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func5") });
+        node.borrow_mut().insert_symbol(9, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func5"), symbol_type: Type::Any });
 
         let node = enter_scope(node);
-        node.borrow_mut().insert_symbol(10, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("var4") });
+        node.borrow_mut().insert_symbol(10, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("var4"), symbol_type: Type::Any });
 
         let node = exit_scope(node);
 
@@ -423,7 +425,7 @@ flowchart TD
 
         let (node, symbol) = get_symbol(node, &1);
         let res = format!("{:?}", symbol);
-        assert_eq!(res, "Some(SymbolTableElement { symbol: Function, name: \"func1\" })");
+        assert_eq!(res, "Some(SymbolTableElement { symbol: Function, name: \"func1\", symbol_type: Any })");
 
         let (node, symbol) = get_symbol(node, &7);
         assert!(symbol.is_none());
@@ -431,13 +433,13 @@ flowchart TD
         let node = get_scope(node, 2).unwrap();
         let (node, symbol) = get_symbol(node, &7);
         let res = format!("{:?}", symbol);
-        assert_eq!(res, "Some(SymbolTableElement { symbol: Variable, name: \"var3\" })");
+        assert_eq!(res, "Some(SymbolTableElement { symbol: Variable, name: \"var3\", symbol_type: Any })");
         let (node, symbol) = get_symbol(node, &5);
         let res = format!("{:?}", symbol);
-        assert_eq!(res, "Some(SymbolTableElement { symbol: Function, name: \"func2\" })");
+        assert_eq!(res, "Some(SymbolTableElement { symbol: Function, name: \"func2\", symbol_type: Any })");
         let (node, symbol) = get_symbol(node, &2);
         let res = format!("{:?}", symbol);
-        assert_eq!(res, "Some(SymbolTableElement { symbol: Variable, name: \"var1\" })");
+        assert_eq!(res, "Some(SymbolTableElement { symbol: Variable, name: \"var1\", symbol_type: Any })");
         let (_node, symbol) = get_symbol(node, &10);
         assert!(symbol.is_none());
 

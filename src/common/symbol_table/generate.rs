@@ -1,5 +1,5 @@
 use super::{enter_scope, exit_scope, init_symbol_table, Symbol, SymbolTableElement, SymbolTableRef};
-use crate::ast::nodes;
+use crate::{ast::nodes, typing::{Type, Weak}};
 
 pub fn generate(root: nodes::Root) -> (nodes::Root, SymbolTableRef) {
     let table = init_symbol_table();
@@ -27,7 +27,8 @@ fn generate_from_def(def: &nodes::Def, table: SymbolTableRef) -> SymbolTableRef 
     let name = def.identifier.element.name.clone();
     let symbol_table_element = SymbolTableElement { 
         symbol: Symbol::Function(), 
-        name: name 
+        name: name,
+        symbol_type: Type::Any, // TODO : Function typing
     };
     table.borrow_mut().insert_symbol(func_id, symbol_table_element);
     
@@ -39,7 +40,8 @@ fn generate_from_def(def: &nodes::Def, table: SymbolTableRef) -> SymbolTableRef 
         let param_name = param.identifier.element.name.clone();
         let param_element = SymbolTableElement {
             symbol: Symbol::Parameter(),
-            name: param_name
+            name: param_name,
+            symbol_type: Type::Weak(Weak::new())
         };
         function_table.borrow_mut().insert_symbol(param_id, param_element);
     }
@@ -59,7 +61,8 @@ fn generate_from_block(block: &nodes::Block, table: SymbolTableRef) -> SymbolTab
                 if let Some((id, name)) = extract_identifier_from_expression(&assign.destination) {
                     let var_element = SymbolTableElement {
                         symbol: Symbol::Variable(),
-                        name
+                        name,
+                        symbol_type: Type::Any, // TODO: type assign expressions
                     };
                     table.borrow_mut().insert_symbol(id, var_element);
                 }
@@ -72,7 +75,8 @@ fn generate_from_block(block: &nodes::Block, table: SymbolTableRef) -> SymbolTab
                 
                 let var_element = SymbolTableElement {
                     symbol: Symbol::Variable(),
-                    name: var_name
+                    name: var_name,
+                    symbol_type: Type::Any
                 };
                 loop_table.borrow_mut().insert_symbol(var_id, var_element);
 

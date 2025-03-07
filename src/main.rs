@@ -14,6 +14,7 @@ use common::symbol_table::{enter_scope, exit_scope, get_scope, init_symbol_table
 use common::types::{FileElement, Tree};
 use lexer::Lexer;
 use parser::{generate_tree, Lexem};
+use typing::Type;
 use std::fs::File;
 use std::io::{self, stdout, Write};
 use std::process::exit;
@@ -158,28 +159,28 @@ fn _print_analysis_table(table: &AnalysisTable, args: PrintTableArgs) {
 fn symbol_table_example() {
     let root = init_symbol_table();
     let node = root.clone();
-    node.borrow_mut().insert_symbol(1, SymbolTableElement { symbol: Symbol::Function(), name: String::from("main") });
-    node.borrow_mut().insert_symbol(2, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("x") });
+    node.borrow_mut().insert_symbol(1, SymbolTableElement { symbol: Symbol::Function(), name: String::from("main"), symbol_type: Type::Any });
+    node.borrow_mut().insert_symbol(2, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("x"), symbol_type: Type::Any });
 
     let node = enter_scope(node);
-    node.borrow_mut().insert_symbol(3, SymbolTableElement { symbol: Symbol::Parameter(), name: String::from("param1") });
-    node.borrow_mut().insert_symbol(4, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("y") });
-    node.borrow_mut().insert_symbol(5, SymbolTableElement { symbol: Symbol::Function(), name: String::from("helper") });
+    node.borrow_mut().insert_symbol(3, SymbolTableElement { symbol: Symbol::Parameter(), name: String::from("param1"), symbol_type: Type::Any });
+    node.borrow_mut().insert_symbol(4, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("y"), symbol_type: Type::Any });
+    node.borrow_mut().insert_symbol(5, SymbolTableElement { symbol: Symbol::Function(), name: String::from("helper"), symbol_type: Type::Any });
 
     let node = enter_scope(node);
-    node.borrow_mut().insert_symbol(6, SymbolTableElement { symbol: Symbol::Function(), name: String::from("nested") });
-    node.borrow_mut().insert_symbol(7, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("z") });
+    node.borrow_mut().insert_symbol(6, SymbolTableElement { symbol: Symbol::Function(), name: String::from("nested"), symbol_type: Type::Any });
+    node.borrow_mut().insert_symbol(7, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("z"), symbol_type: Type::Any });
 
     let node = exit_scope(node);
-    node.borrow_mut().insert_symbol(8, SymbolTableElement { symbol: Symbol::Function(), name: String::from("sibling") });
+    node.borrow_mut().insert_symbol(8, SymbolTableElement { symbol: Symbol::Function(), name: String::from("sibling"), symbol_type: Type::Any });
 
     let node = enter_scope(node);
 
     let node = get_scope(node, 0).unwrap();
-    node.borrow_mut().insert_symbol(9, SymbolTableElement { symbol: Symbol::Function(), name: String::from("outer") });
+    node.borrow_mut().insert_symbol(9, SymbolTableElement { symbol: Symbol::Function(), name: String::from("outer"), symbol_type: Type::Any });
 
     let node = enter_scope(node);
-    node.borrow_mut().insert_symbol(10, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("w") });
+    node.borrow_mut().insert_symbol(10, SymbolTableElement { symbol: Symbol::Variable(), name: String::from("w"), symbol_type: Type::Any });
 
     let node = exit_scope(node);
 

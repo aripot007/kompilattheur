@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::common::types::Token;
 
 #[derive(Debug, Copy, Clone)]
@@ -57,6 +59,12 @@ impl Into<String> for BinOp {
             BinOp::AND => "AND",
             BinOp::OR => "OR",
         })
+    }
+}
+
+impl Display for BinOp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", Into::<String>::into(*self))
     }
 }
 

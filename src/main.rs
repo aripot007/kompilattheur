@@ -89,27 +89,20 @@ fn compile(args: CompileArgs) {
 
     let ast: ast::nodes::Root = generate_ast(tree.clone());
 
-    if args.show_symbol_table {
-        let (returned_ast, symbol_table) = generate(ast);
+    let (returned_ast, symbol_table) = generate(ast);
 
+    if args.show_symbol_table {
         let mut symbol_table_file = File::create("symbol_table.mmd").expect("Error opening symbol table file");
         write!(symbol_table_file, "{}", symbol_table.borrow().generate_unsafe_mermaid())
             .expect("Error writing symbol table");
         println!("Symbol table written to symbol_table.mmd");
-        
-
-        let display_ast: Tree<String> = returned_ast.into();
-
-        let mut output_file = File::create(&args.output_file).expect("Error opening output file");
-        write!(output_file, "{}", display_ast.borrow().generate_html())
-            .expect("error writing to output");
-    } else {
-        let display_ast: Tree<String> = ast.into();
-
-        let mut output_file = File::create(&args.output_file).expect("Error opening output file");
-        write!(output_file, "{}", display_ast.borrow().generate_html())
-            .expect("error writing to output");
     }
+
+    let display_ast: Tree<String> = returned_ast.into();
+
+    let mut output_file = File::create(&args.output_file).expect("Error opening output file");
+    write!(output_file, "{}", display_ast.borrow().generate_html())
+        .expect("error writing to output"); 
 
     if let Some(output_path_str) = &args.output_file.to_str() {
         if args.run && webbrowser::open(output_path_str).is_err() {

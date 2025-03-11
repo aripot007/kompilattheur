@@ -1,6 +1,9 @@
 use crate::{
     analysis_table::NonTerminal,
-    common::{localizable::Localizable, types::{FileElement, Node, Tree}},
+    common::{
+        localizable::Localizable,
+        types::{FileElement, Node, Tree},
+    },
     parser::Lexem,
 };
 
@@ -8,6 +11,7 @@ use super::{parse_list, AstNode, Statement};
 
 pub struct Block {
     statements: Vec<Statement>,
+    pub localization: FileElement<bool>,
 }
 
 impl AstNode for Block {}
@@ -24,7 +28,6 @@ impl From<Tree<FileElement<Lexem>>> for Block {
             start_line: 0,
             end_line: 0,
             start_char: 0,
-            end_char: 0,
             element: Lexem::NonTerminal(NonTerminal::File),
         });
 
@@ -61,7 +64,29 @@ impl From<Tree<FileElement<Lexem>>> for Block {
 
         let statements: Vec<Statement> = parse_list(statement_list_root, Statement::from);
 
-        return Block { statements };
+        // todo!("Check if right FileElement");
+
+        let localization = FileElement {
+            element: true,
+            len: statements.len(),
+            start_char: root.borrow().get_children()[0]
+                .borrow()
+                .get_value()
+                .get_start_char(),
+            start_line: root.borrow().get_children()[0]
+                .borrow()
+                .get_value()
+                .get_start_line(),
+            end_line: root.borrow().get_children()[0]
+                .borrow()
+                .get_value()
+                .get_end_line(),
+        };
+
+        return Block {
+            statements,
+            localization,
+        };
     }
 }
 
@@ -78,19 +103,23 @@ impl Into<Tree<String>> for Block {
 }
 
 impl Localizable for Block {
+    fn get_len(&self) -> usize {
+        self.localization.get_len()
+    }
+
     fn get_start_line(&self) -> usize {
-        todo!()
+        self.localization.get_start_line()
     }
 
     fn get_end_line(&self) -> usize {
-        todo!()
+        self.localization.get_end_line()
     }
 
     fn get_start_char(&self) -> usize {
-        todo!()
+        self.localization.get_start_char()
     }
 
     fn get_end_char(&self) -> usize {
-        todo!()
+        self.localization.get_end_char()
     }
 }

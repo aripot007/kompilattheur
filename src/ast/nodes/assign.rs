@@ -1,6 +1,9 @@
 use super::AstNode;
 use crate::{
-    common::{localizable::Localizable, types::{FileElement, Node, Tree}},
+    common::{
+        localizable::Localizable,
+        types::{FileElement, Node, Tree},
+    },
     parser::Lexem,
 };
 
@@ -9,13 +12,22 @@ use super::Expression;
 pub struct Assign {
     destination: Expression,
     value: Expression,
+    localization: FileElement<bool>,
 }
 
 impl AstNode for Assign {}
 
 impl Assign {
-    pub fn new(destination: Expression, value: Expression) -> Assign {
-        return Assign { destination, value };
+    pub fn new(
+        destination: Expression,
+        value: Expression,
+        localization: FileElement<bool>,
+    ) -> Assign {
+        return Assign {
+            destination,
+            value,
+            localization,
+        };
     }
 }
 
@@ -37,19 +49,23 @@ impl Into<Tree<String>> for Assign {
 }
 
 impl Localizable for Assign {
+    fn get_len(&self) -> usize {
+        self.localization.get_len()
+    }
+
     fn get_start_line(&self) -> usize {
-        todo!()
+        self.localization.get_start_line()
     }
 
     fn get_end_line(&self) -> usize {
-        todo!()
+        self.localization.get_end_line()
     }
 
     fn get_start_char(&self) -> usize {
-        todo!()
+        self.localization.get_start_char()
     }
 
     fn get_end_char(&self) -> usize {
-        todo!()
+        self.localization.get_end_char()
     }
 }

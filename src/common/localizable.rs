@@ -1,5 +1,8 @@
 /// Represents something that can be localized in the source file
 pub trait Localizable {
+    /// Get the length of the element
+    fn get_len(&self) -> usize;
+
     /// Get the starting line in the source code
     fn get_start_line(&self) -> usize;
 

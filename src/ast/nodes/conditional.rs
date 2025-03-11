@@ -1,6 +1,9 @@
 use super::{AstNode, Block, Expression};
 use crate::{
-    common::{localizable::Localizable, types::{FileElement, Node, Token, Tree}},
+    common::{
+        localizable::Localizable,
+        types::{FileElement, Node, Token, Tree},
+    },
     parser::Lexem,
 };
 
@@ -8,6 +11,7 @@ pub struct Conditional {
     condition: Expression,
     if_block: Block,
     else_block: Option<Block>,
+    localization: FileElement<bool>,
 }
 
 impl AstNode for Conditional {}
@@ -26,10 +30,19 @@ impl From<Tree<FileElement<Lexem>>> for Conditional {
 
         let else_block = parse_else(root.borrow().get_children()[4].clone());
 
+        let localization = FileElement {
+            element: true,
+            len: if_elem.len,
+            start_char: if_elem.start_char,
+            start_line: if_elem.start_line,
+            end_line: if_elem.end_line,
+        };
+
         return Conditional {
             condition,
             if_block,
             else_block,
+            localization,
         };
     }
 }
@@ -61,19 +74,23 @@ impl Into<Tree<String>> for Conditional {
 }
 
 impl Localizable for Conditional {
+    fn get_len(&self) -> usize {
+        self.localization.get_len()
+    }
+
     fn get_start_line(&self) -> usize {
-        todo!()
+        self.localization.get_start_line()
     }
 
     fn get_end_line(&self) -> usize {
-        todo!()
+        self.localization.get_end_line()
     }
 
     fn get_start_char(&self) -> usize {
-        todo!()
+        self.localization.get_start_char()
     }
 
     fn get_end_char(&self) -> usize {
-        todo!()
+        self.localization.get_end_char()
     }
 }

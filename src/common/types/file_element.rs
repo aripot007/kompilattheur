@@ -24,9 +24,6 @@ pub struct FileElement<T> {
     /// Le numéro du caractère de début
     pub start_char: usize,
 
-    /// Le numéro du caractère de fin
-    pub end_char: usize,
-
     /// La longueur de l'élément en caractères
     pub len: usize,
 
@@ -39,12 +36,15 @@ pub const EOF: FileElement<Token> = FileElement {
     start_line: 0,
     end_line: 0,
     start_char: 0,
-    end_char: 0,
     len: 0,
     element: Token::EOF,
 };
 
 impl<T> Localizable for FileElement<T> {
+    fn get_len(&self) -> usize {
+        self.len
+    }
+
     fn get_start_line(&self) -> usize {
         self.start_line
     }
@@ -87,7 +87,6 @@ macro_rules! file_element_from {
             start_line: $from.start_line,
             end_line: $from.end_line,
             start_char: $from.start_char,
-            end_char: $from.end_char,
             element: $new_val,
         }
     };
@@ -102,7 +101,6 @@ macro_rules! empty_file_elt {
             start_line: 0,
             end_line: 0,
             start_char: 0,
-            end_char: 0,
             element: $elt,
         }
     };
@@ -121,7 +119,6 @@ mod tests {
             start_line: 1,
             end_line: 1,
             start_char: 42,
-            end_char: 42,
             element: 123456,
         };
 
@@ -130,7 +127,6 @@ mod tests {
         assert_eq!(e1.len, e2.len);
         assert_eq!(e1.start_line, e2.start_line);
         assert_eq!(e1.end_line, e2.end_line);
-        assert_eq!(e1.end_char, e2.end_char);
         assert_eq!(e1.start_char, e2.start_char);
         assert_eq!(e1.element, 123456);
         assert_eq!(e2.element, "chokbar");

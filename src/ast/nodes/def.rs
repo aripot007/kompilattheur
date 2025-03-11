@@ -2,7 +2,10 @@ use super::{AstNode, Block, Param};
 use crate::{
     analysis_table::NonTerminal,
     ast::nodes::parse_list_filter,
-    common::{localizable::Localizable, types::{file_element::file_element_from, FileElement, IdToken, Node, Token, Tree}},
+    common::{
+        localizable::Localizable,
+        types::{file_element::file_element_from, FileElement, IdToken, Node, Token, Tree},
+    },
     parser::Lexem,
 };
 
@@ -10,6 +13,7 @@ pub struct Def {
     identifier: FileElement<IdToken>,
     params: Vec<Param>,
     block: Block,
+    pub localization: FileElement<bool>,
 }
 
 impl AstNode for Def {}
@@ -42,10 +46,19 @@ impl From<Tree<FileElement<Lexem>>> for Def {
 
         let block = Block::from(root.borrow().get_children()[6].clone());
 
+        let localization = FileElement {
+            element: true,
+            len: identifier.len,
+            start_char: identifier.start_char,
+            start_line: identifier.start_line,
+            end_line: identifier.end_line,
+        };
+
         return Def {
             identifier,
             params,
             block,
+            localization,
         };
     }
 }
@@ -74,19 +87,23 @@ impl Into<Tree<String>> for Def {
 }
 
 impl Localizable for Def {
+    fn get_len(&self) -> usize {
+        self.identifier.get_len()
+    }
+
     fn get_start_line(&self) -> usize {
-        todo!()
+        self.identifier.get_start_line()
     }
 
     fn get_end_line(&self) -> usize {
-        todo!()
+        self.block.get_end_line()
     }
 
     fn get_start_char(&self) -> usize {
-        todo!()
+        self.identifier.get_start_char()
     }
 
     fn get_end_char(&self) -> usize {
-        todo!()
+        self.block.get_end_char()
     }
 }

@@ -87,7 +87,10 @@ impl From<Tree<FileElement<Lexem>>> for Factor {
 
             if right_child_children.len() == 0 {
                 // Identifier only
-                return Factor::Identifier(file_element_from!(children[0].borrow().get_value(), identifier));
+                return Factor::Identifier(file_element_from!(
+                    children[0].borrow().get_value(),
+                    identifier
+                ));
             }
 
             // Function call
@@ -181,32 +184,70 @@ impl Localizable for Factor {
     fn get_end_char(&self) -> usize {
         (&self).get_end_char()
     }
+
+    fn get_len(&self) -> usize {
+        (&self).get_len()
+    }
 }
 
 impl Localizable for &Factor {
+    fn get_len(&self) -> usize {
+        match self {
+            Factor::Integer(fe) => fe.get_len(),
+            Factor::String(fe) => fe.get_len(),
+            Factor::True(fe) | Factor::False(fe) | Factor::None(fe) => fe.get_len(),
+            Factor::Identifier(fe) => fe.get_len(),
+            Factor::List(expressions) => expressions.iter().map(|e| e.get_len()).sum(),
+            Factor::Expr(expression) => expression.get_len(),
+            Factor::Call { identifier, args } => todo!(),
+        }
+    }
+
     fn get_start_line(&self) -> usize {
         match self {
             Factor::Integer(fe) => fe.get_start_line(),
             Factor::String(fe) => fe.get_start_line(),
-            | Factor::True(fe)
-            | Factor::False(fe)
-            | Factor::None(fe) => fe.get_start_line(),
+            Factor::True(fe) | Factor::False(fe) | Factor::None(fe) => fe.get_start_line(),
             Factor::Identifier(fe) => fe.get_start_line(),
-            Factor::List(_expressions) => todo!(),
-            Factor::Expr(_expression) => todo!(),
-            Factor::Call { identifier: _, args: _ } => todo!(),
+            Factor::List(expressions) => expressions.first().unwrap().get_start_line(),
+            Factor::Expr(expression) => expression.get_start_line(),
+            Factor::Call { identifier, args } => todo!(),
         }
     }
 
     fn get_end_line(&self) -> usize {
-        todo!()
+        match self {
+            Factor::Integer(fe) => fe.get_end_line(),
+            Factor::String(fe) => fe.get_end_line(),
+            Factor::True(fe) | Factor::False(fe) | Factor::None(fe) => fe.get_end_line(),
+            Factor::Identifier(fe) => fe.get_end_line(),
+            Factor::List(expressions) => expressions.last().unwrap().get_end_line(),
+            Factor::Expr(expression) => expression.get_end_line(),
+            Factor::Call { identifier, args } => todo!(),
+        }
     }
 
     fn get_start_char(&self) -> usize {
-        todo!()
+        match self {
+            Factor::Integer(fe) => fe.get_start_char(),
+            Factor::String(fe) => fe.get_start_char(),
+            Factor::True(fe) | Factor::False(fe) | Factor::None(fe) => fe.get_start_char(),
+            Factor::Identifier(fe) => fe.get_start_char(),
+            Factor::List(expressions) => expressions.first().unwrap().get_start_char(),
+            Factor::Expr(expression) => expression.get_start_char(),
+            Factor::Call { identifier, args } => todo!(),
+        }
     }
 
     fn get_end_char(&self) -> usize {
-        todo!()
+        match self {
+            Factor::Integer(fe) => fe.get_end_char(),
+            Factor::String(fe) => fe.get_end_char(),
+            Factor::True(fe) | Factor::False(fe) | Factor::None(fe) => fe.get_end_char(),
+            Factor::Identifier(fe) => fe.get_end_char(),
+            Factor::List(expressions) => expressions.last().unwrap().get_end_char(),
+            Factor::Expr(expression) => expression.get_end_char(),
+            Factor::Call { identifier, args } => todo!(),
+        }
     }
 }

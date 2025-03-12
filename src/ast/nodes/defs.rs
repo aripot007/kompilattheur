@@ -21,13 +21,8 @@ impl From<Tree<FileElement<Lexem>>> for Defs {
         let localization = FileElement {
             element: true,
             len: defs
-                .last()
-                .map_or(0, |def| def.get_end_char())
-                .saturating_sub(
-                    // -
-                    defs.first()
-                        .map_or(0, |def| def.localization.get_start_char()),
-                ),
+                .iter()
+                .fold(0, |len, def| len + def.localization.get_len()),
             start_line: defs
                 .first()
                 .map_or(0, |def| def.localization.get_start_line()),

@@ -11,7 +11,7 @@ pub struct Conditional {
     condition: Expression,
     if_block: Block,
     else_block: Option<Block>,
-    localization: FileElement<bool>,
+    pub localization: FileElement<bool>,
 }
 
 impl AstNode for Conditional {}
@@ -30,13 +30,24 @@ impl From<Tree<FileElement<Lexem>>> for Conditional {
 
         let else_block = parse_else(root.borrow().get_children()[4].clone());
 
-        let localization = FileElement {
+        let mut localization = FileElement {
             element: true,
             len: if_elem.len,
             start_char: if_elem.start_char,
             start_line: if_elem.start_line,
             end_line: if_elem.end_line,
         };
+
+        if else_block.is_some() {
+            localization.len += root.borrow().get_children()[4]
+                .borrow()
+                .get_value()
+                .get_len();
+            localization.end_line += root.borrow().get_children()[4]
+                .borrow()
+                .get_value()
+                .get_end_line();
+        }
 
         return Conditional {
             condition,

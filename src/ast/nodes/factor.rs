@@ -21,6 +21,7 @@ pub enum Factor {
     Call {
         identifier: IdToken,
         args: Vec<Expression>,
+        localization: FileElement<bool>,
     },
 }
 
@@ -101,7 +102,20 @@ impl From<Tree<FileElement<Lexem>>> for Factor {
                 is_arg_node,
             );
 
-            return Factor::Call { identifier, args };
+            let identifier_node = children[0].borrow().get_value();
+            let localization = FileElement {
+                element: true,
+                len: identifier_node.get_len() + args.iter().map(|s| s.get_len()).sum::<usize>(),
+                start_char: identifier_node.get_start_char(),
+                start_line: identifier_node.get_start_line(),
+                end_line: args.last().map_or(0, |s| s.get_end_line()),
+            };
+
+            return Factor::Call {
+                identifier,
+                args,
+                localization,
+            };
         } else if children.len() == 3 {
             // Expr or list
             match children[0].borrow().get_value().element {
@@ -119,15 +133,7 @@ impl From<Tree<FileElement<Lexem>>> for Factor {
             }
         }
 
-        println!("Not recognized : {}\n", root.borrow().generate_mermaid());
-
-        return Factor::Call {
-            identifier: IdToken {
-                id: 999,
-                name: String::from("NI"),
-            },
-            args: Vec::new(),
-        };
+        panic!("Not recognized : {}\n", root.borrow().generate_mermaid());
     }
 }
 
@@ -150,7 +156,11 @@ impl Into<Tree<String>> for &Factor {
             Factor::None(_file_element) => String::from("None"),
             Factor::List(vec) => return list_into_tree!("LIST", vec),
             Factor::Expr(expression) => return (*expression).as_ref().into(),
-            Factor::Call { identifier, args } => {
+            Factor::Call {
+                identifier,
+                args,
+                localization: _,
+            } => {
                 let root = Node::new(String::from("CALL"));
 
                 root.borrow_mut()
@@ -199,7 +209,11 @@ impl Localizable for &Factor {
             Factor::Identifier(fe) => fe.get_len(),
             Factor::List(expressions) => expressions.iter().map(|e| e.get_len()).sum(),
             Factor::Expr(expression) => expression.get_len(),
-            Factor::Call { identifier, args } => todo!(),
+            Factor::Call {
+                identifier: _,
+                args: _,
+                localization,
+            } => localization.get_len(),
         }
     }
 
@@ -211,7 +225,11 @@ impl Localizable for &Factor {
             Factor::Identifier(fe) => fe.get_start_line(),
             Factor::List(expressions) => expressions.first().unwrap().get_start_line(),
             Factor::Expr(expression) => expression.get_start_line(),
-            Factor::Call { identifier, args } => todo!(),
+            Factor::Call {
+                identifier: _,
+                args: _,
+                localization,
+            } => localization.get_start_line(),
         }
     }
 
@@ -223,7 +241,11 @@ impl Localizable for &Factor {
             Factor::Identifier(fe) => fe.get_end_line(),
             Factor::List(expressions) => expressions.last().unwrap().get_end_line(),
             Factor::Expr(expression) => expression.get_end_line(),
-            Factor::Call { identifier, args } => todo!(),
+            Factor::Call {
+                identifier: _,
+                args: _,
+                localization,
+            } => localization.get_end_line(),
         }
     }
 
@@ -235,7 +257,11 @@ impl Localizable for &Factor {
             Factor::Identifier(fe) => fe.get_start_char(),
             Factor::List(expressions) => expressions.first().unwrap().get_start_char(),
             Factor::Expr(expression) => expression.get_start_char(),
-            Factor::Call { identifier, args } => todo!(),
+            Factor::Call {
+                identifier: _,
+                args: _,
+                localization,
+            } => localization.get_start_char(),
         }
     }
 
@@ -247,7 +273,11 @@ impl Localizable for &Factor {
             Factor::Identifier(fe) => fe.get_end_char(),
             Factor::List(expressions) => expressions.last().unwrap().get_end_char(),
             Factor::Expr(expression) => expression.get_end_char(),
-            Factor::Call { identifier, args } => todo!(),
+            Factor::Call {
+                identifier: _,
+                args: _,
+                localization,
+            } => localization.get_end_char(),
         }
     }
 }

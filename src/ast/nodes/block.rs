@@ -64,23 +64,12 @@ impl From<Tree<FileElement<Lexem>>> for Block {
 
         let statements: Vec<Statement> = parse_list(statement_list_root, Statement::from);
 
-        // todo!("Check if right FileElement");
-
         let localization = FileElement {
             element: true,
-            len: statements.len(),
-            start_char: root.borrow().get_children()[0]
-                .borrow()
-                .get_value()
-                .get_start_char(),
-            start_line: root.borrow().get_children()[0]
-                .borrow()
-                .get_value()
-                .get_start_line(),
-            end_line: root.borrow().get_children()[0]
-                .borrow()
-                .get_value()
-                .get_end_line(),
+            len: statements.iter().map(|s| s.get_len()).sum(),
+            start_char: statements.first().map_or(0, |s| s.get_start_char()),
+            start_line: statements.first().map_or(0, |s| s.get_start_line()),
+            end_line: statements.last().map_or(0, |s| s.get_end_line()),
         };
 
         return Block {

@@ -11,7 +11,7 @@ pub struct For {
     var: FileElement<IdToken>,
     iterator: Expression,
     block: Block,
-    localization: FileElement<bool>,
+    pub localization: FileElement<bool>,
 }
 
 impl AstNode for For {}

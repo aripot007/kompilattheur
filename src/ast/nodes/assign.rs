@@ -12,7 +12,7 @@ use super::Expression;
 pub struct Assign {
     destination: Expression,
     value: Expression,
-    localization: FileElement<bool>,
+    pub localization: FileElement<bool>,
 }
 
 impl AstNode for Assign {}

@@ -2,10 +2,12 @@ use crate::{
     analysis_table::NonTerminal,
     ast::nodes::parse_access,
     common::{
-        diagnostic::{self, DiagnosticGravity}, localizable::Localizable, types::{
+        diagnostic::{self, DiagnosticGravity},
+        localizable::Localizable,
+        types::{
             file_element::{empty_file_elt, file_element_from},
             FileElement, Node, Token, Tree,
-        }
+        },
     },
     parser::Lexem,
 };
@@ -145,9 +147,9 @@ macro_rules! add_nonterm_child {
 ///             factor_id             expr2_no_access                simple_stmt_expr ___________
 ///                                  /   |        \                 /    \          \___         \
 ///                                or  expr_and  expr2_no_access   /      \              =S        \
-///                                                  ...       [ expr ]    access_suite            expr          
+///                                                  ...       [ expr ]    access_suite            expr
 ///                                                                         /       \
-///   
+///
 /// In this case, we use the parse_complex_stmt function, so we need to adapt the tree to the function.                                                                          ...
 /// We move create a factor tree for the left identifier, embeded in a normal expr tree to handle the ors etc,
 ///
@@ -161,8 +163,8 @@ macro_rules! add_nonterm_child {
 ///                      /              \
 ///                   factor        expr2_no_access
 ///                  /      \           ...
-///                id    factor_id  
-///   
+///                id    factor_id
+///
 ///
 ///
 fn parse_ident_stmt(root: Tree<FileElement<Lexem>>) -> Statement {
@@ -179,9 +181,19 @@ fn parse_ident_stmt(root: Tree<FileElement<Lexem>>) -> Statement {
         left_expr.borrow_mut().add_child(&left_expr, ident_node);
         add_nonterm_child!(left_expr, NonTerminal::FactorIdent);
 
+        let equal_node: Tree<FileElement<Lexem>> = descend_children!(root, 1, 0).clone();
+        let localization = FileElement {
+            element: true,
+            len: equal_node.borrow().get_value().len,
+            start_line: equal_node.borrow().get_value().get_start_line(),
+            start_char: equal_node.borrow().get_value().get_start_char(),
+            end_line: equal_node.borrow().get_value().get_end_line(),
+        };
+
         return Statement::Assign(Assign::new(
             Expression::from(left_expr),
             Expression::from(right_expr),
+            localization,
         ));
     }
 
@@ -228,10 +240,10 @@ fn parse_ident_stmt(root: Tree<FileElement<Lexem>>) -> Statement {
 ///                         stmt
 ///                        /     \
 ///                     expr     simple_stmt_expr __________
-///                                  /     \     \______    \             
+///                                  /     \     \______    \
 ///                                 /       \           \    \
-///                           [ expr ]    access_suite   =   expr          
-///                                                                    
+///                           [ expr ]    access_suite   =   expr
+///
 fn parse_complex_stmt(root: Tree<FileElement<Lexem>>) -> Statement {
     let left_expr = Expression::from(descend_children!(root, 0).clone());
 
@@ -273,7 +285,16 @@ fn parse_complex_stmt(root: Tree<FileElement<Lexem>>) -> Statement {
 
     let left_expr = insert_access(left_expr, access_root);
 
-    return Statement::Assign(Assign::new(left_expr, assign_value));
+    let equal_node: Tree<FileElement<Lexem>> = descend_children!(root, 1, 2).clone();
+    let localization = FileElement {
+        element: true,
+        len: equal_node.borrow().get_value().len,
+        start_line: equal_node.borrow().get_value().get_start_line(),
+        start_char: equal_node.borrow().get_value().get_start_char(),
+        end_line: equal_node.borrow().get_value().get_end_line(),
+    };
+
+    return Statement::Assign(Assign::new(left_expr, assign_value, localization));
 }
 
 impl Into<Tree<String>> for Statement {
@@ -299,19 +320,63 @@ impl Into<Tree<String>> for Statement {
 }
 
 impl Localizable for Statement {
+    fn get_len(&self) -> usize {
+        match self {
+            Statement::NotImplemented => 0,
+            Statement::Print(expr) => expr.get_len(),
+            Statement::Return(expr) => expr.get_len(),
+            Statement::For(for_loop) => for_loop.get_len(),
+            Statement::Conditional(cdt) => cdt.get_len(),
+            Statement::Assign(assign) => assign.get_len(),
+            Statement::Expr(expression) => expression.get_len(),
+        }
+    }
+
     fn get_start_line(&self) -> usize {
-        todo!()
+        match self {
+            Statement::NotImplemented => 0,
+            Statement::Print(expr) => expr.get_start_line(),
+            Statement::Return(expr) => expr.get_start_line(),
+            Statement::For(for_loop) => for_loop.get_start_line(),
+            Statement::Conditional(cdt) => cdt.get_start_line(),
+            Statement::Assign(assign) => assign.get_start_line(),
+            Statement::Expr(expression) => expression.get_start_line(),
+        }
     }
 
     fn get_end_line(&self) -> usize {
-        todo!()
+        match self {
+            Statement::NotImplemented => 0,
+            Statement::Print(expr) => expr.get_end_line(),
+            Statement::Return(expr) => expr.get_end_line(),
+            Statement::For(for_loop) => for_loop.get_end_line(),
+            Statement::Conditional(cdt) => cdt.get_end_line(),
+            Statement::Assign(assign) => assign.get_end_line(),
+            Statement::Expr(expression) => expression.get_end_line(),
+        }
     }
 
     fn get_start_char(&self) -> usize {
-        todo!()
+        match self {
+            Statement::NotImplemented => 0,
+            Statement::Print(expr) => expr.get_start_char(),
+            Statement::Return(expr) => expr.get_start_char(),
+            Statement::For(for_loop) => for_loop.get_start_char(),
+            Statement::Conditional(cdt) => cdt.get_start_char(),
+            Statement::Assign(assign) => assign.get_start_char(),
+            Statement::Expr(expression) => expression.get_start_char(),
+        }
     }
 
     fn get_end_char(&self) -> usize {
-        todo!()
+        match self {
+            Statement::NotImplemented => 0,
+            Statement::Print(expr) => expr.get_end_char(),
+            Statement::Return(expr) => expr.get_end_char(),
+            Statement::For(for_loop) => for_loop.get_end_char(),
+            Statement::Conditional(cdt) => cdt.get_end_char(),
+            Statement::Assign(assign) => assign.get_end_char(),
+            Statement::Expr(expression) => expression.get_end_char(),
+        }
     }
 }

@@ -40,6 +40,7 @@ impl Display for SymbolTable {
         <tr>
             <th>Key</th>
             <th>Name</th>
+            <th>Symbol Type</th>
             <th>Type</th>
         </tr>
     </thead>
@@ -54,8 +55,9 @@ impl Display for SymbolTable {
             <td>{}</td>
             <td>{}</td>
             <td>{:?}</td>
+            <td>{}</td>
         </tr>"#,
-                key, value.name, value.symbol
+                key, value.name, value.symbol, value.symbol_type
             ));
         }
 
@@ -287,6 +289,7 @@ flowchart TD
         <tr>
             <th>Key</th>
             <th>Name</th>
+            <th>Symbol Type</th>
             <th>Type</th>
         </tr>
     </thead>
@@ -295,6 +298,7 @@ flowchart TD
             <td>1</td>
             <td>func1</td>
             <td>Function</td>
+            <td>Any</td>
         </tr>
     </tbody>
 </table>
@@ -305,6 +309,7 @@ flowchart TD
         <tr>
             <th>Key</th>
             <th>Name</th>
+            <th>Symbol Type</th>
             <th>Type</th>
         </tr>
     </thead>
@@ -319,6 +324,7 @@ flowchart TD
         <tr>
             <th>Key</th>
             <th>Name</th>
+            <th>Symbol Type</th>
             <th>Type</th>
         </tr>
     </thead>

@@ -4,8 +4,8 @@ use super::Type;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Function {
-    args: Vec<Type>,
-    returns: Type,
+    pub args: Vec<Type>,
+    pub returns: Type,
 }
 
 impl Display for Function {

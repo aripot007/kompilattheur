@@ -1,0 +1,7 @@
+a = 12
+b = "Hello"
+c = a + b
+
+if a == b:
+    d = a - 25 + 12 + c
+

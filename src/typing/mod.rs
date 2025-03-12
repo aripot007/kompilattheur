@@ -1,6 +1,9 @@
 mod types;
-mod parse_type;
+mod parsing;
 mod diagnostics;
+mod typeable;
+mod typing_context;
 
 pub use types::*;
-pub use parse_type::*;
+pub use typeable::*;
+pub use typing_context::*;

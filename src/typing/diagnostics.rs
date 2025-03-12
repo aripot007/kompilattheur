@@ -2,7 +2,7 @@ use colored::{Color, Colorize};
 
 /// Defines all diagnostics used in the typing system
 
-use crate::{ast::nodes::Expression, common::diagnostic::{Diagnostic, DiagnosticGravity}};
+use crate::{ast::nodes::Expression, common::{diagnostic::{Diagnostic, DiagnosticGravity}, localizable::Localizable}};
 use super::Type;
 
 
@@ -19,6 +19,19 @@ impl Diagnostic {
                 format!("{}", t1).color(Color::Yellow),
                 format!("{}", t2).color(Color::Yellow),
                 value
+            ),
+        )
+    }
+
+    /// Unknown symbol
+    pub(super) fn unknown_symbol<T: Localizable>(root: &T, name: &String) -> Self {
+        Diagnostic::from_localizable_ref(
+            root,
+            DiagnosticGravity::Error,
+            String::from("UnknownSymbol"),
+            format!(
+                "Unknown symbol {}",
+                format!("{}", name).color(Color::Red),
             ),
         )
     }

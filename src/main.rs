@@ -10,7 +10,7 @@ use analysis_table::{get_analysis_table, setup_analysis_table, AnalysisTable};
 use ast::generate_ast;
 use clap::{CommandFactory, Parser};
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs, TargetStep};
-use common::symbol_table::{enter_scope, exit_scope, get_scope, init_symbol_table, Symbol, generate, SymbolTableElement};
+use common::symbol_table::{enter_scope, exit_scope, get_scope, init_symbol_table, Symbol, parse_types, SymbolTableElement};
 use common::types::{FileElement, Tree};
 use lexer::Lexer;
 use parser::{generate_tree, Lexem};
@@ -91,7 +91,19 @@ fn compile(args: CompileArgs) {
 
     let ast: ast::nodes::Root = generate_ast(tree.clone());
 
-    let (returned_ast, symbol_table) = generate(ast);
+    let (returned_ast, symbol_table, context) = parse_types(ast);
+
+    for warning in context.warnings {
+        warning.display();
+    }
+
+    if !context.errors.is_empty() {
+        for error in context.errors {
+            error.display();
+        }
+        eprintln!("Typing ended with errors. Aborting");
+        exit(1);
+    }
 
     if args.show_symbol_table {
         let mut symbol_table_file = File::create("symbol_table.mmd").expect("Error opening symbol table file");

@@ -25,7 +25,6 @@ pub fn generate_tree(
         start_line: 0,
         start_char: 0,
         end_line: 0,
-        end_char: 0,
         len: 0,
         element: Lexem::NonTerminal(NonTerminal::File),
     });
@@ -136,7 +135,6 @@ pub fn generate_tree(
                                         start_line: 0,
                                         end_line: 0,
                                         start_char: 0,
-                                        end_char: 0,
                                         element: (*lexem).clone(),
                                     });
                                     stack.push(new_node.clone());

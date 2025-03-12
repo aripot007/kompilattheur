@@ -1,6 +1,9 @@
 use crate::{
     analysis_table::NonTerminal,
-    common::{localizable::Localizable, types::{FileElement, Node, Token, Tree}},
+    common::{
+        localizable::Localizable,
+        types::{FileElement, Node, Token, Tree},
+    },
     parser::Lexem,
 };
 
@@ -138,19 +141,48 @@ impl Into<Tree<String>> for &Expression {
 }
 
 impl Localizable for Expression {
+    fn get_len(&self) -> usize {
+        match self {
+            Expression::BINOP(e1, _bin_op, e2) => e1.get_len() + e2.get_len(),
+            Expression::UNOP(_un_op, expression) => expression.get_len(),
+            Expression::Factor(f) => f.get_len(),
+            Expression::NotImplemented => 0,
+        }
+    }
+
     fn get_start_line(&self) -> usize {
-        todo!()
+        match self {
+            Expression::BINOP(e1, _bin_op, _e2) => e1.get_start_line(),
+            Expression::UNOP(_un_op, expression) => expression.get_start_line(),
+            Expression::Factor(f) => f.get_start_line(),
+            Expression::NotImplemented => 0,
+        }
     }
 
     fn get_end_line(&self) -> usize {
-        todo!()
+        match self {
+            Expression::BINOP(_e1, _bin_op, e2) => e2.get_end_line(),
+            Expression::UNOP(_un_op, expression) => expression.get_end_line(),
+            Expression::Factor(f) => f.get_end_line(),
+            Expression::NotImplemented => 0,
+        }
     }
 
     fn get_start_char(&self) -> usize {
-        todo!()
+        match self {
+            Expression::BINOP(e1, _bin_op, _e2) => e1.get_start_char(),
+            Expression::UNOP(_un_op, expression) => expression.get_start_char(),
+            Expression::Factor(f) => f.get_start_char(),
+            Expression::NotImplemented => 0,
+        }
     }
 
     fn get_end_char(&self) -> usize {
-        todo!()
+        match self {
+            Expression::BINOP(_e1, _bin_op, e2) => e2.get_end_char(),
+            Expression::UNOP(_un_op, expression) => expression.get_end_char(),
+            Expression::Factor(f) => f.get_end_char(),
+            Expression::NotImplemented => 0,
+        }
     }
 }

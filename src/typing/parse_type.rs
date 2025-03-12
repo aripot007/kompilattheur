@@ -87,7 +87,7 @@ impl TryFrom<&Factor> for (Type, Vec<Diagnostic>) {
             Factor::Identifier(_) => todo!(), // Get or add to tds
             Factor::List(_) => Ok((Type::List, Vec::new())),
             Factor::Expr(expr) => expr.as_ref().try_into(),
-            Factor::Call { identifier, args } => todo!(),// Get or add to tds
+            Factor::Call { identifier, args, localization } => todo!(),// Get or add to tds
         };
     }
 }

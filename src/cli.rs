@@ -111,6 +111,10 @@ pub struct CompileArgs {
     /// Lance le programme compilé (ou ouvre le fichier résultant en fonction de l'étape de compilation)
     #[arg(long, short, action)]
     pub run: bool,
+
+    /// Affiche la table des symboles
+    #[arg(long, action)]
+    pub show_symbol_table: bool,
 }
 
 #[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]

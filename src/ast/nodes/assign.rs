@@ -10,8 +10,8 @@ use crate::{
 use super::Expression;
 
 pub struct Assign {
-    destination: Expression,
-    value: Expression,
+    pub destination: Expression,
+    pub value: Expression,
     pub localization: FileElement<bool>,
 }
 

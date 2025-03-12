@@ -10,9 +10,9 @@ use crate::{
 };
 
 pub struct Def {
-    identifier: FileElement<IdToken>,
-    params: Vec<Param>,
-    block: Block,
+    pub identifier: FileElement<IdToken>,
+    pub params: Vec<Param>,
+    pub block: Block,
     pub localization: FileElement<bool>,
 }
 

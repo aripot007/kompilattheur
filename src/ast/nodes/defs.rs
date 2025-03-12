@@ -8,7 +8,7 @@ use crate::{
 };
 
 pub struct Defs {
-    defs: Vec<Def>,
+    pub defs: Vec<Def>,
     localization: FileElement<bool>,
 }
 

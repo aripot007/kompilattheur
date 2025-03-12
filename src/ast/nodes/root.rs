@@ -8,8 +8,8 @@ use crate::{
 };
 
 pub struct Root {
-    defs: Defs,
-    block: Block,
+    pub defs: Defs,
+    pub block: Block,
     location: FileElement<bool>,
 }
 

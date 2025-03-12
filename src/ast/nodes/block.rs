@@ -10,7 +10,7 @@ use crate::{
 use super::{parse_list, AstNode, Statement};
 
 pub struct Block {
-    statements: Vec<Statement>,
+    pub statements: Vec<Statement>,
     pub localization: FileElement<bool>,
 }
 

@@ -8,7 +8,7 @@ use crate::{
 };
 
 pub struct Param {
-    identifier: FileElement<IdToken>,
+    pub identifier: FileElement<IdToken>,
     localization: FileElement<bool>,
 }
 

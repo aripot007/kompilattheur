@@ -252,6 +252,10 @@ fn get_symbol_rec(node: Rc<RefCell<Node<SymbolTable>>>, key: &usize) -> Option<S
     }
 }
 
+pub fn get_symbol_table_index(node: Rc<RefCell<Node<SymbolTable>>>) -> usize {
+    node.borrow().get_value().index
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

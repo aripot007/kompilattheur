@@ -1,8 +1,7 @@
 use crate::{
     analysis_table::NonTerminal,
     common::{
-        localizable::Localizable,
-        types::{FileElement, Node, Tree},
+        localizable::Localizable, symbol_table::SymbolTableRef, types::{FileElement, Node, Tree}
     },
     parser::Lexem,
 };
@@ -12,6 +11,7 @@ use super::{parse_list, AstNode, Statement};
 pub struct Block {
     pub statements: Vec<Statement>,
     pub localization: FileElement<bool>,
+    pub symbol_table: Option<SymbolTableRef>,
 }
 
 impl AstNode for Block {}
@@ -75,6 +75,7 @@ impl From<Tree<FileElement<Lexem>>> for Block {
         return Block {
             statements,
             localization,
+            symbol_table: None,
         };
     }
 }

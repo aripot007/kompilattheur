@@ -23,6 +23,14 @@ impl Weak {
         w.possible = Vec::from(possible_types);
         return w;
     }
+
+    pub fn get_decalage(&self) -> usize {
+        self.possible
+            .iter()
+            .map(|t| t.get_decalage())
+            .max()
+            .expect("Error: Weak type has no decalage computed!")
+    }
 }
 
 impl PartialEq for Weak {

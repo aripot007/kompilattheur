@@ -1,6 +1,10 @@
-
-use crate::common::symbol_table::{enter_scope, exit_scope, init_symbol_table, Symbol, SymbolTableElement, SymbolTableRef};
-use crate::{ast::nodes::{self, Factor, Statement}, typing::{Function, Type, Typeable, TypingContext, Weak}};
+use crate::common::symbol_table::{
+    enter_scope, exit_scope, init_symbol_table, Symbol, SymbolTableElement, SymbolTableRef,
+};
+use crate::{
+    ast::nodes::{self, Factor, Statement},
+    typing::{Function, Type, Typeable, TypingContext, Weak},
+};
 
 pub fn parse_types(root: nodes::Root) -> (nodes::Root, SymbolTableRef, TypingContext) {
     let table = init_symbol_table();
@@ -16,21 +20,29 @@ pub fn parse_types(root: nodes::Root) -> (nodes::Root, SymbolTableRef, TypingCon
     return (root, table, context);
 }
 
-fn generate_from_node_root(root: nodes::Root, table: SymbolTableRef, context: &mut TypingContext) -> (nodes::Root, SymbolTableRef) {
+fn generate_from_node_root(
+    mut root: nodes::Root,
+    table: SymbolTableRef,
+    context: &mut TypingContext,
+) -> (nodes::Root, SymbolTableRef) {
     let mut table = table;
-    
+
     // Process all function definitions
-    for def in &root.defs.defs {
+    for def in &mut root.defs.defs {
         table = generate_from_def(def, table, context);
     }
-    
+
     // Process the main block
-    table = generate_from_block(&root.block, table, context);
-    
+    table = generate_from_block(&mut root.block, table, context);
+
     (root, table)
 }
 
-fn generate_from_def(def: &nodes::Def, table: SymbolTableRef, context: &mut TypingContext) -> SymbolTableRef {
+fn generate_from_def(
+    def: &mut nodes::Def,
+    table: SymbolTableRef,
+    context: &mut TypingContext,
+) -> SymbolTableRef {
     let func_id = def.identifier.element.id;
     let name = def.identifier.element.name.clone();
 
@@ -39,13 +51,15 @@ fn generate_from_def(def: &nodes::Def, table: SymbolTableRef, context: &mut Typi
         returns: Type::Any,
     };
 
-    let symbol_table_element = SymbolTableElement { 
-        symbol: Symbol::Function(), 
+    let symbol_table_element = SymbolTableElement {
+        symbol: Symbol::Function(),
         name: name,
         symbol_type: Type::Function(Box::from(function_type)), // TODO : Function typing
     };
-    table.borrow_mut().insert_symbol(func_id, symbol_table_element);
-    
+    table
+        .borrow_mut()
+        .insert_symbol(func_id, symbol_table_element);
+
     // Enter a new scope for this function
     let function_table = enter_scope(table.clone());
     context.symbol_table = function_table.clone();
@@ -56,21 +70,29 @@ fn generate_from_def(def: &nodes::Def, table: SymbolTableRef, context: &mut Typi
         let param_element = SymbolTableElement {
             symbol: Symbol::Parameter(),
             name: param_name,
-            symbol_type: Type::Weak(Weak::new())
+            symbol_type: Type::Weak(Weak::new()),
         };
-        function_table.borrow_mut().insert_symbol(param_id, param_element);
+        function_table
+            .borrow_mut()
+            .insert_symbol(param_id, param_element);
     }
 
-    let _ = generate_from_block(&def.block, function_table.clone(), context);
-    
+    let _ = generate_from_block(&mut def.block, function_table.clone(), context);
+
     context.symbol_table = table.clone();
     exit_scope(function_table)
 }
 
-fn generate_from_block(block: &nodes::Block, table: SymbolTableRef, context: &mut TypingContext) -> SymbolTableRef {
+fn generate_from_block(
+    block: &mut nodes::Block,
+    table: SymbolTableRef,
+    context: &mut TypingContext,
+) -> SymbolTableRef {
     let mut table = table;
-    
-    for statement in &block.statements {
+
+    block.symbol_table = Some(table.clone());
+
+    for statement in &mut block.statements {
         match statement {
             Statement::Assign(assign) => {
                 let value_type: Type = match assign.value.parse_type(context) {
@@ -80,46 +102,48 @@ fn generate_from_block(block: &nodes::Block, table: SymbolTableRef, context: &mu
 
                 // If the destination is a single identifier, check or set the type with the value
                 if let nodes::Expression::Factor(Factor::Identifier(id)) = &assign.destination {
-                    // TODO : check if types are compatible
-                    match context.get_symbol_type(&id.element, statement) {
+                    // Clone all the data we need before any borrowing
+                    let id_element = id.element.clone();
+                    
+                    // TODO : Check if types are compatible
+                    match context.get_symbol_type(&id_element, statement) {
                         Some(_) => (),
                         None => {
                             // Symbol does not exist, insert it
-                            context.add_symbol(&id.element, Symbol::Variable(), value_type);
+                            context.add_symbol(&id_element, Symbol::Variable(), value_type);
                         }
                     }
                 }
-
-            },
+            }
             Statement::For(for_loop) => {
                 let var_id = for_loop.var.element.id;
                 let var_name = for_loop.var.element.name.clone();
-                
+
                 let loop_table = enter_scope(table.clone());
                 context.symbol_table = loop_table.clone();
-                
+
                 let var_element = SymbolTableElement {
                     symbol: Symbol::Variable(),
                     name: var_name,
-                    symbol_type: Type::Any
+                    symbol_type: Type::Any,
                 };
                 loop_table.borrow_mut().insert_symbol(var_id, var_element);
 
-                let _ = generate_from_block(&for_loop.block, loop_table.clone(), context);
+                let _ = generate_from_block(&mut for_loop.block, loop_table.clone(), context);
 
                 table = exit_scope(loop_table);
                 context.symbol_table = table.clone();
-            },
+            }
             Statement::Conditional(cond) => {
                 let if_table = enter_scope(table.clone());
                 context.symbol_table = if_table.clone();
-                
-                let _ = generate_from_block(&cond.if_block, if_table.clone(), context);
+
+                let _ = generate_from_block(&mut cond.if_block, if_table.clone(), context);
 
                 table = exit_scope(if_table);
                 context.symbol_table = table.clone();
-                
-                if let Some(else_block) = &cond.else_block {
+
+                if let Some(else_block) = &mut cond.else_block {
                     let else_table = enter_scope(table.clone());
                     context.symbol_table = else_table.clone();
 
@@ -128,13 +152,13 @@ fn generate_from_block(block: &nodes::Block, table: SymbolTableRef, context: &mu
                     table = exit_scope(else_table);
                     context.symbol_table = table.clone();
                 }
-            },
+            }
             Statement::Expr(expr) => {
                 let _ = expr.parse_type(context);
             }
-            _ => {},
+            _ => {}
         }
     }
-    
+
     table
 }

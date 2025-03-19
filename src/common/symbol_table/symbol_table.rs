@@ -34,7 +34,7 @@ impl Display for SymbolTable {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut display = String::new();
         display.push_str(&format!(
-            r#"Node index: {}
+            r#"Table index: {}
 <table>
     <thead>
         <tr>

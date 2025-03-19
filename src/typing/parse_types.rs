@@ -106,7 +106,7 @@ fn generate_from_block(
                 // If the destination is a single identifier, check or set the type with the value
                 if let nodes::Expression::Factor(Factor::Identifier(id)) = &assign.destination {
                     // TODO : check if types are compatible
-                    match context.get_symbol_type(&id.element, statement) {
+                    match context.get_symbol_type(&id.element) {
                         Some(_) => (),
                         None => {
                             // Symbol does not exist, insert it

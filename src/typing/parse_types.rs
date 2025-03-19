@@ -1,4 +1,5 @@
-use super::{enter_scope, exit_scope, init_symbol_table, Symbol, SymbolTableElement, SymbolTableRef};
+
+use crate::common::symbol_table::{enter_scope, exit_scope, init_symbol_table, Symbol, SymbolTableElement, SymbolTableRef};
 use crate::{ast::nodes::{self, Factor, Statement}, typing::{Function, Type, Typeable, TypingContext, Weak}};
 
 pub fn parse_types(root: nodes::Root) -> (nodes::Root, SymbolTableRef, TypingContext) {

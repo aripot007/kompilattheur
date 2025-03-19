@@ -298,7 +298,7 @@ flowchart TD
             <td>1</td>
             <td>func1</td>
             <td>Function</td>
-            <td>Any</td>
+            <td>any</td>
         </tr>
     </tbody>
 </table>

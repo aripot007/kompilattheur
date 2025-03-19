@@ -68,7 +68,7 @@ fn generate_from_def(
         let param_id = param.identifier.element.id;
         let param_name = param.identifier.element.name.clone();
         let param_element = SymbolTableElement {
-            symbol: Symbol::Parameter(),
+            symbol: Symbol::Parameter{offset: 0},
             name: param_name,
             symbol_type: Type::Weak(Weak::new()),
         };
@@ -110,7 +110,7 @@ fn generate_from_block(
                         Some(_) => (),
                         None => {
                             // Symbol does not exist, insert it
-                            context.add_symbol(&id_element, Symbol::Variable(), value_type);
+                            context.add_symbol(&id_element, Symbol::Variable{offset: 0}, value_type);
                         }
                     }
                 }
@@ -123,7 +123,7 @@ fn generate_from_block(
                 context.symbol_table = loop_table.clone();
 
                 let var_element = SymbolTableElement {
-                    symbol: Symbol::Variable(),
+                    symbol: Symbol::Variable{offset:0},
                     name: var_name,
                     symbol_type: Type::Any,
                 };

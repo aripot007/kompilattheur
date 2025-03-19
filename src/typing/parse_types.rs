@@ -1,3 +1,5 @@
+use std::fs::read;
+
 use crate::common::diagnostic::{Diagnostic, DiagnosticGravity};
 use crate::common::symbol_table::{
     enter_scope, exit_scope, init_symbol_table, Symbol, SymbolTableElement, SymbolTableRef,
@@ -157,7 +159,10 @@ fn generate_from_block(
                 let _ = expr.parse_type(context);
             }
             Statement::Return(expr) => {
-                let symbol_type = expr.parse_type(context).expect("symbol_type is not set");
+                let symbol_type = match expr.parse_type(context) {
+                    Ok(symbol_type) => symbol_type,
+                    Err(_) => continue,
+                };
                 if let Some(func_id) = context.func_id.clone() {
                     context.update_function_return(&func_id, symbol_type);
                 } else {

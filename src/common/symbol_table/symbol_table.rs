@@ -8,7 +8,7 @@ use crate::typing::Type;
 
 pub type SymbolTableRef = Rc<RefCell<Node<SymbolTable>>>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Symbol {
     Variable(),
     Parameter(),
@@ -28,12 +28,6 @@ pub struct SymbolTable {
 
     pub index: usize,
     last_given_index: usize,
-}
-
-impl PartialEq for Symbol {
-    fn eq(&self, other: &Self) -> bool {
-        self == other
-    }
 }
 
 impl Display for SymbolTable {

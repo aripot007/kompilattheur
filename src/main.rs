@@ -1,4 +1,5 @@
 mod analysis_table;
+mod asm;
 mod ast;
 mod cli;
 mod common;
@@ -24,6 +25,7 @@ use webbrowser;
 static FILE_PATH: OnceLock<String> = OnceLock::new();
 
 fn main() {
+    asm::llvm::example_llvm(false).unwrap();
     let args = cli::Cli::parse();
 
     match args.command {

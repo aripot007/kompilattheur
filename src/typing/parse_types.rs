@@ -1,5 +1,3 @@
-use std::fs::read;
-
 use crate::common::diagnostic::{Diagnostic, DiagnosticGravity};
 use crate::common::symbol_table::{
     enter_scope, exit_scope, init_symbol_table, Symbol, SymbolTableElement, SymbolTableRef,
@@ -54,7 +52,7 @@ fn generate_from_def(
 
     let function_type = Function {
         args: Vec::new(),
-        returns: Type::Any,
+        returns: Type::Weak(Weak::new_with_possible(&[])),
     };
 
     let symbol_table_element = SymbolTableElement {
@@ -84,6 +82,8 @@ fn generate_from_def(
     }
 
     generate_from_block(&def.block, function_table.clone(), context);
+
+    // todo: check return type if empty type Weak None
 
     context.symbol_table = table.clone();
     context.func_id = None;

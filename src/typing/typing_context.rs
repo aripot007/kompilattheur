@@ -1,6 +1,5 @@
 use crate::common::{
     diagnostic::Diagnostic,
-    localizable::Localizable,
     symbol_table::{get_symbol, Symbol, SymbolTableElement, SymbolTableRef},
     types::IdToken,
 };
@@ -59,18 +58,26 @@ impl TypingContext {
 
     pub fn update_function_return(&mut self, identifier: &IdToken, symbol_type: Type) {
         let symbol_table = self.symbol_table.clone();
-        let (_, old_symbol_entry) = get_symbol(symbol_table, &identifier.id);
+        let (symbol_table, old_symbol_entry) = get_symbol(symbol_table, &identifier.id);
         if let Some(old_symbol_entry) = old_symbol_entry {
             if old_symbol_entry.symbol == Symbol::Function() {
+                match old_symbol_entry.symbol_type {
+                    // Match function or push error
+                }
+
                 let symbol_entry = SymbolTableElement {
                     symbol: Symbol::Function(),
                     name: identifier.name.clone(),
                     symbol_type,
                 };
 
-                self.symbol_table
+                symbol_table
                     .borrow_mut()
                     .insert_symbol(identifier.id, symbol_entry);
+
+                // todo: create update symbol
+                // todo: handle weak by adding type
+                // warming: dont make possible in weak pub, use Aristide func, merge
 
                 return;
             }

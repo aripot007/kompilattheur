@@ -10,8 +10,6 @@ use inkwell::OptimizationLevel;
 use std::error::Error;
 use std::path::Path;
 
-use crate::asm::dynamic_linker;
-
 use super::dynamic_linker::get_dynamic_linker;
 
 struct CodeGen<'ctx> {
@@ -148,6 +146,88 @@ impl<'ctx> CodeGen<'ctx> {
             .write_to_file(&self.module, filetype, output_path)
             .map_err(|e| format!("Failed to write object file: {}", e))
     }
+
+    fn try_link_with_command(&self, cmd: &mut std::process::Command) -> Result<(), String> {
+        match cmd.output() {
+            Ok(output) => {
+                if output.status.success() {
+                    Ok(())
+                } else {
+                    Err(String::from_utf8_lossy(&output.stderr).into_owned())
+                }
+            }
+            Err(e) => Err(format!("Failed to execute linker: {}", e))
+        }
+    }
+
+    fn link_object_file(&self, obj_path: &Path, exe_path: &Path, target_triple: &str, dynamic_linker: &str) -> Result<(), String> {
+        // Try using ld.lld first with system-specific configuration
+        if target_triple.contains("apple") {
+            let mut cmd = std::process::Command::new("ld64.lld");
+            cmd.arg("-demangle")
+                .arg("-dynamic")
+                .arg("-arch")
+                .arg("arm64")
+                .arg("-platform_version")
+                .arg("macos")
+                .arg("15.0.0")
+                .arg("15.2")
+                .arg("-syslibroot")
+                .arg("/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk")
+                .arg("-o")
+                .arg(exe_path)
+                .arg("-L/usr/local/lib")
+                .arg(obj_path)
+                .arg("-lSystem");
+
+            match self.try_link_with_command(&mut cmd) {
+                Ok(_) => return Ok(()),
+                Err(e) => println!("ld64.lld failed: {}", e)
+            }
+        } else {
+            // Try Linux lld first
+            let mut cmd = std::process::Command::new("ld.lld");
+            cmd.arg("-o")
+                .arg(exe_path)
+                .arg(obj_path)
+                .arg("/usr/lib/crt1.o")
+                .arg("-lc")
+                .arg("-L/usr/lib")
+                .arg("-dynamic-linker")
+                .arg(dynamic_linker);
+
+            match self.try_link_with_command(&mut cmd) {
+                Ok(_) => return Ok(()),
+                Err(e) => println!("ld.lld failed: {}", e)
+            }
+        }
+
+        // If lld failed, try clang
+        let mut cmd = std::process::Command::new("clang");
+        cmd.arg(obj_path)
+            .arg("-o")
+            .arg(exe_path);
+
+        match self.try_link_with_command(&mut cmd) {
+            Ok(_) => return Ok(()),
+            Err(e) => println!("clang failed: {}", e)
+        }
+
+        // If clang failed, try gcc as last resort
+        let mut cmd = std::process::Command::new("gcc");
+        cmd.arg(obj_path)
+            .arg("-o")
+            .arg(exe_path);
+
+        match self.try_link_with_command(&mut cmd) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(format!(
+                "All linking attempts failed. Last error (gcc): {}. \
+                Tried: ld.lld/ld64.lld, clang, and gcc",
+                e
+            ))
+        }
+    }
 }
 
 type MainFunction = unsafe extern "C" fn();
@@ -216,83 +296,22 @@ pub fn example_llvm(jit: bool) -> Result<(), Box<dyn Error>> {
             .map_err(|e| -> Box<dyn Error> { e.into() })?;
         println!("Assembly file created at {}", asm_path.display());
 
-        // Now use LLD to link the executable
+        // Link the executable using the new fallback system
         let exe_path = output_dir.join("sum_program");
-
-        // Using lld directly
         let target_triple = target_machine.get_triple().to_string();
         
-        // Check if the target is macOS
-        let mut lld_cmd = if target_triple.contains("arm64-apple-darwin24.3.0") {
-            let mut cmd = std::process::Command::new("/opt/homebrew/bin/ld64.lld");
-            cmd
-                .arg("-demangle")
-                .arg("-dynamic")
-                .arg("-arch")
-                .arg("arm64")
-                .arg("-platform_version")
-                .arg("macos")
-                .arg("15.0.0")
-                .arg("15.2")
-                .arg("-syslibroot")
-                .arg("/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk")
-                .arg("-mllvm")
-                .arg("-enable-linkonceodr-outlining")
-                .arg("-o")
-                .arg(&exe_path)
-                .arg("-L/usr/local/lib")
-                .arg(obj_path.as_os_str())
-                .arg("-lSystem")
-                .arg("/Library/Developer/CommandLineTools/usr/lib/clang/16/lib/darwin/libclang_rt.osx.a");
-            cmd
-        } else {
-            let mut cmd = std::process::Command::new("ld.lld");
-            // Use /usr/lib to follow systemd standard https://www.freedesktop.org/software/systemd/man/latest/file-hierarchy.html
-            cmd.arg("-o")
-                .arg(&exe_path)
-                .arg("/usr/lib/crt1.o") // C runtime startup file
-                .arg(obj_path.as_os_str())
-                .arg("-lc")// Link against the C standard library
-                .arg("-L/usr/lib")
-                .arg("-dynamic-linker")
-                .arg(&dynamic_linker);
-            cmd
-        };
-        // Work without this
-        // .arg("/usr/lib/crti.o") // C runtime initialization file
-        // .arg("/usr/lib/crtn.o") // C runtime termination file 
-        // .arg("--hash-style=gnu")
-        // .arg("-pie") // Position Independent Executable
-        // .arg("/nix/store/7q6fxlj7kc8rfdrd6rgv98567nhqipcs-clang-wrapper-18.1.8/resource-root/lib/linux/clang_rt.crtbegin-x86_64.o")
-        //.arg("-L/nix/store/maxa3xhmxggrc5v2vc0c3pjb79hjlkp9-glibc-2.40-66/lib") // Adjust this path as needed
-        // Work without this
-        // .arg("/nix/store/7q6fxlj7kc8rfdrd6rgv98567nhqipcs-clang-wrapper-18.1.8/resource-root/lib/linux/clang_rt.crtend-x86_64.o")
-        // .arg("--init=_init")
-        // .arg("--fini=_fini")
-        ;
-
-        // Check if LDFLAGS is set in the environment.
-        if let Ok(ldflags) = std::env::var("LDFLAGS") {
-            // Split LDFLAGS on whitespace and add each flag.
-            for flag in ldflags.split_whitespace() {
-                lld_cmd.arg(flag);
+        match codegen.link_object_file(&obj_path, &exe_path, &target_triple, &dynamic_linker) {
+            Ok(_) => {
+                println!("Executable created at {}", exe_path.display());
+                
+                // Run the executable to demonstrate it works
+                println!("\nRunning the executable:");
+                let output = std::process::Command::new(&exe_path).output()?;
+                println!("{}", String::from_utf8_lossy(&output.stdout));
             }
-        }
-
-        lld_cmd.arg("-v"); // Verbose output for debugging
-
-        let lld_output = lld_cmd.output()?;
-        if !lld_output.status.success() {
-            println!("Failed to link the executable");
-            println!("{}", String::from_utf8_lossy(&lld_output.stderr));
-        } else {
-            println!("Executable created at {}", exe_path.display());
-
-            // Run the executable to demonstrate it works
-            println!("\nRunning the executable:");
-            let output = std::process::Command::new(exe_path).output()?;
-
-            println!("{}", String::from_utf8_lossy(&output.stdout));
+            Err(e) => {
+                println!("Failed to link the executable: {}", e);
+            }
         }
 
         Ok(())

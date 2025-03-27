@@ -5,3 +5,4 @@ p.html
 symbol_table.mmd
 output/*
 .vscode
+.direnv

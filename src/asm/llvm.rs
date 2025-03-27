@@ -219,17 +219,45 @@ pub fn example_llvm(jit: bool) -> Result<(), Box<dyn Error>> {
         // Now use LLD to link the executable
         let exe_path = output_dir.join("sum_program");
 
-        // Using lld directly (this approach uses ld.lld - the ELF linker)
-        let mut lld_cmd = std::process::Command::new("ld.lld");
-        // Use /usr/lib to follow systemd standard https://www.freedesktop.org/software/systemd/man/latest/file-hierarchy.html
-        lld_cmd.arg("-o")
-        .arg(&exe_path)
-        .arg("/usr/lib/crt1.o") // C runtime startup file
-        .arg(obj_path.as_os_str())
-        .arg("-lc")// Link against the C standard library
-        .arg("-L/usr/lib")
-        .arg("-dynamic-linker")
-        .arg(&dynamic_linker)
+        // Using lld directly
+        let target_triple = target_machine.get_triple().to_string();
+        
+        // Check if the target is macOS
+        let mut lld_cmd = if target_triple.contains("arm64-apple-darwin24.3.0") {
+            let mut cmd = std::process::Command::new("/opt/homebrew/bin/ld64.lld");
+            cmd
+                .arg("-demangle")
+                .arg("-dynamic")
+                .arg("-arch")
+                .arg("arm64")
+                .arg("-platform_version")
+                .arg("macos")
+                .arg("15.0.0")
+                .arg("15.2")
+                .arg("-syslibroot")
+                .arg("/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk")
+                .arg("-mllvm")
+                .arg("-enable-linkonceodr-outlining")
+                .arg("-o")
+                .arg(&exe_path)
+                .arg("-L/usr/local/lib")
+                .arg(obj_path.as_os_str())
+                .arg("-lSystem")
+                .arg("/Library/Developer/CommandLineTools/usr/lib/clang/16/lib/darwin/libclang_rt.osx.a");
+            cmd
+        } else {
+            let mut cmd = std::process::Command::new("ld.lld");
+            // Use /usr/lib to follow systemd standard https://www.freedesktop.org/software/systemd/man/latest/file-hierarchy.html
+            cmd.arg("-o")
+                .arg(&exe_path)
+                .arg("/usr/lib/crt1.o") // C runtime startup file
+                .arg(obj_path.as_os_str())
+                .arg("-lc")// Link against the C standard library
+                .arg("-L/usr/lib")
+                .arg("-dynamic-linker")
+                .arg(&dynamic_linker);
+            cmd
+        };
         // Work without this
         // .arg("/usr/lib/crti.o") // C runtime initialization file
         // .arg("/usr/lib/crtn.o") // C runtime termination file 

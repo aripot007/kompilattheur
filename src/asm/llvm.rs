@@ -162,7 +162,7 @@ impl<'ctx> CodeGen<'ctx> {
 
     fn link_object_file(&self, obj_path: &Path, exe_path: &Path, target_triple: &str, dynamic_linker: &str) -> Result<(), String> {
         // Try using ld.lld first with system-specific configuration
-        if target_triple.contains("apple") {
+        if target_triple.contains("arm64-apple") {
             let mut cmd = std::process::Command::new("ld64.lld");
             cmd.arg("-demangle")
                 .arg("-dynamic")
@@ -203,6 +203,7 @@ impl<'ctx> CodeGen<'ctx> {
         }
 
         // If lld failed, try clang
+        println!("Falling back to clang for linking");
         let mut cmd = std::process::Command::new("clang");
         cmd.arg(obj_path)
             .arg("-o")
@@ -214,6 +215,7 @@ impl<'ctx> CodeGen<'ctx> {
         }
 
         // If clang failed, try gcc as last resort
+        println!("Falling back to gcc for linking");
         let mut cmd = std::process::Command::new("gcc");
         cmd.arg(obj_path)
             .arg("-o")

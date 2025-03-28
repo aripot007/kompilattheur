@@ -163,22 +163,42 @@ impl<'ctx> CodeGen<'ctx> {
     fn link_object_file(&self, obj_path: &Path, exe_path: &Path, target_triple: &str, dynamic_linker: &str) -> Result<(), String> {
         // Try using ld.lld first with system-specific configuration
         if target_triple.contains("arm64-apple") {
+            // Get the current macOS version
+            let macos_version = match std::process::Command::new("sw_vers")
+            .arg("-productVersion")
+            .output() {
+                Ok(output) => {
+                if output.status.success() {
+                    String::from_utf8_lossy(&output.stdout).trim().to_string()
+                } else {
+                    println!("Warning: Failed to get macOS version, using default");
+                    "15.0".to_string()
+                }
+                },
+                Err(e) => {
+                println!("Warning: Failed to execute sw_vers: {}, using default version", e);
+                "15.0".to_string()
+                }
+            };
+            
+            println!("Using macOS version: {}", macos_version);
+            
             let mut cmd = std::process::Command::new("ld64.lld");
             cmd.arg("-demangle")
-                .arg("-dynamic")
-                .arg("-arch")
-                .arg("arm64")
-                .arg("-platform_version")
-                .arg("macos")
-                .arg("15.0.0")
-                .arg("15.2")
-                .arg("-syslibroot")
-                .arg("/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk")
-                .arg("-o")
-                .arg(exe_path)
-                .arg("-L/usr/local/lib")
-                .arg(obj_path)
-                .arg("-lSystem");
+            .arg("-dynamic")
+            .arg("-arch")
+            .arg("arm64")
+            .arg("-platform_version")
+            .arg("macos")
+            .arg(&macos_version)
+            .arg(&macos_version)
+            .arg("-syslibroot")
+            .arg("/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk")
+            .arg("-o")
+            .arg(exe_path)
+            .arg("-L/usr/local/lib")
+            .arg(obj_path)
+            .arg("-lSystem");
 
             match self.try_link_with_command(&mut cmd) {
                 Ok(_) => return Ok(()),

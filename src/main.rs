@@ -8,6 +8,7 @@ mod parser;
 mod reader;
 mod typing;
 use analysis_table::{get_analysis_table, setup_analysis_table, AnalysisTable};
+use asm::codegen::example_llvm;
 use ast::generate_ast;
 use clap::{CommandFactory, Parser};
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs, TargetStep};
@@ -25,7 +26,6 @@ use webbrowser;
 static FILE_PATH: OnceLock<String> = OnceLock::new();
 
 fn main() {
-    asm::llvm::example_llvm(false).unwrap();
     let args = cli::Cli::parse();
 
     match args.command {
@@ -93,7 +93,7 @@ fn compile(args: CompileArgs) {
 
     let ast: ast::nodes::Root = generate_ast(tree.clone());
 
-    let (returned_ast, symbol_table, context) = parse_types(ast);
+    let (ast, symbol_table, context) = parse_types(ast);
 
     for warning in context.warnings {
         warning.display();
@@ -107,6 +107,11 @@ fn compile(args: CompileArgs) {
         exit(1);
     }
 
+    if example_llvm(false, Some(&ast)).is_err() {
+        eprintln!("LLVM codegen ended with errors. Aborting");
+        exit(1);
+    };
+
     if args.show_symbol_table {
         let mut symbol_table_file = File::create("symbol_table.mmd").expect("Error opening symbol table file");
         write!(symbol_table_file, "{}", symbol_table.borrow().generate_unsafe_mermaid())
@@ -114,7 +119,7 @@ fn compile(args: CompileArgs) {
         println!("Symbol table written to symbol_table.mmd");
     }
 
-    let display_ast: Tree<String> = returned_ast.into();
+    let display_ast: Tree<String> = ast.into();
 
     let mut output_file = File::create(&args.output_file).expect("Error opening output file");
     write!(output_file, "{}", display_ast.borrow().generate_html())

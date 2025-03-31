@@ -4,22 +4,138 @@ use inkwell::execution_engine::{ExecutionEngine, JitFunction};
 use inkwell::module::Module;
 use inkwell::targets::FileType;
 use inkwell::targets::{CodeModel, InitializationConfig, RelocMode, Target, TargetMachine};
+use inkwell::types::StructType;
 use inkwell::values::FunctionValue;
 use inkwell::OptimizationLevel;
 
-use std::error::Error;
 use std::path::Path;
 
-use super::dynamic_linker::get_dynamic_linker;
+use crate::ast::nodes::Root;
+use crate::common::diagnostic::Diagnostic;
 
-struct CodeGen<'ctx> {
-    context: &'ctx Context,
-    module: Module<'ctx>,
-    builder: Builder<'ctx>,
+use super::dynamic_linker::get_dynamic_linker;
+use super::{llvm_from_root, InternalFuctions};
+
+pub struct CodeGen<'ctx> {
+    pub context: &'ctx Context,
+    pub module: Module<'ctx>,
+    pub builder: Builder<'ctx>,
+    target_machine: TargetMachine, 
     execution_engine: Option<ExecutionEngine<'ctx>>,
+    pub warnings: Vec<Diagnostic>,
+    pub errors: Vec<Diagnostic>,
+    pub smolpp_types: CodeGenTypedefs<'ctx>,
+}
+
+pub struct CodeGenTypedefs<'ctx> {
+    pub dynamic_type: StructType<'ctx>,
 }
 
 impl<'ctx> CodeGen<'ctx> {
+    pub fn create(jit: bool, context: &'ctx Context) -> Result<Self, String> {
+
+        let config = InitializationConfig {
+            asm_parser: true,
+            asm_printer: true,
+            base: true,
+            disassembler: true,
+            info: true,
+            machine_code: true,
+        };
+        Target::initialize_native(&config).map_err(|_| "Failed to initialize native target")?;
+
+        let target_triple = TargetMachine::get_default_triple();
+        println!("Target triple: {}", target_triple.to_string());
+
+        let target = Target::from_triple(&target_triple)
+            .map_err(|e| format!("Failed to get target from triple: {}", e))?;
+
+        let target_machine = target
+            .create_target_machine(
+                &target_triple,
+                &TargetMachine::get_host_cpu_name().to_string(),
+                &TargetMachine::get_host_cpu_features().to_string(),
+                OptimizationLevel::Default,
+                RelocMode::PIC,
+                CodeModel::Default,
+            )
+            .ok_or_else(|| "Failed to create target machine".to_string())?;
+
+        let module = context.create_module("sum_program");
+        let execution_engine = if jit {
+            Some(
+                module
+                    .create_jit_execution_engine(OptimizationLevel::None)
+                    .map_err(|e| format!("Failed to create JIT execution engine: {}", e))?,
+            )
+        } else {
+            None
+        };
+        
+        
+        let mut codegen = CodeGen {
+            context: context,
+            module,
+            builder: context.create_builder(),
+            execution_engine,
+            warnings: Vec::new(),
+            errors: Vec::new(),
+            target_machine,
+            smolpp_types:  CodeGenTypedefs {
+                dynamic_type: context.opaque_struct_type("dynamic_type_struct"),
+            }
+        };
+
+        codegen.init_smolpp_types();
+        codegen.init_internal_functions();
+
+        return Ok(codegen);
+    }
+
+    fn init_internal_functions(&mut self) {
+
+        //
+        // syscalls
+        //
+
+        // puts function declaration
+        let i32_type = self.context.i32_type();
+        let ptr_type = self.context.ptr_type(inkwell::AddressSpace::default());
+        let puts_type = i32_type.fn_type(&[ptr_type.into()], false);
+        self.module.add_function(InternalFuctions::Puts.into(), puts_type, None);
+
+    }
+
+    fn init_smolpp_types(&mut self) {
+        self.init_dynamic_type();
+    }
+
+    fn init_dynamic_type(&mut self) {
+
+        let context = self.context;
+    
+        let var_type_discriminant = context.i8_type();
+    
+        let i64_type = context.i64_type();
+
+        let ptr_size = self.target_machine.get_target_data().get_pointer_byte_size(None) * 8;
+    
+        // Choose the largest type for the union
+        let union_size = i64_type.get_bit_width().max(ptr_size);
+        let var_value = context.custom_width_int_type(union_size);
+    
+        
+        // Create the struct type
+        self.smolpp_types.dynamic_type.set_body(
+            &[
+                var_type_discriminant.into(),      // char type
+                var_value.into(),   // Simulated union (either u64 or pointer)
+            ],
+            false,
+        );
+
+    }
+
     fn create_sum_function(&self) -> FunctionValue<'ctx> {
         // ...existing function implementation...
         let i64_type = self.context.i64_type();
@@ -66,8 +182,15 @@ impl<'ctx> CodeGen<'ctx> {
         // Create format string
         let format_string = self
             .builder
-            .build_global_string_ptr("%lld + %lld + %lld = %lld\n\0", "format_str")
+            .build_global_string_ptr("%lld + %lld + %lld = %lld (%p : %s)\n", "format_str")
             .unwrap();
+
+        // Create format string
+        let thestring = self
+            .builder
+            .build_global_string_ptr("HEUEHURIHEIZRHOOUIZEHORUIHE", "format_str")
+            .unwrap();
+
 
         // Create constant values for x, y, z
         let x = i64_type.const_int(1, false);
@@ -91,6 +214,8 @@ impl<'ctx> CodeGen<'ctx> {
             y.into(),
             z.into(),
             result.into(),
+            thestring.as_pointer_value().into(),
+            thestring.as_pointer_value().into(),
         ];
         self.builder
             .build_call(printf, printf_args, "printf_call")
@@ -101,38 +226,12 @@ impl<'ctx> CodeGen<'ctx> {
         self.builder.build_return(Some(&ret_val)).unwrap();
     }
 
-    fn get_target_machine_and_linker(&self) -> Result<(TargetMachine, String), String> {
-        let config = InitializationConfig {
-            asm_parser: true,
-            asm_printer: true,
-            base: true,
-            disassembler: true,
-            info: true,
-            machine_code: true,
-        };
-        Target::initialize_native(&config).map_err(|_| "Failed to initialize native target")?;
-
-        let target_triple = TargetMachine::get_default_triple();
-        println!("Target triple: {}", target_triple.to_string());
-
-        let target = Target::from_triple(&target_triple)
-            .map_err(|e| format!("Failed to get target from triple: {}", e))?;
-
-        let target_machine = target
-            .create_target_machine(
-                &target_triple,
-                &TargetMachine::get_host_cpu_name().to_string(),
-                &TargetMachine::get_host_cpu_features().to_string(),
-                OptimizationLevel::Default,
-                RelocMode::PIC,
-                CodeModel::Default,
-            )
-            .ok_or_else(|| "Failed to create target machine".to_string())?;
-
-        let dynamic_linker = get_dynamic_linker(&target_machine);
+    fn get_linker(&self) -> Result<String, String> {
+        
+        let dynamic_linker = get_dynamic_linker(&self.target_machine);
         println!("Dynamic linker: {}", dynamic_linker);
         
-        Ok((target_machine, dynamic_linker))
+        Ok(dynamic_linker)
     }
 
     fn compile(&self, output_path: &Path, filetype: FileType, target_machine: &TargetMachine) -> Result<(), String> {
@@ -254,29 +353,33 @@ impl<'ctx> CodeGen<'ctx> {
 
 type MainFunction = unsafe extern "C" fn();
 
-pub fn example_llvm(jit: bool) -> Result<(), Box<dyn Error>> {
+
+
+pub fn example_llvm(jit: bool, ast: Option<&Root>) -> Result<(), String> {
+    
     let context = Context::create();
-    let module = context.create_module("sum_program");
-    let execution_engine = if jit {
-        Some(
-            module
-                .create_jit_execution_engine(OptimizationLevel::None)
-                .map_err(|e| format!("Failed to create JIT execution engine: {}", e))?,
-        )
+    let mut codegen = CodeGen::create(jit, &context).unwrap();
+
+    if let Some(root) = ast {
+        let res = llvm_from_root(root, &mut codegen);
+
+        for w in &codegen.warnings {
+            w.display();
+        }
+
+        for e in &codegen.errors {
+            e.display();
+        }
+
+        if codegen.errors.len() > 0 || res.is_err() {
+            return Err("Could not generate LLVM from ast".into());
+        }
+
     } else {
-        None
-    };
-
-    let codegen = CodeGen {
-        context: &context,
-        module,
-        builder: context.create_builder(),
-        execution_engine,
-    };
-
-    // Create the sum function and main function
-    let sum_function = codegen.create_sum_function();
-    codegen.create_main_function(sum_function);
+        // Create the sum function and main function
+        let sum_function = codegen.create_sum_function();
+        codegen.create_main_function(sum_function);
+    }
 
     // Verify the module
     if codegen.module.verify().is_err() {
@@ -289,7 +392,7 @@ pub fn example_llvm(jit: bool) -> Result<(), Box<dyn Error>> {
 
     // Output paths
     let output_dir = Path::new("output");
-    std::fs::create_dir_all(output_dir)?;
+    std::fs::create_dir_all(output_dir).map_err(|e| e.to_string())?;
 
     if let Some(ref engine) = codegen.execution_engine {
         unsafe {
@@ -303,19 +406,16 @@ pub fn example_llvm(jit: bool) -> Result<(), Box<dyn Error>> {
         }
     } else {
         // Generate object file
-        let (target_machine, dynamic_linker) = codegen.get_target_machine_and_linker()?;
+        let target_machine = &codegen.target_machine;
+        let dynamic_linker = codegen.get_linker()?;
 
         let obj_path = output_dir.join("sum_program.o");
-        codegen
-            .compile(&obj_path, FileType::Object, &target_machine)
-            .map_err(|e| -> Box<dyn Error> { e.into() })?;
+        codegen.compile(&obj_path, FileType::Object, &target_machine)?;
         println!("Object file created at {}", obj_path.display());
 
         // Also generate assembly for reference
         let asm_path = output_dir.join("sum_program.s");
-        codegen
-            .compile(&asm_path, FileType::Assembly, &target_machine)
-            .map_err(|e| -> Box<dyn Error> { e.into() })?;
+        codegen.compile(&asm_path, FileType::Assembly, &target_machine)?;
         println!("Assembly file created at {}", asm_path.display());
 
         // Link the executable using the new fallback system
@@ -328,7 +428,7 @@ pub fn example_llvm(jit: bool) -> Result<(), Box<dyn Error>> {
                 
                 // Run the executable to demonstrate it works
                 println!("\nRunning the executable:");
-                let output = std::process::Command::new(&exe_path).output()?;
+                let output = std::process::Command::new(&exe_path).output().map_err(|e| e.to_string())?;
                 println!("{}", String::from_utf8_lossy(&output.stdout));
             }
             Err(e) => {

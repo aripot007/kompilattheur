@@ -1,5 +1,4 @@
-use inkwell::targets::{Target, TargetMachine, InitializationConfig};
-use std::path::Path;
+use inkwell::targets::TargetMachine;
 
 /// Returns a dynamic linker path based on the target machine's triple.
 ///
@@ -190,22 +189,4 @@ pub fn get_dynamic_linker(target_machine: &TargetMachine) -> String {
     }
     
     format!("/{}/{}", lib_dir, loader)
-}
-
-fn main() {
-    // Initialize targets (normally you do this early in your compiler).
-    Target::initialize_all(&InitializationConfig::default());
-
-    // Create a target machine using the default triple.
-    let triple = TargetMachine::get_default_triple();
-    let target = Target::from_triple(&triple).expect("Failed to get target from triple");
-    let cpu = "generic";
-    let features = "";
-    let target_machine = target
-        .create_target_machine(&triple, cpu, features, inkwell::OptimizationLevel::Default, inkwell::targets::RelocMode::Default, inkwell::targets::CodeModel::Default)
-        .expect("Unable to create target machine");
-
-    // Get the dynamic linker path.
-    let dynamic_linker = get_dynamic_linker(&target_machine);
-    println!("Dynamic linker: {}", dynamic_linker);
 }

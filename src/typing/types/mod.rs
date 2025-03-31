@@ -21,6 +21,22 @@ pub enum Type {
     Weak(Weak),
 }
 
+impl Type {
+    pub fn get_discriminant(&self) -> u8 {
+        match self {
+            Type::None => 0,
+            Type::Bool => 1,
+            Type::Int => 2,
+            Type::String => 3,
+            Type::List => 4,
+            Type::Any
+            | Type::NTuple(_)
+            | Type::Function(_)
+            | Type::Weak(_) => panic!("Cannot get discriminant for type {}", self),
+        }
+    }
+}
+
 
 impl Display for Type {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

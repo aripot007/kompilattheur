@@ -162,7 +162,7 @@ impl<'ctx> CodeGen<'ctx> {
 
     fn link_object_file(&self, obj_path: &Path, exe_path: &Path, target_triple: &str, dynamic_linker: &str) -> Result<(), String> {
         // Try using ld.lld first with system-specific configuration
-        if target_triple.contains("arm64-apple") {
+        if target_triple.contains("apple") {
             // Get the current macOS version
             let macos_version = match std::process::Command::new("sw_vers")
             .arg("-productVersion")
@@ -180,14 +180,14 @@ impl<'ctx> CodeGen<'ctx> {
                 "15.0".to_string()
                 }
             };
-            
+            let arch = target_triple.split('-').next().unwrap_or("arm64");
             println!("Using macOS version: {}", macos_version);
             
             let mut cmd = std::process::Command::new("ld64.lld");
             cmd.arg("-demangle")
             .arg("-dynamic")
             .arg("-arch")
-            .arg("arm64")
+            .arg(arch)
             .arg("-platform_version")
             .arg("macos")
             .arg(&macos_version)

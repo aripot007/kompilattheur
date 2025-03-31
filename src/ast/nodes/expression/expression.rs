@@ -19,7 +19,16 @@ pub enum Expression {
     NotImplemented,
 }
 
-impl AstNode for Expression {}
+impl AstNode for Expression {
+    fn get_string_repr(&self) -> String {
+        match self {
+            Expression::BINOP(_, bin_op, _) => format!("Expression::BinOp({})", (*bin_op).to_string()),
+            Expression::UNOP(un_op, _) => format!("Expression::UnOp({})", (*un_op).to_string()),
+            Expression::Factor(_) => String::from("Expression::Factor"),
+            Expression::NotImplemented => String::from("Expression::NotImplemented"),
+        }
+    }
+}
 
 impl From<Tree<FileElement<Lexem>>> for Expression {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {

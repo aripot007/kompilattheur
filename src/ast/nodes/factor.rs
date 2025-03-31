@@ -25,7 +25,21 @@ pub enum Factor {
     },
 }
 
-impl AstNode for Factor {}
+impl AstNode for Factor {
+    fn get_string_repr(&self) -> String {
+        String::from(match self {
+            Factor::Integer(_) => "Factor::Integer",
+            Factor::String(_)  => "Factor::String",
+            Factor::True(_)  => "Factor::True",
+            Factor::False(_)  => "Factor::False",
+            Factor::None(_)  => "Factor::None",
+            Factor::Identifier(_)  => "Factor::Identifier",
+            Factor::List(_)  => "Factor::List",
+            Factor::Expr(_)  => "Factor::Expr",
+            Factor::Call { identifier: _, args: _, localization: _ }  => "Factor::Call",
+        })
+    }
+}
 
 impl From<Tree<FileElement<Lexem>>> for Factor {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {

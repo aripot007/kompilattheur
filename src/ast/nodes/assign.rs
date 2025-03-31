@@ -15,7 +15,11 @@ pub struct Assign {
     pub localization: FileElement<bool>,
 }
 
-impl AstNode for Assign {}
+impl AstNode for Assign {
+    fn get_string_repr(&self) -> String {
+        String::from("Assign")
+    }
+}
 
 impl Assign {
     pub fn new(

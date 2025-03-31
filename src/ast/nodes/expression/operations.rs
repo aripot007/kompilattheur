@@ -41,9 +41,9 @@ impl From<Token> for BinOp {
     }
 }
 
-impl Into<String> for BinOp {
-    fn into(self) -> String {
-        String::from(match self {
+impl Into<&'static str> for BinOp {
+    fn into(self) -> &'static str {
+        match self {
             BinOp::LESS => "<",
             BinOp::LESSEQ => "<=",
             BinOp::GREATER => ">",
@@ -58,7 +58,14 @@ impl Into<String> for BinOp {
             BinOp::ACCESS => "ACCESS",
             BinOp::AND => "AND",
             BinOp::OR => "OR",
-        })
+        }
+    }
+}
+
+impl Into<String> for BinOp {
+    fn into(self) -> String {
+        let s: &str = self.into();
+        String::from(s)
     }
 }
 
@@ -84,11 +91,24 @@ impl From<Token> for UnOp {
     }
 }
 
-impl Into<String> for UnOp {
-    fn into(self) -> String {
-        String::from(match self {
+impl Into<&'static str> for UnOp {
+    fn into(self) -> &'static str {
+        match self {
             UnOp::NOT => "NOT",
             UnOp::NEG => "NEG",
-        })
+        }
+    }
+}
+
+impl Into<String> for UnOp {
+    fn into(self) -> String {
+        let s: &str = self.into();
+        String::from(s)
+    }
+}
+
+impl Display for UnOp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", Into::<String>::into(*self))
     }
 }

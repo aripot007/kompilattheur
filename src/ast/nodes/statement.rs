@@ -24,7 +24,19 @@ pub enum Statement {
     NotImplemented,
 }
 
-impl AstNode for Statement {}
+impl AstNode for Statement {
+    fn get_string_repr(&self) -> String {
+        String::from(match self {
+            Statement::Print(_) => "Statement::Print",
+            Statement::Return(_) => "Statement::Return",
+            Statement::For(_) => "Statement::For",
+            Statement::Conditional(_) => "Statement::Conditional",
+            Statement::Assign(_) => "Statement::Assign",
+            Statement::Expr(_) => "Statement::Expr",
+            Statement::NotImplemented => "Statement::NotImplemented",
+        })
+    }
+}
 
 impl From<Tree<FileElement<Lexem>>> for Statement {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {

@@ -108,8 +108,11 @@ pub(super) use list_into_tree;
 /// doit pouvoir être convertit en arbre de String représentant chaque noeud, pour
 /// faciliter l'affichage.
 #[allow(dead_code)]
-trait AstNode: From<Tree<FileElement<Lexem>>> + Into<Tree<String>> + Localizable {}
+pub trait AstNode: From<Tree<FileElement<Lexem>>> + Into<Tree<String>> + Localizable {
+    fn get_string_repr(&self) -> String;
+}
 
+#[allow(dead_code)]
 pub enum Ast {
     Expression(Expression),
     Assign(Assign),

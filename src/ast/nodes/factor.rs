@@ -2,6 +2,7 @@ use crate::analysis_table::NonTerminal;
 use crate::ast::nodes::parse_list_filter;
 use crate::common::localizable::Localizable;
 use crate::common::types::IdToken;
+use crate::typing::Type;
 use crate::{
     common::types::{file_element::file_element_from, FileElement, Node, NumToken, Token, Tree},
     parser::Lexem,
@@ -9,7 +10,12 @@ use crate::{
 
 use super::{list_into_tree, AstNode, Expression};
 
-pub enum Factor {
+pub struct Factor {
+    pub factor_type: Option<Type>,
+    pub kind: FactorKind,
+}
+
+pub enum FactorKind {
     Integer(FileElement<u64>),
     String(FileElement<String>),
     True(FileElement<Token>),
@@ -41,6 +47,12 @@ impl AstNode for Factor {
     }
 }
 
+impl From<FactorKind> for Factor {
+    fn from(value: FactorKind) -> Self {
+        Factor { factor_type: None, kind: value }
+    }
+}
+
 impl From<Tree<FileElement<Lexem>>> for Factor {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {
         // Check if a node from an expr list is an element or a separator
@@ -53,7 +65,7 @@ impl From<Tree<FileElement<Lexem>>> for Factor {
         }
 
         if let Lexem::Terminal(Token::Identifier(id)) = root.borrow().get_value().element {
-            return Factor::Identifier(file_element_from!(root.borrow().get_value(), id));
+            return FactorKind::Identifier(file_element_from!(root.borrow().get_value(), id)).into();
         }
 
         let children = root.borrow().get_children();
@@ -64,19 +76,19 @@ impl From<Tree<FileElement<Lexem>>> for Factor {
 
             match val.element {
                 Lexem::Terminal(Token::Integer(NumToken { value })) => {
-                    return Factor::Integer(file_element_from!(val, value))
+                    return FactorKind::Integer(file_element_from!(val, value)).into()
                 }
                 Lexem::Terminal(Token::String(string)) => {
-                    return Factor::String(file_element_from!(val, string))
+                    return FactorKind::String(file_element_from!(val, string)).into()
                 }
                 Lexem::Terminal(Token::True) => {
-                    return Factor::True(file_element_from!(val, Token::True))
+                    return FactorKind::True(file_element_from!(val, Token::True)).into()
                 }
                 Lexem::Terminal(Token::False) => {
-                    return Factor::False(file_element_from!(val, Token::False))
+                    return FactorKind::False(file_element_from!(val, Token::False)).into()
                 }
                 Lexem::Terminal(Token::None) => {
-                    return Factor::None(file_element_from!(val, Token::None))
+                    return FactorKind::None(file_element_from!(val, Token::None)).into()
                 }
                 Lexem::Terminal(token) => panic!(
                     "Malformed CST: Expected NumToken while parsing const, found {}",
@@ -102,10 +114,10 @@ impl From<Tree<FileElement<Lexem>>> for Factor {
 
             if right_child_children.len() == 0 {
                 // Identifier only
-                return Factor::Identifier(file_element_from!(
+                return FactorKind::Identifier(file_element_from!(
                     children[0].borrow().get_value(),
                     identifier
-                ));
+                )).into();
             }
 
             // Function call
@@ -125,23 +137,23 @@ impl From<Tree<FileElement<Lexem>>> for Factor {
                 end_line: args.last().map_or(0, |s| s.get_end_line()),
             };
 
-            return Factor::Call {
+            return Factor { factor_type: None, kind: FactorKind::Call {
                 identifier,
                 args,
                 localization,
-            };
+            }};
         } else if children.len() == 3 {
             // Expr or list
             match children[0].borrow().get_value().element {
                 Lexem::Terminal(Token::OpenBracket) => {
-                    return Factor::List(parse_list_filter(
+                    return FactorKind::List(parse_list_filter(
                         children[1].clone(),
                         Expression::from,
                         is_arg_node,
-                    ))
+                    )).into()
                 }
                 Lexem::Terminal(Token::OpenParenthesis) => {
-                    return Factor::Expr(Box::new(Expression::from(children[1].clone())))
+                    return FactorKind::Expr(Box::new(Expression::from(children[1].clone()))).into()
                 }
                 _ => panic!(),
             }
@@ -159,18 +171,18 @@ impl Into<Tree<String>> for Factor {
 
 impl Into<Tree<String>> for &Factor {
     fn into(self) -> Tree<String> {
-        let s = match self {
-            Factor::Integer(file_element) => format!("{}", file_element.element),
-            Factor::String(file_element) => {
+        let s = match &self.kind {
+            FactorKind::Integer(file_element) => format!("{}", file_element.element),
+            FactorKind::String(file_element) => {
                 format!("String : \"{}\"", file_element.element.escape_debug())
             }
-            Factor::True(_file_element) => String::from("True"),
-            Factor::False(_file_element) => String::from("False"),
-            Factor::Identifier(id) => format!("Identifier {}", id.element.name),
-            Factor::None(_file_element) => String::from("None"),
-            Factor::List(vec) => return list_into_tree!("LIST", vec),
-            Factor::Expr(expression) => return (*expression).as_ref().into(),
-            Factor::Call {
+            FactorKind::True(_file_element) => String::from("True"),
+            FactorKind::False(_file_element) => String::from("False"),
+            FactorKind::Identifier(id) => format!("Identifier {}", id.element.name),
+            FactorKind::None(_file_element) => String::from("None"),
+            FactorKind::List(vec) => return list_into_tree!("LIST", vec),
+            FactorKind::Expr(expr_box) => return expr_box.as_ref().into(),
+            FactorKind::Call {
                 identifier,
                 args,
                 localization: _,
@@ -216,14 +228,14 @@ impl Localizable for Factor {
 
 impl Localizable for &Factor {
     fn get_len(&self) -> usize {
-        match self {
-            Factor::Integer(fe) => fe.get_len(),
-            Factor::String(fe) => fe.get_len(),
-            Factor::True(fe) | Factor::False(fe) | Factor::None(fe) => fe.get_len(),
-            Factor::Identifier(fe) => fe.get_len(),
-            Factor::List(expressions) => expressions.iter().map(|e| e.get_len()).sum(),
-            Factor::Expr(expression) => expression.get_len(),
-            Factor::Call {
+        match &self.kind {
+            FactorKind::Integer(fe) => fe.get_len(),
+            FactorKind::String(fe) => fe.get_len(),
+            FactorKind::True(fe) | FactorKind::False(fe) | FactorKind::None(fe) => fe.get_len(),
+            FactorKind::Identifier(fe) => fe.get_len(),
+            FactorKind::List(expressions) => expressions.iter().map(|e| e.get_len()).sum(),
+            FactorKind::Expr(expression) => expression.get_len(),
+            FactorKind::Call {
                 identifier: _,
                 args: _,
                 localization,
@@ -232,14 +244,14 @@ impl Localizable for &Factor {
     }
 
     fn get_start_line(&self) -> usize {
-        match self {
-            Factor::Integer(fe) => fe.get_start_line(),
-            Factor::String(fe) => fe.get_start_line(),
-            Factor::True(fe) | Factor::False(fe) | Factor::None(fe) => fe.get_start_line(),
-            Factor::Identifier(fe) => fe.get_start_line(),
-            Factor::List(expressions) => expressions.first().unwrap().get_start_line(),
-            Factor::Expr(expression) => expression.get_start_line(),
-            Factor::Call {
+        match &self.kind {
+            FactorKind::Integer(fe) => fe.get_start_line(),
+            FactorKind::String(fe) => fe.get_start_line(),
+            FactorKind::True(fe) | FactorKind::False(fe) | FactorKind::None(fe) => fe.get_start_line(),
+            FactorKind::Identifier(fe) => fe.get_start_line(),
+            FactorKind::List(expressions) => expressions.first().unwrap().get_start_line(),
+            FactorKind::Expr(expression) => expression.get_start_line(),
+            FactorKind::Call {
                 identifier: _,
                 args: _,
                 localization,
@@ -248,14 +260,14 @@ impl Localizable for &Factor {
     }
 
     fn get_end_line(&self) -> usize {
-        match self {
-            Factor::Integer(fe) => fe.get_end_line(),
-            Factor::String(fe) => fe.get_end_line(),
-            Factor::True(fe) | Factor::False(fe) | Factor::None(fe) => fe.get_end_line(),
-            Factor::Identifier(fe) => fe.get_end_line(),
-            Factor::List(expressions) => expressions.last().unwrap().get_end_line(),
-            Factor::Expr(expression) => expression.get_end_line(),
-            Factor::Call {
+        match &self.kind {
+            FactorKind::Integer(fe) => fe.get_end_line(),
+            FactorKind::String(fe) => fe.get_end_line(),
+            FactorKind::True(fe) | FactorKind::False(fe) | FactorKind::None(fe) => fe.get_end_line(),
+            FactorKind::Identifier(fe) => fe.get_end_line(),
+            FactorKind::List(expressions) => expressions.last().unwrap().get_end_line(),
+            FactorKind::Expr(expression) => expression.get_end_line(),
+            FactorKind::Call {
                 identifier: _,
                 args: _,
                 localization,
@@ -264,14 +276,14 @@ impl Localizable for &Factor {
     }
 
     fn get_start_char(&self) -> usize {
-        match self {
-            Factor::Integer(fe) => fe.get_start_char(),
-            Factor::String(fe) => fe.get_start_char(),
-            Factor::True(fe) | Factor::False(fe) | Factor::None(fe) => fe.get_start_char(),
-            Factor::Identifier(fe) => fe.get_start_char(),
-            Factor::List(expressions) => expressions.first().unwrap().get_start_char(),
-            Factor::Expr(expression) => expression.get_start_char(),
-            Factor::Call {
+        match &self.kind {
+            FactorKind::Integer(fe) => fe.get_start_char(),
+            FactorKind::String(fe) => fe.get_start_char(),
+            FactorKind::True(fe) | FactorKind::False(fe) | FactorKind::None(fe) => fe.get_start_char(),
+            FactorKind::Identifier(fe) => fe.get_start_char(),
+            FactorKind::List(expressions) => expressions.first().unwrap().get_start_char(),
+            FactorKind::Expr(expression) => expression.get_start_char(),
+            FactorKind::Call {
                 identifier: _,
                 args: _,
                 localization,
@@ -280,14 +292,14 @@ impl Localizable for &Factor {
     }
 
     fn get_end_char(&self) -> usize {
-        match self {
-            Factor::Integer(fe) => fe.get_end_char(),
-            Factor::String(fe) => fe.get_end_char(),
-            Factor::True(fe) | Factor::False(fe) | Factor::None(fe) => fe.get_end_char(),
-            Factor::Identifier(fe) => fe.get_end_char(),
-            Factor::List(expressions) => expressions.last().unwrap().get_end_char(),
-            Factor::Expr(expression) => expression.get_end_char(),
-            Factor::Call {
+        match &self.kind {
+            FactorKind::Integer(fe) => fe.get_end_char(),
+            FactorKind::String(fe) => fe.get_end_char(),
+            FactorKind::True(fe) | FactorKind::False(fe) | FactorKind::None(fe) => fe.get_end_char(),
+            FactorKind::Identifier(fe) => fe.get_end_char(),
+            FactorKind::List(expressions) => expressions.last().unwrap().get_end_char(),
+            FactorKind::Expr(expression) => expression.get_end_char(),
+            FactorKind::Call {
                 identifier: _,
                 args: _,
                 localization,

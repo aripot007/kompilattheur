@@ -77,80 +77,86 @@ fn generate_from_block(block: &mut nodes::Block, table: SymbolTableRef, context:
     for statement in &mut block.statements {
         match statement {
             Statement::Assign(ref mut assign) => {
-                let value_type: Type = match assign.value.parse_type(context) {
-                    Ok(t) => t,
-                    Err(()) => continue, // No use in typing the value if the destination cannot be typed
-                };
+                        let value_type: Type = match assign.value.parse_type(context) {
+                            Ok(t) => t,
+                            Err(()) => continue, // No use in typing the value if the destination cannot be typed
+                        };
 
-                // If the destination is a single identifier, check or set the type with the value
-                if let ExpressionKind::Factor(Factor {factor_type: _, kind: FactorKind::Identifier(id)}) = &assign.destination.kind {
-                    // TODO : check if types are compatible
-                    match context.get_symbol_type(&id.element) {
-                        Some(_) => (),
-                        None => {
-                            // Symbol does not exist, insert it
-                            context.add_symbol(&id.element, Symbol::Variable(), value_type);
+                        // If the destination is a single identifier, check or set the type with the value
+                        if let ExpressionKind::Factor(Factor {factor_type: _, kind: FactorKind::Identifier(id)}) = &assign.destination.kind {
+                            // TODO : check if types are compatible
+                            match context.get_symbol_type(&id.element) {
+                                Some(_) => (),
+                                None => {
+                                    // Symbol does not exist, insert it
+                                    context.add_symbol(&id.element, Symbol::Variable(), value_type);
+                                }
+                            }
                         }
-                    }
-                }
 
             },
             Statement::For(ref mut for_loop) => {
-                let var_id = for_loop.var.element.id;
-                let var_name = for_loop.var.element.name.clone();
+                        let var_id = for_loop.var.element.id;
+                        let var_name = for_loop.var.element.name.clone();
                 
-                let loop_table = enter_scope(table.clone());
-                context.symbol_table = loop_table.clone();
+                        let loop_table = enter_scope(table.clone());
+                        context.symbol_table = loop_table.clone();
                 
-                let var_element = SymbolTableElement {
-                    symbol: Symbol::Variable(),
-                    name: var_name,
-                    symbol_type: Type::Any
-                };
-                loop_table.borrow_mut().insert_symbol(var_id, var_element);
+                        let var_element = SymbolTableElement {
+                            symbol: Symbol::Variable(),
+                            name: var_name,
+                            symbol_type: Type::Any
+                        };
+                        loop_table.borrow_mut().insert_symbol(var_id, var_element);
 
-                let _ = generate_from_block(&mut for_loop.block, loop_table.clone(), context);
+                        let _ = generate_from_block(&mut for_loop.block, loop_table.clone(), context);
 
-                table = exit_scope(loop_table);
-                context.symbol_table = table.clone();
+                        table = exit_scope(loop_table);
+                        context.symbol_table = table.clone();
             },
             Statement::Conditional(ref mut cond) => {
                 
-                // Parse condition expression type
-                if let Ok(t) = cond.condition.parse_type(context) {
-                    // TODO: Correct comparison with weak
-                    if t != Type::Bool {
-                        context.errors.push(
-                            Diagnostic::incompatible_type(&cond.condition, &t, &[Type::Bool])
-                        );
-                        continue;
-                    }
-                } else {
+                        // Parse condition expression type
+                        if let Ok(t) = cond.condition.parse_type(context) {
+                            // TODO: Correct comparison with weak
+                            if t != Type::Bool {
+                                context.errors.push(
+                                    Diagnostic::incompatible_type(&cond.condition, &t, &[Type::Bool])
+                                );
+                                continue;
+                            }
+                        } else {
 
-                }
+                        }
                 
-                let if_table = enter_scope(table.clone());
-                context.symbol_table = if_table.clone();
+                        let if_table = enter_scope(table.clone());
+                        context.symbol_table = if_table.clone();
    
-                let _ = generate_from_block(&mut cond.if_block, if_table.clone(), context);
+                        let _ = generate_from_block(&mut cond.if_block, if_table.clone(), context);
 
-                table = exit_scope(if_table);
-                context.symbol_table = table.clone();
+                        table = exit_scope(if_table);
+                        context.symbol_table = table.clone();
                 
-                if let Some(else_block) = &mut cond.else_block {
-                    let else_table = enter_scope(table.clone());
-                    context.symbol_table = else_table.clone();
+                        if let Some(else_block) = &mut cond.else_block {
+                            let else_table = enter_scope(table.clone());
+                            context.symbol_table = else_table.clone();
 
-                    let _ = generate_from_block(else_block, else_table.clone(), context);
+                            let _ = generate_from_block(else_block, else_table.clone(), context);
 
-                    table = exit_scope(else_table);
-                    context.symbol_table = table.clone();
-                }
+                            table = exit_scope(else_table);
+                            context.symbol_table = table.clone();
+                        }
             },
             Statement::Expr(ref mut expr) => {
                 let _ = expr.parse_type(context);
-            }
-            _ => {},
+            },
+            Statement::Print(ref mut expr) => {
+                let _ = expr.parse_type(context);
+            },
+            Statement::Return(ref mut expr) => {
+                let _ = expr.parse_type(context);
+            },
+            Statement::NotImplemented => todo!(),
         }
     }
     

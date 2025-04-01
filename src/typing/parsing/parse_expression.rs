@@ -7,24 +7,22 @@ impl Typeable for Expression {
 
         let localization = localization_info!(self);
 
-        match &mut self.kind {
-            ExpressionKind::BINOP(ref mut e1, bin_op, ref mut e2) => {
-                match try_parse_binop(localization, e1.as_mut(), *bin_op, e2.as_mut(), context) {
-                    Ok(t) => {
-                        self.set_type(t.clone());
-                        return Ok(t);
-                    },
-                    Err(_) => Err(()),
-                }
-            },
+        let res = match &mut self.kind {
+            ExpressionKind::BINOP(ref mut e1, bin_op, ref mut e2) => try_parse_binop(localization, e1.as_mut(), *bin_op, e2.as_mut(), context),
             ExpressionKind::UNOP(un_op, ref mut expr) => match (un_op, expr.as_mut().parse_type(context)) {
+                // TODO: Adapt to weak types
                 (UnOp::NEG, Ok(Type::Int)) => Ok(Type::Int),
                 (UnOp::NOT, Ok(Type::Bool)) => Ok(Type::Bool),
                 _ => Err(()),
             },
-            ExpressionKind::Factor(factor) => factor.parse_type(context),
+            ExpressionKind::Factor(ref mut factor) => factor.parse_type(context),
             ExpressionKind::NotImplemented => Err(()), // todo!()
+        };
+
+        if let Ok(t) = &res {
+            self.set_type(t.clone());
         }
+        return res;
     }
     
     fn is_typed(&self) -> bool {

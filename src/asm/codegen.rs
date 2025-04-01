@@ -5,6 +5,7 @@ use inkwell::targets::{FileType, TargetTriple};
 use inkwell::targets::{CodeModel, InitializationConfig, RelocMode, Target, TargetMachine};
 use inkwell::types::StructType;
 use inkwell::OptimizationLevel;
+use tempfile::NamedTempFile;
 
 use std::path::Path;
 
@@ -275,16 +276,20 @@ impl<'ctx> CodeGen<'ctx> {
         // Generate the executable
         let dynamic_linker = self.get_linker()?;
 
+        let temp_file = NamedTempFile::new().map_err(|e| format!("Error opening temp file for linking : {}", e))?;
+        
         // Compile the object file
-        self.compile(output_path, FileType::Object, &self.target_machine)?;
+        self.compile(temp_file.path(), FileType::Object, &self.target_machine)?;
 
         // Link the executable
         self.link_object_file(
-            output_path,
+            temp_file.path(),
             output_path,
             target_triple,
             &dynamic_linker,
         )?;
+
+        temp_file.close().map_err(|e| format!("Error closing temp file : {}", e))?;
 
         Ok(())
     }

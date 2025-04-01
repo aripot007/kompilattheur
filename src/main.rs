@@ -232,21 +232,18 @@ fn compile(args: CompileArgs) {
             eprintln!("Error generating assembly: {}", e);
             exit(1);
         }
-        return;
     }
     if args.target == cli::TargetLanguage::Object {
         if let Err(e) = codegen.compile(&output_file_name, Object, &codegen.target_machine) {
             eprintln!("Error generating object: {}", e);
             exit(1);
         }
-        return;
     }
     if args.target == cli::TargetLanguage::Binary {
         if let Err(e) = codegen.generate_executable(&output_file_name, &target_triple) {
             eprintln!("Error generating binary: {}", e);
             exit(1);
         }
-        return;
     }
 
     if args.run {

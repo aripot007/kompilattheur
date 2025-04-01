@@ -1,6 +1,6 @@
 use inkwell::values::StructValue;
 
-use crate::{asm::{codegen::CodeGen, llvm::LLVMCodegenError, InternalFuctions}, ast::nodes::{Block, Expression}, common::diagnostic::{Diagnostic, DiagnosticGravity}};
+use crate::{asm::{codegen::CodeGen, llvm::LLVMCodegenError, llvm::print::*, InternalFuctions}, ast::nodes::{Block, Expression}, common::diagnostic::{Diagnostic, DiagnosticGravity}, typing::{Type, Typeable}};
 use super::llvm_compute_expr;
 
 pub fn llvm_from_block<'ctx>(block: &Block, cg: &mut CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
@@ -34,28 +34,23 @@ pub fn llvm_from_block<'ctx>(block: &Block, cg: &mut CodeGen<'ctx>) -> Result<()
 
 fn llvm_from_print<'ctx>(expr: &Expression, cg: &mut CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
 
-    // tkt ça arrive soon
-    if /* expr.type != Type::String */ false {
-        cg.errors.push(Diagnostic::from_localizable_ref(
-            expr,
-            DiagnosticGravity::Error,
-            String::from("UnimplementedLLVM"),
-            String::from("print string pls")
-        ));
-        return Err(());
-    }
-
-    // TODO : Compute and store value of expression in register
-    // For now its a string
-
     let expr_value: StructValue<'ctx> = llvm_compute_expr(expr, cg)?;
 
-    // TODO : C'est des string tkt (et onfera une fonction print plus tard)
-    let puts = cg.module.get_function(InternalFuctions::Puts.into()).unwrap();
-
-    cg.builder
-        .build_call(puts, &[expr_value.get_field_at_index(1).unwrap().into()], "printf_call")
-        .unwrap();
+    match expr.get_type() {
+        Type::None => print_none_value(&expr_value, cg),
+        Type::Bool => print_bool_value(&expr_value, cg),
+        Type::Int => print_int_value(&expr_value, cg),
+        Type::String => print_string_value(&expr_value, cg),
+        _ => {
+            cg.errors.push(Diagnostic::from_localizable_ref(
+                expr,
+                DiagnosticGravity::Error,
+                String::from("UnimplementedLLVM"),
+                String::from("print string pls")
+            ));
+            return Err(());
+        }
+    }
 
     return Ok(());
 }

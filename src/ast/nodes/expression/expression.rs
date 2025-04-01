@@ -4,7 +4,8 @@ use crate::{
         localizable::Localizable,
         types::{FileElement, Node, Token, Tree},
     },
-    parser::Lexem, typing::Type,
+    parser::Lexem,
+    typing::Type,
 };
 
 use super::{
@@ -26,24 +27,23 @@ pub enum ExpressionKind {
 
 impl From<ExpressionKind> for Expression {
     fn from(value: ExpressionKind) -> Self {
-        Expression { expr_type: None, kind: value }
+        Expression {
+            expr_type: None,
+            kind: value,
+        }
     }
 }
 
 impl AstNode for Expression {
     fn get_string_repr(&self) -> String {
-        match self {
-            Expression::BINOP(_, bin_op, _) => format!("Expression::BinOp({})", (*bin_op).to_string()),
-            Expression::UNOP(un_op, _) => format!("Expression::UnOp({})", (*un_op).to_string()),
-            Expression::Factor(_) => String::from("Expression::Factor"),
-            Expression::NotImplemented => String::from("Expression::NotImplemented"),
+        match &self.kind {
+            ExpressionKind::BINOP(_, bin_op, _) => {
+                format!("Expression::BinOp({})", (*bin_op).to_string())
+            }
+            ExpressionKind::UNOP(un_op, _) => format!("Expression::UnOp({})", (*un_op).to_string()),
+            ExpressionKind::Factor(_) => String::from("Expression::Factor"),
+            ExpressionKind::NotImplemented => String::from("Expression::NotImplemented"),
         }
-    }
-}
-
-impl From<ExpressionKind> for Expression {
-    fn from(value: ExpressionKind) -> Self {
-        Expression { expr_type: None, kind: value }
     }
 }
 
@@ -51,7 +51,9 @@ impl From<Tree<FileElement<Lexem>>> for Expression {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {
         let root_elem = root.borrow().get_value().element;
         let root_elem = match root_elem {
-            Lexem::Terminal(Token::Identifier(_)) => return ExpressionKind::Factor(Factor::from(root)).into(),
+            Lexem::Terminal(Token::Identifier(_)) => {
+                return ExpressionKind::Factor(Factor::from(root)).into()
+            }
             Lexem::Terminal(token) => panic!("Cannot convert terminal {token} to EXPR"),
             Lexem::NonTerminal(nt) => nt,
         };
@@ -76,7 +78,11 @@ impl From<Tree<FileElement<Lexem>>> for Expression {
                             panic!("Cannot convert non terminal node {id} to unary operator")
                         }
                     };
-                    return ExpressionKind::UNOP(op, Box::from(Expression::from(children[1].clone()))).into();
+                    return ExpressionKind::UNOP(
+                        op,
+                        Box::from(Expression::from(children[1].clone())),
+                    )
+                    .into();
                 }
                 return Expression::from(children[0].clone());
             }

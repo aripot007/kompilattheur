@@ -29,7 +29,7 @@ pub fn print_int_value<'ctx>(variable: &StructValue<'ctx>, cg: &CodeGen<'ctx>) {
         get_internal_func!(cg, InternalFuctions::Printf),
         &[
             // Format string
-            get_internal_global_const!(cg, InternalGlobalConst::IntFormatString).as_pointer_value().into(),
+            get_internal_global_const!(cg, InternalGlobalConst::IntFormatStringWithNewline).as_pointer_value().into(),
             value.into() // value
         ],
         "printf_call"

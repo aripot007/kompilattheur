@@ -15,7 +15,7 @@ use crate::common::diagnostic::Diagnostic;
 
 use super::dynamic_linker::get_dynamic_linker;
 use super::llvm::llvm_from_root;
-use super::{init_internal_global_consts, InternalFuctions};
+use super::{init_internal_functions, init_internal_global_consts};
 
 pub struct CodeGen<'ctx> {
     pub context: &'ctx Context,
@@ -86,24 +86,10 @@ impl<'ctx> CodeGen<'ctx> {
         codegen.module.set_triple(&target_triple);
         
         codegen.init_smolpp_types();
-        codegen.init_internal_functions();
+        init_internal_functions(&codegen);
         init_internal_global_consts(&codegen);
 
         return Ok(codegen);
-    }
-
-    fn init_internal_functions(&mut self) {
-        //
-        // syscalls
-        //
-
-        // puts function declaration
-        let i32_type = self.context.i32_type();
-        let ptr_type = self.context.ptr_type(inkwell::AddressSpace::default());
-        let puts_type = i32_type.fn_type(&[ptr_type.into()], false);
-        self.module
-            .add_function(InternalFuctions::Puts.into(), puts_type, None);
-
     }
 
     fn init_smolpp_types(&mut self) {
@@ -271,8 +257,9 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn verify(&self) -> Result<(), String> {
         // Verify the module
-        if self.module.verify().is_err() {
+        if let Err(e) =self.module.verify() {
             eprintln!("Module verification failed!");
+            eprintln!("{}", e);
             eprintln!("{}", self.module.print_to_string().to_string());
             Err("Module verification failed".into())
         } else {

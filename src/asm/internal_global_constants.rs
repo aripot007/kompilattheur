@@ -42,12 +42,11 @@ impl Into<&'static str> for InternalGlobalConst {
 }
 
 fn create_global_string<'ctx>(name: InternalGlobalConst, value: &str, cg: &CodeGen<'ctx>) {
-    let module = cg.context.create_module("my_module");
 
     let string_value = cg.context.const_string(value.as_bytes(), true);
 
     // Declare it as a global variable
-    let global_var = module.add_global(string_value.get_type(), Some(AddressSpace::default()), name.into());
+    let global_var = cg.module.add_global(string_value.get_type(), Some(AddressSpace::default()), name.into());
     global_var.set_initializer(&string_value);
     global_var.set_constant(true);
 }

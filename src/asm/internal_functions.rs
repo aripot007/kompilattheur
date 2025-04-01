@@ -15,6 +15,8 @@ macro_rules! get_internal_func {
 }
 pub(super) use get_internal_func;
 
+use super::codegen::CodeGen;
+
 macro_rules! internal_function_prefix {
     ($name: expr) => {
         concat!("__smolpp_f_", $name)
@@ -30,4 +32,24 @@ impl Into<&'static str> for InternalFuctions {
             InternalFuctions::Printf => "printf",
         }
     }
+}
+
+pub(super) fn init_internal_functions<'ctx>(cg: &CodeGen<'ctx>) {
+    //
+    // syscalls
+    //
+
+    let i32_type = cg.context.i32_type();
+    let ptr_type = cg.context.ptr_type(inkwell::AddressSpace::default());
+    
+    // puts function declaration
+    let puts_type = i32_type.fn_type(&[ptr_type.into()], false);
+    cg.module
+        .add_function(InternalFuctions::Puts.into(), puts_type, None);
+
+    // printf function declaration
+    let printf_type = i32_type.fn_type(&[ptr_type.into()], true);
+    cg.module
+        .add_function(InternalFuctions::Printf.into(), printf_type, None);
+
 }

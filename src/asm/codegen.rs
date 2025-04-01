@@ -13,7 +13,8 @@ use crate::ast::nodes::Root;
 use crate::common::diagnostic::Diagnostic;
 
 use super::dynamic_linker::get_dynamic_linker;
-use super::{llvm_from_root, InternalFuctions};
+use super::llvm::llvm_from_root;
+use super::InternalFuctions;
 pub struct CodeGen<'ctx> {
     pub context: &'ctx Context,
     pub module: Module<'ctx>,

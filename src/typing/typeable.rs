@@ -2,7 +2,7 @@ use super::{Type, TypingContext};
 
 pub trait Typeable {
     /// Parse the type of this object
-    fn parse_type(&self, context: &mut TypingContext) -> Result<Type, ()>;
+    fn parse_type(&mut self, context: &mut TypingContext) -> Result<Type, ()>;
 
     /// Returns true if the object was typed before
     fn is_typed(&self) -> bool;

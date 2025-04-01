@@ -1,7 +1,7 @@
 use inkwell::values::StructValue;
 
-use crate::{asm::{codegen::CodeGen, InternalFuctions}, ast::nodes::{Block, Expression}, common::diagnostic::{Diagnostic, DiagnosticGravity}};
-use super::{llvm_compute_expr, LLVMCodegenError};
+use crate::{asm::{codegen::CodeGen, llvm::LLVMCodegenError, InternalFuctions}, ast::nodes::{Block, Expression}, common::diagnostic::{Diagnostic, DiagnosticGravity}};
+use super::llvm_compute_expr;
 
 pub fn llvm_from_block<'ctx>(block: &Block, cg: &mut CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
 

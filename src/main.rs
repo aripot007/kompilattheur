@@ -189,7 +189,6 @@ fn compile(args: CompileArgs) {
         eprintln!("LLVM codegen ended with errors: {}", e);
         exit(1);
     }
-    eprintln!("LLVM codegen ended with errors. Aborting");
 
     if args.target_step == TargetStep::LLVMIR {
         let mut output_file = File::create(&args.output_file.unwrap_or("a.ll".into()))

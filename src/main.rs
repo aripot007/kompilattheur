@@ -64,7 +64,7 @@ fn compile(args: CompileArgs) {
     let lexer = Lexer::new(reader::new(&file_path));
 
     if args.target_step == TargetStep::Lexing {
-        let mut output_file = File::create(&args.output_file.unwrap_or("a.lex".into()))
+        let mut output_file = File::create(&args.output_file.unwrap_or("p.lex".into()))
             .expect("Error opening output file");
 
         for token in lexer {
@@ -89,8 +89,8 @@ fn compile(args: CompileArgs) {
             output_file_name = name;
         } else {
             output_file_name = match &args.target {
-                cli::TargetLanguage::Mermaid => "a.mmd".into(),
-                cli::TargetLanguage::Html => "a.html".into(),
+                cli::TargetLanguage::Mermaid => "p.mmd".into(),
+                cli::TargetLanguage::Html => "p.html".into(),
                 cli::TargetLanguage::Assembly
                 | cli::TargetLanguage::Object
                 | cli::TargetLanguage::Binary => {
@@ -154,8 +154,8 @@ fn compile(args: CompileArgs) {
             output_file_name = name;
         } else {
             output_file_name = match &args.target {
-                cli::TargetLanguage::Mermaid => "a.mmd".into(),
-                cli::TargetLanguage::Html => "a.html".into(),
+                cli::TargetLanguage::Mermaid => "p.mmd".into(),
+                cli::TargetLanguage::Html => "p.html".into(),
                 cli::TargetLanguage::Assembly
                 | cli::TargetLanguage::Object
                 | cli::TargetLanguage::Binary => {
@@ -191,7 +191,7 @@ fn compile(args: CompileArgs) {
     }
 
     if args.target_step == TargetStep::LLVMIR {
-        let mut output_file = File::create(&args.output_file.unwrap_or("a.ll".into()))
+        let mut output_file = File::create(&args.output_file.unwrap_or("p.ll".into()))
             .expect("Error opening output file");
         let llvm_ir = codegen.module.print_to_string().to_string();
         write!(output_file, "{}", llvm_ir).expect("error writing to output");
@@ -217,9 +217,9 @@ fn compile(args: CompileArgs) {
     let output_file_name = match &args.output_file {
         Some(name) => name.clone(),
         None => match &args.target {
-            cli::TargetLanguage::Assembly => "a.s".into(),
-            cli::TargetLanguage::Object => "a.o".into(),
-            cli::TargetLanguage::Binary => "a.out".into(),
+            cli::TargetLanguage::Assembly => "p.s".into(),
+            cli::TargetLanguage::Object => "p.o".into(),
+            cli::TargetLanguage::Binary => "p.out".into(),
             _ => {
                 eprintln!("Incompatible target language");
                 exit(1);
@@ -247,7 +247,7 @@ fn compile(args: CompileArgs) {
     }
 
     if args.run {
-        if let Err(e) = execute_executable(&args.output_file.unwrap_or("a.out".into())) {
+        if let Err(e) = execute_executable(&args.output_file.unwrap_or("p.out".into())) {
             eprintln!("Error executing program: {}", e);
             exit(1);
         }

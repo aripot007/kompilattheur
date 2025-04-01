@@ -248,9 +248,12 @@ fn compile(args: CompileArgs) {
 
     if args.run {
         let output_path = args.output_file.unwrap_or("p.out".into());
-        if let Err(e) = execute_binary(&output_path) {
+        let absolute_path = output_path.canonicalize().unwrap_or_else(|_| {
+            eprintln!("Failed to get absolute path");
+            exit(1);
+        });
+        if let Err(e) = execute_binary(&absolute_path) {
             eprintln!("{}", e);
-            eprintln!("File path: {:?}", output_path);
             exit(1);
         }
     }

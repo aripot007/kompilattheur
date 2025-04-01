@@ -8,6 +8,7 @@ type MainFunction = unsafe extern "C" fn();
 
 pub fn execute_binary(exe_path: &Path) -> Result<(), String> {
     // Execute the generated binary
+    println!();
     let output = std::process::Command::new(exe_path)
         .output()
         .map_err(|e| format!("Failed to execute the program: {}", e))?;

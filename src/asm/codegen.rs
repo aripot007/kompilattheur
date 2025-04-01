@@ -272,8 +272,8 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    pub fn generate_executable(&self, output_path: &Path, target_triple: &TargetTriple) -> Result<(), String> {
-        // Generate the executable
+    pub fn generate_binary(&self, output_path: &Path, target_triple: &TargetTriple) -> Result<(), String> {
+        // Generate the binary
         let dynamic_linker = self.get_linker()?;
 
         let temp_file = NamedTempFile::new().map_err(|e| format!("Error opening temp file for linking : {}", e))?;

@@ -9,7 +9,7 @@ mod reader;
 mod typing;
 use analysis_table::{get_analysis_table, setup_analysis_table, AnalysisTable};
 use asm::codegen::CodeGen;
-use asm::execute::execute_executable;
+use asm::execute::execute_binary;
 use ast::generate_ast;
 use clap::{CommandFactory, Parser};
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs, TargetStep};
@@ -240,15 +240,17 @@ fn compile(args: CompileArgs) {
         }
     }
     if args.target == cli::TargetLanguage::Binary {
-        if let Err(e) = codegen.generate_executable(&output_file_name, &target_triple) {
+        if let Err(e) = codegen.generate_binary(&output_file_name, &target_triple) {
             eprintln!("Error generating binary: {}", e);
             exit(1);
         }
     }
 
     if args.run {
-        if let Err(e) = execute_executable(&args.output_file.unwrap_or("p.out".into())) {
-            eprintln!("Error executing program: {}", e);
+        let output_path = args.output_file.unwrap_or("p.out".into());
+        if let Err(e) = execute_binary(&output_path) {
+            eprintln!("{}", e);
+            eprintln!("File path: {:?}", output_path);
             exit(1);
         }
     }

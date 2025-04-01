@@ -1,4 +1,5 @@
 
+use crate::ast::nodes::{ExpressionKind, FactorKind};
 use crate::common::symbol_table::{enter_scope, exit_scope, init_symbol_table, Symbol, SymbolTableElement, SymbolTableRef};
 use crate::{ast::nodes::{self, Factor, Statement}, typing::{Function, Type, Typeable, TypingContext, Weak}};
 
@@ -79,7 +80,7 @@ fn generate_from_block(block: &nodes::Block, table: SymbolTableRef, context: &mu
                 };
 
                 // If the destination is a single identifier, check or set the type with the value
-                if let nodes::Expression::Factor(Factor::Identifier(id)) = &assign.destination {
+                if let ExpressionKind::Factor(Factor {factor_type: _, kind: FactorKind::Identifier(id)}) = &assign.destination.kind {
                     // TODO : check if types are compatible
                     match context.get_symbol_type(&id.element, statement) {
                         Some(_) => (),

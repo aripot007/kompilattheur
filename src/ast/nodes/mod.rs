@@ -1,5 +1,5 @@
 mod factor;
-pub use factor::Factor;
+pub use factor::{Factor, FactorKind};
 mod defs;
 pub use defs::Defs;
 mod def;

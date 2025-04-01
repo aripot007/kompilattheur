@@ -1,13 +1,13 @@
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::module::Module;
-use inkwell::targets::{FileType, TargetTriple};
 use inkwell::targets::{CodeModel, InitializationConfig, RelocMode, Target, TargetMachine};
+use inkwell::targets::{FileType, TargetTriple};
 use inkwell::types::StructType;
 use inkwell::OptimizationLevel;
 use tempfile::NamedTempFile;
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use crate::ast::nodes::Root;
 use crate::common::diagnostic::Diagnostic;
@@ -29,7 +29,11 @@ pub struct CodeGenTypedefs<'ctx> {
 }
 
 impl<'ctx> CodeGen<'ctx> {
-    pub fn create(context: &'ctx Context, target_triple: &TargetTriple) -> Result<Self, String> {
+    pub fn create(
+        context: &'ctx Context,
+        target_triple: &TargetTriple,
+        source_file: &PathBuf,
+    ) -> Result<Self, String> {
         let config = InitializationConfig {
             asm_parser: true,
             asm_printer: true,
@@ -54,7 +58,20 @@ impl<'ctx> CodeGen<'ctx> {
             )
             .ok_or_else(|| "Failed to create target machine".to_string())?;
 
-        let module = context.create_module("sum_program");
+        let module = context.create_module(
+            source_file
+                .file_name()
+                .unwrap_or(std::ffi::OsStr::new("smolpp"))
+                .to_str()
+                .unwrap_or("smolpp"),
+        );
+        module.set_source_file_name(
+            source_file
+                .file_name()
+                .unwrap_or(std::ffi::OsStr::new("smolpp"))
+                .to_str()
+                .unwrap_or("smolpp"),
+        );
 
         let mut codegen = CodeGen {
             context: context,
@@ -272,12 +289,17 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    pub fn generate_binary(&self, output_path: &Path, target_triple: &TargetTriple) -> Result<(), String> {
+    pub fn generate_binary(
+        &self,
+        output_path: &Path,
+        target_triple: &TargetTriple,
+    ) -> Result<(), String> {
         // Generate the binary
         let dynamic_linker = self.get_linker()?;
 
-        let temp_file = NamedTempFile::new().map_err(|e| format!("Error opening temp file for linking : {}", e))?;
-        
+        let temp_file = NamedTempFile::new()
+            .map_err(|e| format!("Error opening temp file for linking : {}", e))?;
+
         // Compile the object file
         self.compile(temp_file.path(), FileType::Object, &self.target_machine)?;
 
@@ -289,7 +311,9 @@ impl<'ctx> CodeGen<'ctx> {
             &dynamic_linker,
         )?;
 
-        temp_file.close().map_err(|e| format!("Error closing temp file : {}", e))?;
+        temp_file
+            .close()
+            .map_err(|e| format!("Error closing temp file : {}", e))?;
 
         Ok(())
     }

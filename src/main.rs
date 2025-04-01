@@ -183,7 +183,7 @@ fn compile(args: CompileArgs) {
     let context = Context::create();
     let target_triple = TargetMachine::get_default_triple();
     println!("Target triple: {}", target_triple.to_string());
-    let mut codegen = CodeGen::create(&context, &target_triple).unwrap();
+    let mut codegen = CodeGen::create(&context, &target_triple, &file_path).unwrap();
     codegen.generate_llvm(&ast);
     if let Err(e) = codegen.verify() {
         eprintln!("LLVM codegen ended with errors: {}", e);
@@ -193,7 +193,7 @@ fn compile(args: CompileArgs) {
     if args.target_step == TargetStep::LLVMIR {
         let mut output_file = File::create(&args.output_file.unwrap_or("p.ll".into()))
             .expect("Error opening output file");
-        let llvm_ir = codegen.module.print_to_string().to_string();
+        let llvm_ir = codegen.module.to_string();
         write!(output_file, "{}", llvm_ir).expect("error writing to output");
         return;
     }

@@ -28,7 +28,7 @@
             zlib
           ];
 
-          LLVM_SYS_180_PREFIX = llvmPackages_18.llvm.dev;
+          LLVM_SYS_150_PREFIX = llvmPackages_15.llvm.dev;
         };
       }
     );

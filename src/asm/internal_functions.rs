@@ -13,7 +13,7 @@ macro_rules! internal_prefix {
 impl Into<&'static str> for InternalFuctions {
     fn into(self) -> &'static str {
         match self {
-            InternalFuctions::Main => internal_prefix!("main"),
+            InternalFuctions::Main => "main",
             InternalFuctions::GenericPrint => internal_prefix!("generic_print"),
             InternalFuctions::Puts => "puts",
         }

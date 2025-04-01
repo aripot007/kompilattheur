@@ -48,13 +48,16 @@ pub fn print_bool_value<'ctx>(variable: &StructValue<'ctx>, cg: &CodeGen<'ctx>) 
     // Get the variable value as int
     let value = variable.get_field_at_index(1).unwrap().into_int_value();
 
+    let zero = cg.context.i64_type().const_zero();
+    let cdt = cg.builder.build_int_compare(inkwell::IntPredicate::EQ, value, zero, "cmp").unwrap();
+
     // Create basic blocks if-else
     let then_block = cg.context.append_basic_block(cg.current_function, "then");
     let else_block = cg.context.append_basic_block(cg.current_function, "else");
     let merge_block = cg.context.append_basic_block(cg.current_function, "end");
 
     // Conditional branch
-    cg.builder.build_conditional_branch(value, then_block, else_block).unwrap();
+    cg.builder.build_conditional_branch(cdt, then_block, else_block).unwrap();
 
     // "Then" block : value is True
     cg.builder.position_at_end(then_block);

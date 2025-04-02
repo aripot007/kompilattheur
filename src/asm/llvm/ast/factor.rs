@@ -31,8 +31,8 @@ pub fn llvm_compute_factor<'ctx>(factor: &Factor, cg: &mut CodeGen<'ctx>) -> Res
         FactorKind::False(_) => return llvm_compute_bool_value(false, cg),
         FactorKind::None(_) => return llvm_compute_none_value(cg),
         FactorKind::Expr(expr) => return llvm_compute_expr(expr, cg),
+        FactorKind::List(_) => return llvm_compute_list_value(cg),
         FactorKind::Identifier(_)
-        | FactorKind::List(_)
         | FactorKind::Call { identifier: _, args: _, localization: _ } => (),
     }
 
@@ -59,7 +59,7 @@ fn llvm_compute_bool_value<'ctx>(value: bool, cg: &mut CodeGen<'ctx>) -> Result<
 
     let int_const = cg.context.i64_type().const_int(value as u64, false);
 
-    return Ok(const_variable!(cg, Type::Int, int_const));
+    return Ok(const_variable!(cg, Type::Bool, int_const));
 }
 
 fn llvm_compute_none_value<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<StructValue<'ctx>, LLVMCodegenError> {
@@ -68,3 +68,11 @@ fn llvm_compute_none_value<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<StructValue<'
 
     return Ok(const_variable!(cg, Type::None, val));
 }
+
+fn llvm_compute_list_value<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<StructValue<'ctx>, LLVMCodegenError> {
+
+    let val = cg.context.i64_type().const_zero();
+
+    return Ok(const_variable!(cg, Type::List, val));
+}
+

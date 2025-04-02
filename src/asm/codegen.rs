@@ -1,3 +1,4 @@
+use inkwell::basic_block::BasicBlock;
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::module::Module;
@@ -26,6 +27,8 @@ pub struct CodeGen<'ctx> {
     pub errors: Vec<Diagnostic>,
     pub smolpp_types: CodeGenTypedefs<'ctx>,
     pub current_function: FunctionValue<'ctx>,
+    pub current_main_block: BasicBlock<'ctx>,
+    pub main_function: FunctionValue<'ctx>,
 }
 
 pub struct CodeGenTypedefs<'ctx> {
@@ -52,7 +55,7 @@ impl<'ctx> CodeGen<'ctx> {
                 target_triple,
                 &TargetMachine::get_host_cpu_name().to_string(),
                 &TargetMachine::get_host_cpu_features().to_string(),
-                OptimizationLevel::Default,
+                OptimizationLevel::None,
                 RelocMode::PIC,
                 CodeModel::Default,
             )
@@ -78,6 +81,8 @@ impl<'ctx> CodeGen<'ctx> {
             errors: Vec::new(),
             target_machine,
             current_function: main_function,
+            main_function: main_function,
+            current_main_block: basic_block,
             smolpp_types: CodeGenTypedefs {
                 dynamic_type: context.opaque_struct_type("dynamic_type_struct"),
             },
@@ -86,8 +91,8 @@ impl<'ctx> CodeGen<'ctx> {
         codegen.module.set_triple(&target_triple);
         
         codegen.init_smolpp_types();
-        init_internal_functions(&codegen);
         init_internal_global_consts(&codegen);
+        init_internal_functions(&mut codegen);
 
         return Ok(codegen);
     }
@@ -259,7 +264,7 @@ impl<'ctx> CodeGen<'ctx> {
         // Verify the module
         if let Err(e) =self.module.verify() {
             eprintln!("Module verification failed!");
-            eprintln!("{}", e);
+            eprintln!("{}", e.to_string());
             eprintln!("{}", self.module.print_to_string().to_string());
             Err("Module verification failed".into())
         } else {

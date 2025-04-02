@@ -24,6 +24,19 @@ pub enum InternalGlobalConst {
     IntFormatStringWithNewline,
     /// Format string for converting int to string (eg. for concatenation)
     IntFormatString,
+
+}
+
+/// Internal global string constants used for runtime error printing
+pub enum RuntimeErrorMsg {
+
+    /// Used when an invalid type value is encountered during type comparison.
+    /// 
+    /// Takes the type value as an i8 argument
+    PanicInvalidInternalTypeValueFormatString,
+
+    /// Used when we generate something that is not yet implemented
+    PanicNotImplemented,
 }
 
 macro_rules! internal_global_prefix {
@@ -44,7 +57,16 @@ impl Into<&'static str> for InternalGlobalConst {
     }
 }
 
-fn create_global_string<'ctx>(name: InternalGlobalConst, value: &str, cg: &CodeGen<'ctx>) {
+impl Into<&'static str> for RuntimeErrorMsg {
+    fn into(self) -> &'static str {
+        match self {
+            RuntimeErrorMsg::PanicInvalidInternalTypeValueFormatString => internal_global_prefix!("panic_invalid_type_fmt_string"),
+            RuntimeErrorMsg::PanicNotImplemented => internal_global_prefix!("panic_unimplemented"),
+        }
+    }
+}
+
+fn create_global_string<'ctx, T: Into::<&'static str>>(name: T, value: &str, cg: &CodeGen<'ctx>) {
 
     let string_value = cg.context.const_string(value.as_bytes(), true);
 
@@ -75,4 +97,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
     create_global_string(InternalGlobalConst::IntFormatString, "%d", cg);
     create_global_string(InternalGlobalConst::IntFormatStringWithNewline, "%d\n", cg);
 
+    // Error messages
+    create_global_string(RuntimeErrorMsg::PanicInvalidInternalTypeValueFormatString, "PANIC: Invalid internal type value %d\n", cg);
+    create_global_string(RuntimeErrorMsg::PanicNotImplemented, "PANIC: LLVM not implemented yet\n", cg);
 }

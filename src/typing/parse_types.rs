@@ -74,7 +74,7 @@ fn generate_from_def(def: &mut nodes::Def, table: SymbolTableRef, context: &mut 
 
     generate_from_block(&mut def.block, function_table.clone(), context);
 
-    // todo: check return type if empty type Weak None
+    // TODO(Romain): check return type if empty type Weak None
 
     context.symbol_table = table.clone();
     context.func_id = None;

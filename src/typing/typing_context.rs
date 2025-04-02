@@ -40,7 +40,7 @@ impl TypingContext {
         }
     }
 
-    /// TODO: replace with function that merges types
+    /// TODO(Romain): replace with function that merges types
     pub fn add_symbol(&mut self, identifier: &IdToken, symbol: Symbol, symbol_type: Type) {
         let symbol_entry = SymbolTableElement {
             symbol,
@@ -72,8 +72,9 @@ impl TypingContext {
                     .borrow_mut()
                     .insert_symbol(identifier.id, symbol_entry);
 
-                // todo: create update symbol
-                // todo: handle weak by adding type
+                // TODO(Romain): 
+                // create update symbol
+                // handle weak by adding type
                 // warming: dont make possible in weak pub, use Aristide func, merge
 
                 return;

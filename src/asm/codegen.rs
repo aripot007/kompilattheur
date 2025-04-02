@@ -1,9 +1,11 @@
+use inkwell::basic_block::BasicBlock;
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::module::Module;
 use inkwell::targets::{CodeModel, InitializationConfig, RelocMode, Target, TargetMachine};
 use inkwell::targets::{FileType, TargetTriple};
 use inkwell::types::StructType;
+use inkwell::values::FunctionValue;
 use inkwell::OptimizationLevel;
 use tempfile::NamedTempFile;
 
@@ -13,7 +15,9 @@ use crate::ast::nodes::Root;
 use crate::common::diagnostic::Diagnostic;
 
 use super::dynamic_linker::get_dynamic_linker;
-use super::{llvm_from_root, InternalFuctions};
+use super::llvm::llvm_from_root;
+use super::{init_internal_functions, init_internal_global_consts};
+
 pub struct CodeGen<'ctx> {
     pub context: &'ctx Context,
     pub module: Module<'ctx>,
@@ -22,6 +26,9 @@ pub struct CodeGen<'ctx> {
     pub warnings: Vec<Diagnostic>,
     pub errors: Vec<Diagnostic>,
     pub smolpp_types: CodeGenTypedefs<'ctx>,
+    pub current_function: FunctionValue<'ctx>,
+    pub current_main_block: BasicBlock<'ctx>,
+    pub main_function: FunctionValue<'ctx>,
 }
 
 pub struct CodeGenTypedefs<'ctx> {
@@ -52,7 +59,7 @@ impl<'ctx> CodeGen<'ctx> {
                 target_triple,
                 &TargetMachine::get_host_cpu_name().to_string(),
                 &TargetMachine::get_host_cpu_features().to_string(),
-                OptimizationLevel::Default,
+                OptimizationLevel::None,
                 RelocMode::PIC,
                 CodeModel::Default,
             )
@@ -73,45 +80,38 @@ impl<'ctx> CodeGen<'ctx> {
                 .unwrap_or("smolpp"),
         );
 
+        // Add main function entry point
+        let i32_type = context.i32_type();
+        let fn_type = i32_type.fn_type(&[], false);
+        let main_function = module.add_function("main", fn_type, None);
+        let basic_block = context.append_basic_block(main_function, "entry");
+
+        let builder = context.create_builder();
+
+        builder.position_at_end(basic_block);
+
         let mut codegen = CodeGen {
             context: context,
             module,
-            builder: context.create_builder(),
+            builder,
             warnings: Vec::new(),
             errors: Vec::new(),
             target_machine,
+            current_function: main_function,
+            main_function: main_function,
+            current_main_block: basic_block,
             smolpp_types: CodeGenTypedefs {
                 dynamic_type: context.opaque_struct_type("dynamic_type_struct"),
             },
         };
 
-        codegen.init_smolpp_types();
-        codegen.init_internal_functions();
         codegen.module.set_triple(&target_triple);
+        
+        codegen.init_smolpp_types();
+        init_internal_global_consts(&codegen);
+        init_internal_functions(&mut codegen);
 
         return Ok(codegen);
-    }
-
-    fn init_internal_functions(&mut self) {
-        //
-        // syscalls
-        //
-
-        // puts function declaration
-        let i32_type = self.context.i32_type();
-        let ptr_type = self.context.ptr_type(inkwell::AddressSpace::default());
-        let puts_type = i32_type.fn_type(&[ptr_type.into()], false);
-        self.module
-            .add_function(InternalFuctions::Puts.into(), puts_type, None);
-
-        // Add main function entry point
-        let i32_type = self.context.i32_type();
-        let fn_type = i32_type.fn_type(&[], false);
-        let function = self.module.add_function("main", fn_type, None);
-        let basic_block = self.context.append_basic_block(function, "entry");
-
-        self.builder.position_at_end(basic_block);
-        // Create a basic block for the main function
     }
 
     fn init_smolpp_types(&mut self) {
@@ -283,8 +283,9 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn verify(&self) -> Result<(), String> {
         // Verify the module
-        if self.module.verify().is_err() {
+        if let Err(e) =self.module.verify() {
             eprintln!("Module verification failed!");
+            eprintln!("{}", e.to_string());
             eprintln!("{}", self.module.print_to_string().to_string());
             Err("Module verification failed".into())
         } else {

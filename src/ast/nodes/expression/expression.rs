@@ -155,18 +155,38 @@ impl Into<Tree<String>> for &Expression {
     fn into(self) -> Tree<String> {
         match &self.kind {
             ExpressionKind::BINOP(e1, bin_op, e2) => {
-                let root = Node::new((*bin_op).into());
+                let s: String = match &self.expr_type {
+                    Some(t) => format!("{}\n({})", *bin_op, t),
+                    None => (*bin_op).into(),
+                };
+                let root = Node::new(s);
                 root.borrow_mut().add_child(&root, (*e1).as_ref().into());
                 root.borrow_mut().add_child(&root, (*e2).as_ref().into());
                 return root;
             }
             ExpressionKind::UNOP(un_op, expression) => {
-                let root = Node::new((*un_op).into());
+                let s: String = match &self.expr_type {
+                    Some(t) => format!("{}\n({})", *un_op, t),
+                    None => (*un_op).into(),
+                };
+                let root = Node::new(s);
                 root.borrow_mut()
                     .add_child(&root, (*expression).as_ref().into());
                 return root;
             }
-            ExpressionKind::Factor(f) => f.into(),
+            ExpressionKind::Factor(f) => {
+                
+                let mut root = f.into();
+
+                // Add ghost type node for debugging
+                if let Some(t) = &self.expr_type {
+                    let fake_root = Node::new(format!("(Typed Expr::Factor : {})", t));
+                    fake_root.borrow_mut().add_child(&fake_root, root);
+                    root = fake_root;
+                }
+
+                root
+            },
             ExpressionKind::NotImplemented => Node::new(String::from("EXPR (NI)")),
         }
     }

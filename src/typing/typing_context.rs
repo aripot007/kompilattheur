@@ -1,9 +1,4 @@
-use crate::common::{
-    diagnostic::Diagnostic,
-    localizable::Localizable,
-    symbol_table::{get_symbol, Symbol, SymbolTableElement, SymbolTableRef},
-    types::IdToken,
-};
+use crate::common::{diagnostic::Diagnostic, symbol_table::{get_symbol, Symbol, SymbolTableElement, SymbolTableRef}, types::IdToken};
 
 use super::{Type, Weak};
 
@@ -36,11 +31,7 @@ impl TypingContext {
     }
 
     /// Get a symbol type from the symbol table, or create an error
-    pub fn get_symbol_type<T: Localizable>(
-        &mut self,
-        identifier: &IdToken,
-        root: &T,
-    ) -> Option<Type> {
+    pub fn get_symbol_type(&mut self, identifier: &IdToken) -> Option<Type> {
         match get_symbol(self.symbol_table.clone(), &identifier.id) {
             (_, Some(elt)) => Some(elt.symbol_type),
             (_, None) => None,
@@ -55,8 +46,6 @@ impl TypingContext {
             symbol_type: symbol_type,
         };
 
-        self.symbol_table
-            .borrow_mut()
-            .insert_symbol(identifier.id, symbol_entry);
+        self.symbol_table.borrow_mut().insert_symbol(identifier.id, symbol_entry);
     }
 }

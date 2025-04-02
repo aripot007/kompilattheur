@@ -1,0 +1,103 @@
+use inkwell::AddressSpace;
+
+use super::codegen::CodeGen;
+
+/// Internal global constants
+pub enum InternalGlobalConst {
+    
+    //
+    // Printing strings
+    //
+
+    /// String representation for the None type
+    NoneString,
+    /// String representation for the bool value True
+    TrueString,
+    /// String representation for the bool value False
+    FalseString,
+
+    //
+    // Format strings
+    //
+
+    /// Format string for printing int with an ending newline
+    IntFormatStringWithNewline,
+    /// Format string for converting int to string (eg. for concatenation)
+    IntFormatString,
+
+}
+
+/// Internal global string constants used for runtime error printing
+pub enum RuntimeErrorMsg {
+
+    /// Used when an invalid type value is encountered during type comparison.
+    /// 
+    /// Takes the type value as an i8 argument
+    PanicInvalidInternalTypeValueFormatString,
+
+    /// Used when we generate something that is not yet implemented
+    PanicNotImplemented,
+}
+
+macro_rules! internal_global_prefix {
+    ($name: expr) => {
+        concat!("__smolpp_g_", $name)
+    };
+}
+
+impl Into<&'static str> for InternalGlobalConst {
+    fn into(self) -> &'static str {
+        match self {
+            InternalGlobalConst::NoneString => internal_global_prefix!("none_string"),
+            InternalGlobalConst::TrueString => internal_global_prefix!("true_string"),
+            InternalGlobalConst::FalseString => internal_global_prefix!("false_string"),
+            InternalGlobalConst::IntFormatString => internal_global_prefix!("int_fmt_string"),
+            InternalGlobalConst::IntFormatStringWithNewline => internal_global_prefix!("int_fmt_string_newline"),
+        }
+    }
+}
+
+impl Into<&'static str> for RuntimeErrorMsg {
+    fn into(self) -> &'static str {
+        match self {
+            RuntimeErrorMsg::PanicInvalidInternalTypeValueFormatString => internal_global_prefix!("panic_invalid_type_fmt_string"),
+            RuntimeErrorMsg::PanicNotImplemented => internal_global_prefix!("panic_unimplemented"),
+        }
+    }
+}
+
+fn create_global_string<'ctx, T: Into::<&'static str>>(name: T, value: &str, cg: &CodeGen<'ctx>) {
+
+    let string_value = cg.context.const_string(value.as_bytes(), true);
+
+    // Declare it as a global variable
+    let global_var = cg.module.add_global(string_value.get_type(), Some(AddressSpace::default()), name.into());
+    global_var.set_initializer(&string_value);
+    global_var.set_constant(true);
+}
+
+/// Get a global constant registered in the CodeGen.
+/// The global consts MUST be initialized before using this macro
+macro_rules! get_internal_global_const {
+    ($cg: expr, $name: expr) => {
+        $cg.module.get_global($name.into()).unwrap()
+    };
+}
+pub(super) use get_internal_global_const;
+
+/// Initialize internal global constants used by smolpp (eg. error strings)
+pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
+
+    // Printing strings
+    create_global_string(InternalGlobalConst::NoneString, "None", cg);
+    create_global_string(InternalGlobalConst::TrueString, "True", cg);
+    create_global_string(InternalGlobalConst::FalseString, "False", cg);
+
+    // Format strings
+    create_global_string(InternalGlobalConst::IntFormatString, "%d", cg);
+    create_global_string(InternalGlobalConst::IntFormatStringWithNewline, "%d\n", cg);
+
+    // Error messages
+    create_global_string(RuntimeErrorMsg::PanicInvalidInternalTypeValueFormatString, "PANIC: Invalid internal type value %d\n", cg);
+    create_global_string(RuntimeErrorMsg::PanicNotImplemented, "PANIC: LLVM not implemented yet\n", cg);
+}

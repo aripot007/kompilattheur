@@ -1,8 +1,9 @@
 pub mod codegen;
 mod llvm;
-pub use llvm::*;
 mod dynamic_linker;
 mod internal_functions;
 pub use internal_functions::*;
 mod diagnostics;
 pub mod execute;
+mod internal_global_constants;
+use internal_global_constants::*;

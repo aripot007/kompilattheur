@@ -1,19 +1,28 @@
 use colored::{Color, Colorize};
 
-use crate::{ast::nodes::{BinOp, Expression, ExpressionKind, UnOp}, common::diagnostic::{Diagnostic, DiagnosticGravity}, typing::{Type, Typeable, TypingContext}};
+use crate::{ast::nodes::{BinOp, Expression, ExpressionKind, UnOp}, common::{diagnostic::{Diagnostic, DiagnosticGravity}, localizable::{localization_info, LocalizationInfo, Localizable}}, typing::{Type, Typeable, TypingContext}};
 
 impl Typeable for Expression {
-    fn parse_type(&self, context: &mut TypingContext) -> Result<Type, ()> {
-        match &self.kind {
-            ExpressionKind::BINOP(e1, bin_op, e2) => try_parse_binop(self, e1.as_ref(), *bin_op, e2.as_ref(), context),
-            ExpressionKind::UNOP(un_op, expr) => match (un_op, expr.as_ref().parse_type(context)) {
+    fn parse_type(&mut self, context: &mut TypingContext) -> Result<Type, ()> {
+
+        let localization = localization_info!(self);
+
+        let res = match &mut self.kind {
+            ExpressionKind::BINOP(ref mut e1, bin_op, ref mut e2) => try_parse_binop(localization, e1.as_mut(), *bin_op, e2.as_mut(), context),
+            ExpressionKind::UNOP(un_op, ref mut expr) => match (un_op, expr.as_mut().parse_type(context)) {
+                // TODO: Adapt to weak types
                 (UnOp::NEG, Ok(Type::Int)) => Ok(Type::Int),
                 (UnOp::NOT, Ok(Type::Bool)) => Ok(Type::Bool),
-                _ => Err(()), 
+                _ => Err(()),
             },
-            ExpressionKind::Factor(factor) => factor.parse_type(context),
+            ExpressionKind::Factor(ref mut factor) => factor.parse_type(context),
             ExpressionKind::NotImplemented => Err(()), // todo!()
+        };
+
+        if let Ok(t) = &res {
+            self.set_type(t.clone());
         }
+        return res;
     }
     
     fn is_typed(&self) -> bool {
@@ -36,7 +45,7 @@ impl Typeable for Expression {
     }
 }
 
-fn try_parse_binop(root: &Expression, e1: &Expression, op: BinOp, e2: &Expression, context: &mut TypingContext) -> Result<Type, ()> {
+fn try_parse_binop(root_localization: LocalizationInfo, e1: &mut Expression, op: BinOp, e2: &mut Expression, context: &mut TypingContext) -> Result<Type, ()> {
 
     let t1_parsing = e1.parse_type(context);
     let t2_parsing = e2.parse_type(context);
@@ -54,7 +63,7 @@ fn try_parse_binop(root: &Expression, e1: &Expression, op: BinOp, e2: &Expressio
                 match (&t1, &t2) {
                     (Type::Bool, Type::Int)
                     | (Type::Int, Type::Bool) => (),
-                    _ => context.warnings.push(Diagnostic::dubious_comparison(root, &t1, &t2, false)),
+                    _ => context.warnings.push(Diagnostic::dubious_comparison(&root_localization, &t1, &t2, false)),
                 }    
             }
             return Ok(Type::Bool);
@@ -67,8 +76,8 @@ fn try_parse_binop(root: &Expression, e1: &Expression, op: BinOp, e2: &Expressio
         | BinOp::GREATEREQ => {
             if t1 != t2 {
                 context.errors.push(
-                    Diagnostic::from_localizable_ref(
-                        root, 
+                    Diagnostic::from_localizable(
+                        root_localization, 
                         DiagnosticGravity::Error,
                         String::from("TypeError"),
                         format!(
@@ -89,8 +98,8 @@ fn try_parse_binop(root: &Expression, e1: &Expression, op: BinOp, e2: &Expressio
         | BinOp::SUB => {
             if t1 != Type::Int || t2 != Type::Int {
                 context.errors.push(
-                    Diagnostic::from_localizable_ref(
-                        root, 
+                    Diagnostic::from_localizable(
+                        root_localization, 
                         DiagnosticGravity::Error,
                         String::from("TypeError"),
                         format!(
@@ -108,8 +117,8 @@ fn try_parse_binop(root: &Expression, e1: &Expression, op: BinOp, e2: &Expressio
         }
         BinOp::ADD if t1 != t2 => {
             context.errors.push(
-                Diagnostic::from_localizable_ref(
-                    root, 
+                Diagnostic::from_localizable(
+                    root_localization, 
                     DiagnosticGravity::Error,
                     String::from("TypeError"),
                     format!(
@@ -128,8 +137,8 @@ fn try_parse_binop(root: &Expression, e1: &Expression, op: BinOp, e2: &Expressio
                 Ok(Type::Any)
             } else {
                 context.errors.push(
-                    Diagnostic::from_localizable_ref(
-                        root, 
+                    Diagnostic::from_localizable(
+                        root_localization, 
                         DiagnosticGravity::Error,
                         String::from("TypeError"),
                         format!(

@@ -184,7 +184,7 @@ impl Into<Tree<String>> for Factor {
 
 impl Into<Tree<String>> for &Factor {
     fn into(self) -> Tree<String> {
-        let s = match &self.kind {
+        let mut s = match &self.kind {
             FactorKind::Integer(file_element) => format!("{}", file_element.element),
             FactorKind::String(file_element) => {
                 format!("String : \"{}\"", file_element.element.escape_debug())
@@ -210,6 +210,11 @@ impl Into<Tree<String>> for &Factor {
                 return root;
             }
         };
+
+        // Add typing information if available
+        if let Some(t) = &self.factor_type {
+            s = format!("{}\n({})", s, t);
+        }
 
         let root = Node::new(s);
 

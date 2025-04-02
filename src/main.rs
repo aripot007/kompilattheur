@@ -13,9 +13,6 @@ use asm::execute::execute_binary;
 use ast::generate_ast;
 use clap::{CommandFactory, Parser};
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs, TargetStep};
-use common::symbol_table::{
-    enter_scope, exit_scope, get_scope, init_symbol_table, set_symbols_offset, Symbol, SymbolTableElement,
-};
 use common::types::{FileElement, Tree};
 use inkwell::context::Context;
 use inkwell::targets::FileType::{Assembly, Object};
@@ -27,7 +24,7 @@ use std::fs::File;
 use std::io::{self, stdout, Write};
 use std::process::exit;
 use std::sync::OnceLock;
-use typing::{parse_types, Type};
+use typing::parse_types;
 use webbrowser;
 
 static FILE_PATH: OnceLock<String> = OnceLock::new();
@@ -79,8 +76,6 @@ fn compile(args: CompileArgs) {
     let (tree, accept, error): (Tree<FileElement<Lexem>>, bool, bool) =
         generate_tree(lexer, &table);
 
-    // println!("Accepted: {}, Error: {}", accept, error);
-
     if args.target_step == TargetStep::ConcreteTree {
         let output_file_name;
 
@@ -118,34 +113,6 @@ fn compile(args: CompileArgs) {
 
     let ast: ast::nodes::Root = generate_ast(tree.clone());
 
-    let (ast, symbol_table, context) = parse_types(ast);
-
-    let symbol_table = set_symbols_offset(symbol_table);
-
-    for warning in context.warnings {
-        warning.display();
-    }
-
-    if !context.errors.is_empty() {
-        for error in context.errors {
-            error.display();
-        }
-        eprintln!("Typing ended with errors. Aborting");
-        exit(1);
-    }
-
-    if args.show_symbol_table {
-        let mut symbol_table_file =
-            File::create("symbol_table.mmd").expect("Error opening symbol table file");
-        write!(
-            symbol_table_file,
-            "{}",
-            symbol_table.borrow().generate_unsafe_mermaid()
-        )
-        .expect("Error writing symbol table");
-        println!("Symbol table written to symbol_table.mmd");
-    }
-
     if args.target_step == TargetStep::AbstractTree {
         let display_ast: Tree<String> = ast.into();
 
@@ -179,6 +146,67 @@ fn compile(args: CompileArgs) {
             eprintln!("Failed to convert output path to string.");
         }
         return;
+    }
+
+    let (ast, symbol_table, context) = parse_types(ast);
+
+    for warning in context.warnings {
+        warning.display();
+    }
+
+    if !context.errors.is_empty() {
+        for error in context.errors {
+            error.display();
+        }
+        eprintln!("Typing ended with errors. Aborting");
+        exit(1);
+    }
+
+    if args.target_step == TargetStep::TypedAbstractTree {
+        let display_ast: Tree<String> = ast.into();
+
+        let output_file_name;
+
+        if let Some(name) = args.output_file {
+            output_file_name = name;
+        } else {
+            output_file_name = match &args.target {
+                cli::TargetLanguage::Mermaid => "p.mmd".into(),
+                cli::TargetLanguage::Html => "p.html".into(),
+                cli::TargetLanguage::Assembly
+                | cli::TargetLanguage::Object
+                | cli::TargetLanguage::Binary => {
+                    eprintln!("Incompatible target language for abstract tree");
+                    exit(1);
+                }
+            }
+        }
+
+        let mut output_file = File::create(&output_file_name).expect("Error opening output file");
+
+        write!(output_file, "{}", display_ast.borrow().generate_html())
+            .expect("error writing to output");
+
+        if let Some(output_path_str) = output_file_name.to_str() {
+            if args.run && webbrowser::open(output_path_str).is_err() {
+                eprintln!("Failed to open the HTML file in the web browser.");
+            }
+        } else {
+            eprintln!("Failed to convert output path to string.");
+        }
+        return;
+    }
+
+    if args.show_symbol_table {
+        let mut symbol_table_file =
+            File::create("symbol_table.mmd").expect("Error opening symbol table file");
+        write!(
+            symbol_table_file,
+            "{}",
+            symbol_table.borrow().generate_unsafe_mermaid()
+        )
+        .expect("Error writing symbol table");
+        println!("Symbol table written to symbol_table.mmd");
     }
 
     let context = Context::create();

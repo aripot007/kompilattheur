@@ -154,6 +154,10 @@ pub enum TargetStep {
     #[value(alias("ast"), alias("parsing"), alias("parser"))]
     AbstractTree,
 
+    /// Arbre Syntaxique Abstrait Typé
+    #[value(alias("typing"), alias("type"), alias("typed-ast"))]
+    TypedAbstractTree,
+
     /// LLVM IR
     #[value(alias("llvm"))]
     LLVMIR,

@@ -1,19 +1,38 @@
 use colored::{Color, Colorize};
 
-use crate::{ast::nodes::{BinOp, Expression, UnOp}, common::diagnostic::{Diagnostic, DiagnosticGravity}, typing::{Type, Typeable, TypingContext}};
+use crate::{ast::nodes::{BinOp, Expression, ExpressionKind, UnOp}, common::diagnostic::{Diagnostic, DiagnosticGravity}, typing::{Type, Typeable, TypingContext}};
 
 impl Typeable for Expression {
     fn parse_type(&self, context: &mut TypingContext) -> Result<Type, ()> {
-        match self {
-            Expression::BINOP(e1, bin_op, e2) => try_parse_binop(self, e1.as_ref(), *bin_op, e2.as_ref(), context),
-            Expression::UNOP(un_op, expr) => match (un_op, expr.as_ref().parse_type(context)) {
+        match &self.kind {
+            ExpressionKind::BINOP(e1, bin_op, e2) => try_parse_binop(self, e1.as_ref(), *bin_op, e2.as_ref(), context),
+            ExpressionKind::UNOP(un_op, expr) => match (un_op, expr.as_ref().parse_type(context)) {
                 (UnOp::NEG, Ok(Type::Int)) => Ok(Type::Int),
                 (UnOp::NOT, Ok(Type::Bool)) => Ok(Type::Bool),
                 _ => Err(()), 
             },
-            Expression::Factor(factor) => factor.parse_type(context),
-            Expression::NotImplemented => Err(()), // todo!()
+            ExpressionKind::Factor(factor) => factor.parse_type(context),
+            ExpressionKind::NotImplemented => Err(()), // todo!()
         }
+    }
+    
+    fn is_typed(&self) -> bool {
+        self.expr_type.is_some()
+    }
+    
+    fn get_type(&self) -> &Type {
+        self.expr_type.as_ref().unwrap()
+    }
+    
+    fn get_type_opt(&self) -> Option<&Type> {
+        match &self.expr_type {
+            Some(t) => Some(t),
+            None => None,
+        }
+    }
+    
+    fn set_type(&mut self, t: Type) {
+        self.expr_type = Some(t);
     }
 }
 

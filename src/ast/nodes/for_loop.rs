@@ -14,7 +14,11 @@ pub struct For {
     pub localization: FileElement<bool>,
 }
 
-impl AstNode for For {}
+impl AstNode for For {
+    fn get_string_repr(&self) -> String {
+        String::from("For")
+    }
+}
 
 impl From<Tree<FileElement<Lexem>>> for For {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {

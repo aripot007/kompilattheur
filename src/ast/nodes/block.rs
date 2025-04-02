@@ -14,7 +14,11 @@ pub struct Block {
     pub symbol_table: Option<SymbolTableRef>,
 }
 
-impl AstNode for Block {}
+impl AstNode for Block {
+    fn get_string_repr(&self) -> String {
+        String::from("Block")
+    }
+}
 
 impl From<Tree<FileElement<Lexem>>> for Block {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {

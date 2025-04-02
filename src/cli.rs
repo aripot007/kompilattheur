@@ -97,15 +97,15 @@ pub struct CompileArgs {
     pub file: Option<PathBuf>,
 
     /// Le fichier de sortie
-    #[arg(name = "output", short, long, default_value = "p.out")]
-    pub output_file: PathBuf,
+    #[arg(name = "output", short, long)]
+    pub output_file: Option<PathBuf>,
 
     /// Étape de compilation à laquelle le compilateur s'arrête
-    #[arg(short = 's', long, num_args = 0..=1, value_enum, default_value_t=TargetStep::AbstractTree, alias("step"))]
+    #[arg(short = 's', long, num_args = 0..=1, value_enum, default_value_t=TargetStep::Compile, alias("step"))]
     pub target_step: TargetStep,
 
     /// Language de destination
-    #[arg(long, short, num_args = 0..=1, value_enum, default_value_t=TargetLanguage::Html)]
+    #[arg(long, short, num_args = 0..=1, value_enum, default_value_t=TargetLanguage::Binary)]
     pub target: TargetLanguage,
 
     /// Lance le programme compilé (ou ouvre le fichier résultant en fonction de l'étape de compilation)
@@ -115,6 +115,10 @@ pub struct CompileArgs {
     /// Affiche la table des symboles
     #[arg(long, action)]
     pub show_symbol_table: bool,
+
+    /// Interprète le programme en JIT
+    #[arg(long, short, action)]
+    pub jit: bool,
 }
 
 #[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
@@ -125,6 +129,15 @@ pub enum TargetLanguage {
 
     #[value()]
     Html,
+
+    #[value(alias("asm"))]
+    Assembly,
+
+    #[value(alias("object"))]
+    Object,
+
+    #[value(alias("exe"), alias("executable"))]
+    Binary,
 }
 
 #[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
@@ -140,4 +153,12 @@ pub enum TargetStep {
     /// Arbre Syntaxique Abstrait
     #[value(alias("ast"), alias("parsing"), alias("parser"))]
     AbstractTree,
+
+    /// LLVM IR
+    #[value(alias("llvm"))]
+    LLVMIR,
+
+    // Compile
+    #[value()]
+    Compile,
 }

@@ -3,3 +3,6 @@ generated_table.rs
 *.out
 p.html
 symbol_table.mmd
+output/*
+.vscode
+.direnv

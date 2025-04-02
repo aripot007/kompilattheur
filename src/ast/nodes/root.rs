@@ -13,7 +13,11 @@ pub struct Root {
     location: FileElement<bool>,
 }
 
-impl AstNode for Root {}
+impl AstNode for Root {
+    fn get_string_repr(&self) -> String {
+        String::from("Root")
+    }
+}
 
 impl From<Tree<FileElement<Lexem>>> for Root {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {

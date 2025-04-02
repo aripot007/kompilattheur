@@ -14,7 +14,14 @@ pub struct Conditional {
     pub localization: FileElement<bool>,
 }
 
-impl AstNode for Conditional {}
+impl AstNode for Conditional {
+    fn get_string_repr(&self) -> String {
+        String::from(match self.else_block {
+            Some(_) => "Conditional::IfElse",
+            None => "Conditional::If",
+        })
+    }
+}
 
 impl From<Tree<FileElement<Lexem>>> for Conditional {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {

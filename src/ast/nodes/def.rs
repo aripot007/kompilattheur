@@ -16,7 +16,11 @@ pub struct Def {
     pub localization: FileElement<bool>,
 }
 
-impl AstNode for Def {}
+impl AstNode for Def {
+    fn get_string_repr(&self) -> String {
+        String::from("Def")
+    }
+}
 
 impl From<Tree<FileElement<Lexem>>> for Def {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {

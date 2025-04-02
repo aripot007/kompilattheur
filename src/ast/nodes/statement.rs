@@ -1,6 +1,6 @@
 use crate::{
     analysis_table::NonTerminal,
-    ast::nodes::parse_access,
+    ast::nodes::{parse_access, ExpressionKind},
     common::{
         diagnostic::{Diagnostic, DiagnosticGravity},
         localizable::Localizable,
@@ -24,7 +24,19 @@ pub enum Statement {
     NotImplemented,
 }
 
-impl AstNode for Statement {}
+impl AstNode for Statement {
+    fn get_string_repr(&self) -> String {
+        String::from(match self {
+            Statement::Print(_) => "Statement::Print",
+            Statement::Return(_) => "Statement::Return",
+            Statement::For(_) => "Statement::For",
+            Statement::Conditional(_) => "Statement::Conditional",
+            Statement::Assign(_) => "Statement::Assign",
+            Statement::Expr(_) => "Statement::Expr",
+            Statement::NotImplemented => "Statement::NotImplemented",
+        })
+    }
+}
 
 impl From<Tree<FileElement<Lexem>>> for Statement {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {
@@ -259,15 +271,15 @@ fn parse_complex_stmt(root: Tree<FileElement<Lexem>>) -> Statement {
     // Add the access expression to the rightmost factor
 
     fn insert_access(expr: Expression, access_root: Tree<FileElement<Lexem>>) -> Expression {
-        match expr {
-            Expression::BINOP(e1, op, e2) => {
-                Expression::BINOP(e1, op, Box::new(insert_access(*e2, access_root)))
+        match expr.kind {
+            ExpressionKind::BINOP(e1, op, e2) => {
+                ExpressionKind::BINOP(e1, op, Box::new(insert_access(*e2, access_root))).into()
             }
-            Expression::UNOP(op, e) => {
-                Expression::UNOP(op, Box::new(insert_access(*e, access_root)))
+            ExpressionKind::UNOP(op, e) => {
+                ExpressionKind::UNOP(op, Box::new(insert_access(*e, access_root))).into()
             }
-            Expression::NotImplemented => Expression::NotImplemented,
-            Expression::Factor(_) => parse_access(access_root, expr),
+            ExpressionKind::NotImplemented => ExpressionKind::NotImplemented.into(),
+            ExpressionKind::Factor(_) => parse_access(access_root, expr),
         }
     }
 

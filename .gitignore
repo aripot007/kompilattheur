@@ -2,4 +2,11 @@
 generated_table.rs
 *.out
 p.html
+p.ll
+p.mmd
+p.s
+p.o
 symbol_table.mmd
+output/*
+.vscode
+.direnv

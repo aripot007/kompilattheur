@@ -1,1 +1,6 @@
-print("Hello World !")
+print("Hello Smol World !")
+
+print("This is a multiline")
+print("program !")
+
+print("\nWaouh !\n")

@@ -9,10 +9,13 @@ use crate::{
 
 pub struct Param {
     pub identifier: FileElement<IdToken>,
-    localization: FileElement<bool>,
 }
 
-impl AstNode for Param {}
+impl AstNode for Param {
+    fn get_string_repr(&self) -> String {
+        String::from("Param")
+    }
+}
 
 impl From<Tree<FileElement<Lexem>>> for Param {
     fn from(root: Tree<FileElement<Lexem>>) -> Self {
@@ -26,17 +29,8 @@ impl From<Tree<FileElement<Lexem>>> for Param {
         };
         let identifier: FileElement<IdToken> = file_element_from!(id_elem, id_token);
 
-        let localization = FileElement {
-            element: true,
-            len: id_elem.len,
-            start_line: id_elem.start_line,
-            start_char: id_elem.start_char,
-            end_line: id_elem.end_line,
-        };
-
         return Param {
             identifier,
-            localization,
         };
     }
 }

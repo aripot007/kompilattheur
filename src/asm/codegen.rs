@@ -210,7 +210,11 @@ impl<'ctx> CodeGen<'ctx> {
                     "15.0".to_string()
                 }
             };
-            let arch = target_triple.split('-').next().unwrap_or("arm64");
+            let triple_str = target_triple.to_string();
+            let triple_str = triple_str
+                .trim_start_matches("TargetTriple(\"")
+                .trim_end_matches("\")");
+            let arch = triple_str.split('-').next().unwrap_or("arm64");
             println!("Using macOS version: {}", macos_version);
 
             let mut cmd = std::process::Command::new("ld64.lld");

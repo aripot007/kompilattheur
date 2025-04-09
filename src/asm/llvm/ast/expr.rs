@@ -1,6 +1,6 @@
 use inkwell::values::StructValue;
 
-use crate::{asm::{codegen::CodeGen, llvm::LLVMCodegenError}, ast::nodes::{Expression, ExpressionKind}, common::diagnostic::Diagnostic};
+use crate::{asm::{codegen::CodeGen, llvm::LLVMCodegenError}, ast::nodes::{AstNode, Expression, ExpressionKind}, common::diagnostic::Diagnostic};
 use super::llvm_compute_factor;
 
 pub fn llvm_compute_expr<'ctx>(expr: &Expression, cg: &mut CodeGen<'ctx>) -> Result<StructValue<'ctx>, LLVMCodegenError> {
@@ -14,5 +14,5 @@ pub fn llvm_compute_expr<'ctx>(expr: &Expression, cg: &mut CodeGen<'ctx>) -> Res
 
     cg.errors.push(Diagnostic::unimplemented_llvm(expr));
 
-    return Err(());
+    return Err(LLVMCodegenError::Unimplemented(expr.get_string_repr()));
 }

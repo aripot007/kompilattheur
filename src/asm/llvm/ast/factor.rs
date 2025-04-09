@@ -10,7 +10,7 @@ use super::llvm_compute_expr;
 macro_rules! const_variable {
     ($cg: ident, $t: expr, $v: expr) => {
         {
-            let var_type_discr = $t.get_discriminant();
+            let var_type_discr = $t.get_bitmask();
             let var_type_discr_val = $cg.context.i8_type().const_int(var_type_discr as u64, false);
             $cg.smolpp_types.dynamic_type.const_named_struct(
                 &[

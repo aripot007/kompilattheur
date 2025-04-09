@@ -31,6 +31,10 @@ impl Weak {
             .max()
             .expect("Error: Weak type has no decalage computed!")
     }
+
+    pub fn get_possible(&self) -> &Vec<Type> {
+        &self.possible
+    }
 }
 
 impl PartialEq for Weak {

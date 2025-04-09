@@ -139,11 +139,11 @@ pub fn init_internal_generic_print_function<'ctx>(cg: &mut CodeGen<'ctx>) -> Res
         type_field, 
         default_block,
         &[
-            (i8_type.const_int(Type::None.get_discriminant().into(), false), case_none),
-            (i8_type.const_int(Type::Bool.get_discriminant().into(), false), case_bool),
-            (i8_type.const_int(Type::Int.get_discriminant().into(), false), case_int),
-            (i8_type.const_int(Type::String.get_discriminant().into(), false), case_string),
-            (i8_type.const_int(Type::List.get_discriminant().into(), false), case_list),
+            (i8_type.const_int(Type::None.get_bitmask().into(), false), case_none),
+            (i8_type.const_int(Type::Bool.get_bitmask().into(), false), case_bool),
+            (i8_type.const_int(Type::Int.get_bitmask().into(), false), case_int),
+            (i8_type.const_int(Type::String.get_bitmask().into(), false), case_string),
+            (i8_type.const_int(Type::List.get_bitmask().into(), false), case_list),
         ]
     )?;
 

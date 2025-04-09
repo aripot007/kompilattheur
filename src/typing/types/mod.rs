@@ -2,7 +2,7 @@ mod function;
 mod ntuple;
 mod weak;
 
-use std::fmt::Display;
+use std::{fmt::Display, ops::BitOr};
 
 pub use function::*;
 pub use ntuple::*;
@@ -24,17 +24,20 @@ pub enum Type {
 }
 
 impl Type {
-    pub fn get_discriminant(&self) -> u8 {
+    /// Get a bitmask representing this type
+    pub fn get_bitmask(&self) -> u8 {
         match self {
-            Type::None => 0,
-            Type::Bool => 1,
-            Type::Int => 2,
-            Type::String => 3,
-            Type::List => 4,
-            Type::Any
+            Type::None => 0b00000001,
+            Type::Bool => 0b00000010,
+            Type::Int => 0b00000100,
+            Type::String => 0b00001000,
+            Type::List => 0b00010000,
+            Type::Any => 0b00011111,
+            Type::Weak(w) => {
+                w.get_possible().iter().map(Type::get_bitmask).reduce(u8::bitor).unwrap_or(0)
+            },
             | Type::NTuple(_)
-            | Type::Function(_)
-            | Type::Weak(_) => panic!("Cannot get discriminant for type {}", self),
+            | Type::Function(_) => panic!("Cannot get discriminant for type {}", self),
         }
     }
 }

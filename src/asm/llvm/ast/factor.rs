@@ -1,6 +1,6 @@
 use inkwell::values::StructValue;
 
-use crate::ast::nodes::FactorKind;
+use crate::ast::nodes::{AstNode, FactorKind};
 use crate::{asm::codegen::CodeGen, ast::nodes::Factor, common::diagnostic::Diagnostic, typing::Type};
 use crate::asm::llvm::LLVMCodegenError;
 
@@ -38,12 +38,12 @@ pub fn llvm_compute_factor<'ctx>(factor: &Factor, cg: &mut CodeGen<'ctx>) -> Res
 
     cg.errors.push(Diagnostic::unimplemented_llvm(factor));
    
-    return Err(());
+    return Err(LLVMCodegenError::Unimplemented(factor.get_string_repr()));
 }
 
 fn llvm_compute_string_value<'ctx>(s: &String, cg: &mut CodeGen<'ctx>) -> Result<StructValue<'ctx>, LLVMCodegenError> {
     
-    let str_const_ptr = cg.builder.build_global_string_ptr(&s, "string_const").unwrap();
+    let str_const_ptr = cg.builder.build_global_string_ptr(&s, "string_const")?;
 
     return Ok(const_variable!(cg, Type::String, str_const_ptr.as_pointer_value()));
 }

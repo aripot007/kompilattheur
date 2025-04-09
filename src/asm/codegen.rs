@@ -49,7 +49,7 @@ impl<'ctx> CodeGen<'ctx> {
             info: true,
             machine_code: true,
         };
-        Target::initialize_native(&config).map_err(|_| "Failed to initialize native target")?;
+        Target::initialize_native(&config).map_err(|s| format!("Failed to initialize native target : {}", s))?;
 
         let target = Target::from_triple(target_triple)
             .map_err(|e| format!("Failed to get target from triple: {}", e))?;
@@ -109,7 +109,8 @@ impl<'ctx> CodeGen<'ctx> {
         
         codegen.init_smolpp_types();
         init_internal_global_consts(&codegen);
-        init_internal_functions(&mut codegen);
+        init_internal_functions(&mut codegen)
+            .map_err(|e| format!("Failed to initialize internal functions : {}", e))?;
 
         return Ok(codegen);
     }

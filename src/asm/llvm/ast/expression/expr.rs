@@ -1,13 +1,13 @@
 use inkwell::values::StructValue;
 
 use crate::{asm::{codegen::CodeGen, llvm::LLVMCodegenError}, ast::nodes::{Expression, ExpressionKind}, common::diagnostic::Diagnostic};
-use super::super::llvm_compute_factor;
+use super::{super::llvm_compute_factor, llvm_compute_binop, llvm_compute_unop};
 
 pub fn llvm_compute_expr<'ctx>(expr: &Expression, cg: &mut CodeGen<'ctx>) -> Result<StructValue<'ctx>, LLVMCodegenError> {
 
     match &expr.kind {
-        ExpressionKind::BINOP(_e1, _bin_op, _e2) => (),
-        ExpressionKind::UNOP(_un_op, _e1) => (),
+        ExpressionKind::BINOP(e1, op, e2) => return llvm_compute_binop(e1, op, e2, cg),
+        ExpressionKind::UNOP(op, e1) => return llvm_compute_unop(op, e1, cg),
         ExpressionKind::Factor(factor) => return llvm_compute_factor(factor, cg),
         ExpressionKind::NotImplemented => (),
     }

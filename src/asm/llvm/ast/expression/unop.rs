@@ -26,18 +26,19 @@ fn llvm_compute_not<'ctx>(val: SmolVar<'ctx>, cg: &mut CodeGen<'ctx>) -> Result<
 /// Compute the NOT operation for a given variable, without type checking
 fn llvm_compute_not_unchecked<'ctx>(val: SmolVar<'ctx>, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
     let val_field = cg.get_variable_value(val)?.into_int_value();
-    let new_value = cg.builder.build_not(val_field, "")?;
-    return cg.set_variable_value(val, new_value)
+    let new_value = cg.builder.build_not(val_field, "smolvar_not")?;
+    return cg.set_variable_value(val, new_value);
 }
 
 /// Compute the NEG operation for a given variable
 fn llvm_compute_neg<'ctx>(val: SmolVar<'ctx>, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    // TODO: check for type compatibility
-    todo!()
+    assert_type(Type::Int, &val, cg, None)?;
+    return llvm_compute_neg_unchecked(val, cg);
 }
 
 /// Compute the NEG operation for a given variable, without type checking
 fn llvm_compute_neg_unchecked<'ctx>(val: SmolVar<'ctx>, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    // TODO: check for type compatibility
-    todo!()
+    let val_field = cg.get_variable_value(val)?.into_int_value();
+    let new_value = cg.builder.build_int_neg(val_field, "smolvar_neg")?;
+    return cg.set_variable_value(val, new_value);
 }

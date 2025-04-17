@@ -66,4 +66,14 @@ impl<'ctx> CodeGen<'ctx> {
         return Ok(res.into_struct_value());
     }
 
+    pub fn create_variable<BV>(&self, t: Type, value: BV) -> SmolVar<'ctx> where BV: BasicValue<'ctx> {
+        let var_type_discr = t.get_bitmask();
+        let var_type_discr_val = self.context.i8_type().const_int(var_type_discr as u64, false);
+        self.smolpp_types.dynamic_type.const_named_struct(
+            &[
+                var_type_discr_val.into(),
+                value.as_basic_value_enum(),
+            ]
+        )
+    }
 }

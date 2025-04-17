@@ -1,8 +1,8 @@
-use inkwell::{values::{BasicValue, StructValue}, AddressSpace};
+use inkwell::{values::BasicValue, AddressSpace};
 
 use crate::{asm::{codegen::CodeGen, get_internal_func, get_internal_global_const, internal_function_prefix, internal_global_constants::RuntimeErrorMsg, InternalFuctions, InternalGlobalConst}, typing::Type};
 
-use super::{panic::{smolpp_panic, smolpp_panic_with_unreachable}, LLVMCodegenError};
+use super::{panic::{smolpp_panic, smolpp_panic_with_unreachable}, smolvar::SmolVar, LLVMCodegenError};
 
 macro_rules! llvm_puts {
     ($cg: expr, $value: expr, $name: literal) => {
@@ -14,17 +14,17 @@ macro_rules! llvm_puts {
 }
 
 /// Generate LLVM to print a None value
-pub fn print_none_value<'ctx>(_value: &StructValue<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
+pub fn print_none_value<'ctx>(_value: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
     let none_str_ptr = get_internal_global_const!(cg, InternalGlobalConst::NoneString).as_pointer_value();
     llvm_puts!(cg, none_str_ptr, "puts_none");
     return Ok(());
 }
 
 /// Generate LLVM to print a int value
-pub fn print_int_value<'ctx>(variable: &StructValue<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
+pub fn print_int_value<'ctx>(variable: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
 
     // Get the variable value as int
-    let value = cg.builder.build_extract_value(*variable, 1, "value_field")?.into_int_value();
+    let value = cg.get_variable_value(*variable)?.into_int_value();
 
     // Call printf("%d", value)
     cg.builder.build_call(
@@ -40,10 +40,10 @@ pub fn print_int_value<'ctx>(variable: &StructValue<'ctx>, cg: &CodeGen<'ctx>) -
 }
 
 /// Generate LLVM to print a String value
-pub fn print_string_value<'ctx>(variable: &StructValue<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
+pub fn print_string_value<'ctx>(variable: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
     let ptr_type = cg.context.ptr_type(AddressSpace::default());
 
-    let value_generic = cg.builder.build_extract_value(*variable, 1, "value_field")?;
+    let value_generic = cg.get_variable_value(*variable)?;
 
     let value = match value_generic.is_int_value() {
         true => cg.builder.build_int_to_ptr(value_generic.into_int_value(), ptr_type, "str_ptr")?,
@@ -56,9 +56,9 @@ pub fn print_string_value<'ctx>(variable: &StructValue<'ctx>, cg: &CodeGen<'ctx>
 }
 
 /// Generate LLVM to print a Bool value
-pub fn print_bool_value<'ctx>(variable: &StructValue<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
+pub fn print_bool_value<'ctx>(variable: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
 
-    let value = cg.builder.build_extract_value(*variable, 1, "value_field")?.into_int_value();
+    let value = cg.get_variable_value(*variable)?.into_int_value();
 
     let zero = cg.context.i64_type().const_zero();
     let cdt = cg.builder.build_int_compare(inkwell::IntPredicate::EQ, value, zero, "cmp")?;
@@ -92,13 +92,13 @@ pub fn print_bool_value<'ctx>(variable: &StructValue<'ctx>, cg: &CodeGen<'ctx>) 
 }
 
 /// Generate LLVM to print a List value
-pub fn print_list_value<'ctx>(value: &StructValue<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
+pub fn print_list_value<'ctx>(value: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
     smolpp_panic(cg, RuntimeErrorMsg::PanicNotImplemented, &[])?;
     return Ok(());
 }
 
 /// Generate LLVM to print any value.
-pub fn print_any_value<'ctx>(value: &StructValue<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
+pub fn print_any_value<'ctx>(value: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
     cg.builder.build_call(get_internal_func!(cg, InternalFuctions::GenericPrint), &[value.as_basic_value_enum().into()], "generic_print_call")?;
     return Ok(());
 }
@@ -123,7 +123,7 @@ pub fn init_internal_generic_print_function<'ctx>(cg: &mut CodeGen<'ctx>) -> Res
 
     let param = function.get_first_param().unwrap().into_struct_value();
 
-    let type_field = cg.builder.build_extract_value(param, 0, "type_field")?.into_int_value();
+    let type_field = cg.get_variable_type(param)?;
 
     // Create a switch based on the type field
     let case_none = cg.context.append_basic_block(function, "case_none");

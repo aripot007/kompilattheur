@@ -119,33 +119,6 @@ impl<'ctx> CodeGen<'ctx> {
         self.init_dynamic_type();
     }
 
-    fn init_dynamic_type(&mut self) {
-        let context = self.context;
-
-        let var_type_discriminant = context.i8_type();
-
-        let i64_type = context.i64_type();
-
-        let ptr_size = self
-            .target_machine
-            .get_target_data()
-            .get_pointer_byte_size(None)
-            * 8;
-
-        // Choose the largest type for the union
-        let union_size = i64_type.get_bit_width().max(ptr_size);
-        let var_value = context.custom_width_int_type(union_size);
-
-        // Create the struct type
-        self.smolpp_types.dynamic_type.set_body(
-            &[
-                var_type_discriminant.into(), // char type
-                var_value.into(),             // Simulated union (either u64 or pointer)
-            ],
-            false,
-        );
-    }
-
     fn get_linker(&self) -> Result<String, String> {
         let dynamic_linker = get_dynamic_linker(&self.target_machine);
         println!("Dynamic linker: {}", dynamic_linker);

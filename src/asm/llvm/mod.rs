@@ -5,6 +5,7 @@ use inkwell::builder::BuilderError;
 pub(super) use print::*;
 mod panic;
 use thiserror::Error;
+pub mod smolvar;
 
 #[derive(Error, Debug, PartialEq, Eq)]
 pub enum LLVMCodegenError {

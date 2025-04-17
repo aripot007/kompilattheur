@@ -1,6 +1,4 @@
-use inkwell::values::StructValue;
-
-use crate::{asm::{codegen::CodeGen, llvm::{print::*, LLVMCodegenError}}, ast::nodes::{AstNode, Block, Expression, Statement}, common::diagnostic::{Diagnostic, DiagnosticGravity}, typing::{Type, Typeable}};
+use crate::{asm::{codegen::CodeGen, llvm::{print::*, smolvar::SmolVar, LLVMCodegenError}}, ast::nodes::{AstNode, Block, Expression, Statement}, common::diagnostic::{Diagnostic, DiagnosticGravity}, typing::{Type, Typeable}};
 use super::llvm_compute_expr;
 
 pub fn llvm_from_block<'ctx>(block: &Block, cg: &mut CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
@@ -34,7 +32,7 @@ pub fn llvm_from_block<'ctx>(block: &Block, cg: &mut CodeGen<'ctx>) -> Result<()
 
 fn llvm_from_print<'ctx>(expr: &Expression, cg: &mut CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
 
-    let expr_value: StructValue<'ctx> = llvm_compute_expr(expr, cg)?;
+    let expr_value: SmolVar<'ctx> = llvm_compute_expr(expr, cg)?;
 
     match expr.get_type() {
         Type::None => print_none_value(&expr_value, cg)?,

@@ -1,5 +1,5 @@
-use inkwell::values::StructValue;
 
+use crate::asm::llvm::smolvar::SmolVar;
 use crate::ast::nodes::{AstNode, FactorKind};
 use crate::{asm::codegen::CodeGen, ast::nodes::Factor, common::diagnostic::Diagnostic, typing::Type};
 use crate::asm::llvm::LLVMCodegenError;
@@ -22,7 +22,7 @@ macro_rules! const_variable {
     };
 }
 
-pub fn llvm_compute_factor<'ctx>(factor: &Factor, cg: &mut CodeGen<'ctx>) -> Result<StructValue<'ctx>, LLVMCodegenError> {
+pub fn llvm_compute_factor<'ctx>(factor: &Factor, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
 
     match &factor.kind {
         FactorKind::String(file_element) => return llvm_compute_string_value(&file_element.element, cg),
@@ -41,35 +41,35 @@ pub fn llvm_compute_factor<'ctx>(factor: &Factor, cg: &mut CodeGen<'ctx>) -> Res
     return Err(LLVMCodegenError::Unimplemented(factor.get_string_repr()));
 }
 
-fn llvm_compute_string_value<'ctx>(s: &String, cg: &mut CodeGen<'ctx>) -> Result<StructValue<'ctx>, LLVMCodegenError> {
+fn llvm_compute_string_value<'ctx>(s: &String, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
     
     let str_const_ptr = cg.builder.build_global_string_ptr(&s, "string_const")?;
 
     return Ok(const_variable!(cg, Type::String, str_const_ptr.as_pointer_value()));
 }
 
-fn llvm_compute_int_value<'ctx>(value: u64, cg: &mut CodeGen<'ctx>) -> Result<StructValue<'ctx>, LLVMCodegenError> {
+fn llvm_compute_int_value<'ctx>(value: u64, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
 
     let int_const = cg.context.i64_type().const_int(value, false);
 
     return Ok(const_variable!(cg, Type::Int, int_const));
 }
 
-fn llvm_compute_bool_value<'ctx>(value: bool, cg: &mut CodeGen<'ctx>) -> Result<StructValue<'ctx>, LLVMCodegenError> {
+fn llvm_compute_bool_value<'ctx>(value: bool, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
 
     let int_const = cg.context.i64_type().const_int(value as u64, false);
 
     return Ok(const_variable!(cg, Type::Bool, int_const));
 }
 
-fn llvm_compute_none_value<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<StructValue<'ctx>, LLVMCodegenError> {
+fn llvm_compute_none_value<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
 
     let val = cg.context.i64_type().const_zero();
 
     return Ok(const_variable!(cg, Type::None, val));
 }
 
-fn llvm_compute_list_value<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<StructValue<'ctx>, LLVMCodegenError> {
+fn llvm_compute_list_value<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
 
     let val = cg.context.i64_type().const_zero();
 

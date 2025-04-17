@@ -37,6 +37,11 @@ pub enum RuntimeErrorMsg {
 
     /// Used when we generate something that is not yet implemented
     PanicNotImplemented,
+
+    /// Used when the type of a variable is not what was expected
+    /// 
+    /// Takes a string message as an argument
+    TypeError,
 }
 
 macro_rules! internal_global_prefix {
@@ -62,6 +67,7 @@ impl Into<&'static str> for RuntimeErrorMsg {
         match self {
             RuntimeErrorMsg::PanicInvalidInternalTypeValueFormatString => internal_global_prefix!("panic_invalid_type_fmt_string"),
             RuntimeErrorMsg::PanicNotImplemented => internal_global_prefix!("panic_unimplemented"),
+            RuntimeErrorMsg::TypeError => internal_global_prefix!("error_type"),
         }
     }
 }
@@ -100,4 +106,5 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
     // Error messages
     create_global_string(RuntimeErrorMsg::PanicInvalidInternalTypeValueFormatString, "PANIC: Invalid internal type value %d\n", cg);
     create_global_string(RuntimeErrorMsg::PanicNotImplemented, "PANIC: LLVM not implemented yet\n", cg);
+    create_global_string(RuntimeErrorMsg::TypeError, "TypeError: %s\n", cg);
 }

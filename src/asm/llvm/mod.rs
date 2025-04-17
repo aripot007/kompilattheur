@@ -5,6 +5,8 @@ use inkwell::builder::BuilderError;
 pub(super) use print::*;
 mod panic;
 use thiserror::Error;
+mod assert_type;
+pub use assert_type::*;
 pub mod smolvar;
 
 #[derive(Error, Debug, PartialEq, Eq)]

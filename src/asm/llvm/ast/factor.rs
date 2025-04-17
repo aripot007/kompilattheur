@@ -40,7 +40,7 @@ fn llvm_compute_int_value<'ctx>(value: u64, cg: &mut CodeGen<'ctx>) -> Result<Sm
 
 fn llvm_compute_bool_value<'ctx>(value: bool, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
 
-    let int_const = cg.context.i64_type().const_int(value as u64, false);
+    let int_const = cg.context.bool_type().const_int(value as u64, false);
 
     return Ok(cg.create_variable(Type::Bool, int_const));
 }

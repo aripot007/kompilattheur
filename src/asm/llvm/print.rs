@@ -59,9 +59,10 @@ pub fn print_string_value<'ctx>(variable: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) ->
 pub fn print_bool_value<'ctx>(variable: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
 
     let value = cg.get_variable_value(*variable)?.into_int_value();
+    let bool_value = cg.builder.build_int_cast(value, cg.context.bool_type(), "value_as_bool")?;
 
-    let zero = cg.context.i64_type().const_zero();
-    let cdt = cg.builder.build_int_compare(inkwell::IntPredicate::EQ, value, zero, "cmp")?;
+    let false_val = cg.context.bool_type().const_zero();
+    let cdt = cg.builder.build_int_compare(inkwell::IntPredicate::NE, bool_value, false_val, "cmp")?;
 
     // Create basic blocks if-else
     let then_block = cg.context.append_basic_block(cg.current_function, "then");

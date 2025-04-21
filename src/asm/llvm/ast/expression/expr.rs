@@ -4,7 +4,7 @@ use super::{super::llvm_compute_factor, llvm_compute_binop, llvm_compute_unop};
 pub fn llvm_compute_expr<'ctx>(expr: &Expression, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
 
     match &expr.kind {
-        ExpressionKind::BINOP(e1, op, e2) => return llvm_compute_binop(e1, op, e2, cg),
+        ExpressionKind::BINOP(e1, op, e2) => return llvm_compute_binop(e1, op, e2, cg, expr),
         ExpressionKind::UNOP(op, e1) => return llvm_compute_unop(op, e1, cg),
         ExpressionKind::Factor(factor) => return llvm_compute_factor(factor, cg),
         ExpressionKind::NotImplemented => (),

@@ -1,6 +1,4 @@
-use inkwell::values::StructValue;
-
-use crate::{asm::{codegen::CodeGen, llvm::{assert_type, smolvar::SmolVar, LLVMCodegenError}}, ast::nodes::{Expression, ExpressionKind, UnOp}, typing::Type};
+use crate::{asm::{codegen::CodeGen, llvm::{assert_type, smolvar::SmolVar, LLVMCodegenError}}, ast::nodes::{Expression, UnOp}, typing::Type};
 
 use super::llvm_compute_expr;
 

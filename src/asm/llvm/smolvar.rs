@@ -66,14 +66,11 @@ impl<'ctx> CodeGen<'ctx> {
         return Ok(res.into_struct_value());
     }
 
-    pub fn create_variable<BV>(&self, t: Type, value: BV) -> SmolVar<'ctx> where BV: BasicValue<'ctx> {
-        let var_type_discr = t.get_bitmask();
-        let var_type_discr_val = self.context.i8_type().const_int(var_type_discr as u64, false);
-        self.smolpp_types.dynamic_type.const_named_struct(
-            &[
-                var_type_discr_val.into(),
-                value.as_basic_value_enum(),
-            ]
-        )
+    pub fn create_variable<BV>(&self, t: Type, value: BV) -> Result<SmolVar<'ctx>, LLVMCodegenError> where BV: BasicValue<'ctx> {
+        let undef = self.smolpp_types.dynamic_type.get_undef();
+        let var_type_discr_val = self.context.i8_type().const_int(t.get_bitmask() as u64, false);
+        let with_type = self.builder.build_insert_value(undef, var_type_discr_val, 0, "with_type")?.into_struct_value();
+        let full_struct = self.builder.build_insert_value(with_type, value.as_basic_value_enum(), 1, "with_value")?.into_struct_value();
+        return Ok(full_struct);
     }
 }

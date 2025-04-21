@@ -1,4 +1,4 @@
-use inkwell::{basic_block::BasicBlock, values::{IntValue, StructValue}, IntPredicate};
+use inkwell::{basic_block::BasicBlock, values::IntValue, IntPredicate};
 
 use crate::{asm::{codegen::CodeGen, internal_global_constants::RuntimeErrorMsg, llvm::panic::smolpp_panic}, typing::Type};
 
@@ -43,7 +43,8 @@ pub fn assert_type_oneof<'ctx>(types: &[Type], value: &SmolVar<'ctx>, cg: &CodeG
     let type_field = cg.get_variable_type(*value)?;
     let expected_type = cg.context.i8_type().const_int(expected_bitmask as u64, false);
 
-    let cdt = cg.builder.build_and(expected_type, type_field, format!("assert_type_oneof_{}", expected_types_str).as_str())?;
+    let and_res = cg.builder.build_and(expected_type, type_field, format!("assert_type_oneof_{}", expected_types_str).as_str())?;
+    let cdt =  cg.builder.build_int_compare(IntPredicate::NE, cg.context.i8_type().const_zero(), and_res, "convert_to_bool")?;
 
     return create_assert_type_branch(cdt, cg, msg);
 }
@@ -57,17 +58,11 @@ fn create_assert_type_branch<'ctx>(cdt: IntValue<'ctx>, cg: &CodeGen<'ctx>, msg:
     let msg_str = cg.context.const_string(msg.as_bytes(), true);
 
     // Create panic block and continuation block
-    let then_block = cg.context.append_basic_block(cg.current_function, "ok");
+    let ok_block = cg.context.append_basic_block(cg.current_function, "ok");
     let panic_block = cg.context.append_basic_block(cg.current_function, "panic");
-    let merge_block = cg.context.append_basic_block(cg.current_function, "end");
 
     // Conditional branch
-    cg.builder.build_conditional_branch(cdt, then_block, panic_block)?;
-
-    // "Then" block : type is ok
-    cg.builder.position_at_end(then_block);
-    // Go back to the main execution
-    cg.builder.build_unconditional_branch(merge_block)?;
+    cg.builder.build_conditional_branch(cdt, ok_block, panic_block)?;
 
     // "Panic" block : type is not the same
     cg.builder.position_at_end(panic_block);
@@ -75,9 +70,24 @@ fn create_assert_type_branch<'ctx>(cdt: IntValue<'ctx>, cg: &CodeGen<'ctx>, msg:
     // End execution
     cg.builder.build_unreachable()?;
 
-    // Merge block
-    cg.builder.position_at_end(merge_block);
+    // "Then" block : type is ok
+    cg.builder.position_at_end(ok_block);
 
-    return Ok(merge_block);
+    return Ok(ok_block);
 }
 
+
+/// Generate LLVM to assert that the type of an expression is
+/// compatible with its destination at runtime
+/// This will stop the program if the runtime type of `value` is not
+/// compatible with the runtime type of `destination`
+pub fn assert_assignation_type<'ctx>(destination: &SmolVar<'ctx>, value: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> Result<BasicBlock<'ctx>, LLVMCodegenError> {
+
+    let value_type_field = cg.get_variable_type(*value)?;
+    let dest_type_field = cg.get_variable_type(*destination)?;
+
+    let and_res = cg.builder.build_and(dest_type_field, value_type_field, "assert_type_assign")?;
+    let cdt =  cg.builder.build_int_compare(IntPredicate::NE, cg.context.i8_type().const_zero(), and_res, "convert_to_bool")?;
+
+    return create_assert_type_branch(cdt, cg, String::from("Incompatible types during assignation"));
+}

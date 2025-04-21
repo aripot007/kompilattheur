@@ -10,7 +10,11 @@ pub type SymbolTableRef = Rc<RefCell<Node<SymbolTable>>>;
 
 #[derive(Debug, Clone)]
 pub enum Symbol {
-    Variable{offset: usize},
+    Variable{
+        offset: usize,
+        /// Id of the pointer in the codegen context
+        ptr_id: Option<usize>,
+    },
     Parameter{offset: usize},
     Function(),
 }
@@ -282,9 +286,9 @@ fn set_symbols_offset_rec(root: SymbolTableRef) -> SymbolTableRef {
         
         for (key, symbol) in symbol_table.table.iter() {
             match symbol.symbol {
-                Symbol::Variable { offset: _ } => {
+                Symbol::Variable { offset: _, ptr_id: _ } => {
                     let mut symbol_clone = symbol.clone();
-                    symbol_clone.symbol = Symbol::Variable { offset: offset_var };
+                    symbol_clone.symbol = Symbol::Variable { offset: offset_var, ptr_id: None };
                     offset_var += symbol_clone.symbol_type.get_decalage();
                     updates.push((*key, symbol_clone));
                 },
@@ -324,7 +328,7 @@ mod tests {
     #[test]
     fn test_symbol_table() {
         let mut symbol_table = SymbolTable::new(0, 0);
-        symbol_table.update_symbol(1, SymbolTableElement { symbol: Symbol::Variable{offset: 8}, name: String::from("var1"), symbol_type: Type::Int });
+        symbol_table.update_symbol(1, SymbolTableElement { symbol: Symbol::Variable{offset: 8, ptr_id: None}, name: String::from("var1"), symbol_type: Type::Int });
         symbol_table.update_symbol(2, SymbolTableElement { symbol: Symbol::Parameter{offset: 8}, name: String::from("param1"), symbol_type: Type::Any });
 
         print!("{}", symbol_table);
@@ -437,7 +441,7 @@ flowchart TD
         let root = init_symbol_table();
         let node = root.clone();
         node.borrow_mut().insert_symbol(1, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func2"), symbol_type: Type::Any });
-        node.borrow_mut().insert_symbol(2, SymbolTableElement { symbol: Symbol::Variable{offset: 8}, name: String::from("var2"), symbol_type: Type::Any });
+        node.borrow_mut().insert_symbol(2, SymbolTableElement { symbol: Symbol::Variable{offset: 8, ptr_id: None}, name: String::from("var2"), symbol_type: Type::Any });
 
         let node = enter_scope(node);
         node.borrow_mut().insert_symbol(3, SymbolTableElement { symbol: Symbol::Parameter{offset: 8}, name: String::from("param2"), symbol_type: Type::Any });
@@ -465,16 +469,16 @@ flowchart TD
         let root = init_symbol_table();
         let node = root.clone();
         node.borrow_mut().insert_symbol(1, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func1"), symbol_type: Type::Any });
-        node.borrow_mut().insert_symbol(2, SymbolTableElement { symbol: Symbol::Variable{offset: 8}, name: String::from("var1"), symbol_type: Type::Any });
+        node.borrow_mut().insert_symbol(2, SymbolTableElement { symbol: Symbol::Variable{offset: 8, ptr_id: None}, name: String::from("var1"), symbol_type: Type::Any });
 
         let node = enter_scope(node);
         node.borrow_mut().insert_symbol(3, SymbolTableElement { symbol: Symbol::Parameter{offset: 8}, name: String::from("param1"), symbol_type: Type::Any });
-        node.borrow_mut().insert_symbol(4, SymbolTableElement { symbol: Symbol::Variable{offset: 8}, name: String::from("var2"), symbol_type: Type::Any });
+        node.borrow_mut().insert_symbol(4, SymbolTableElement { symbol: Symbol::Variable{offset: 8, ptr_id: None}, name: String::from("var2"), symbol_type: Type::Any });
         node.borrow_mut().insert_symbol(5, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func2"), symbol_type: Type::Any });
 
         let node = enter_scope(node);
         node.borrow_mut().insert_symbol(6, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func3"), symbol_type: Type::Any });
-        node.borrow_mut().insert_symbol(7, SymbolTableElement { symbol: Symbol::Variable{offset: 8}, name: String::from("var3"), symbol_type: Type::Any });
+        node.borrow_mut().insert_symbol(7, SymbolTableElement { symbol: Symbol::Variable{offset: 8, ptr_id: None}, name: String::from("var3"), symbol_type: Type::Any });
 
         let node = exit_scope(node);
         node.borrow_mut().insert_symbol(8, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func4"), symbol_type: Type::Any });
@@ -485,7 +489,7 @@ flowchart TD
         node.borrow_mut().insert_symbol(9, SymbolTableElement { symbol: Symbol::Function(), name: String::from("func5"), symbol_type: Type::Any });
 
         let node = enter_scope(node);
-        node.borrow_mut().insert_symbol(10, SymbolTableElement { symbol: Symbol::Variable{offset:8}, name: String::from("var4"), symbol_type: Type::Any });
+        node.borrow_mut().insert_symbol(10, SymbolTableElement { symbol: Symbol::Variable{offset:8, ptr_id: None}, name: String::from("var4"), symbol_type: Type::Any });
 
         let node = exit_scope(node);
 

@@ -98,7 +98,7 @@ fn generate_from_block(block: &mut nodes::Block, table: SymbolTableRef, context:
                                 Some(_) => (),
                                 None => {
                                     // Symbol does not exist, insert it
-                                    context.add_symbol(&id_element, Symbol::Variable{offset: 0}, value_type);
+                                    context.add_symbol(&id_element, Symbol::Variable{offset: 0, ptr_id: None}, value_type);
                                 }
                             }
                         }
@@ -112,7 +112,7 @@ fn generate_from_block(block: &mut nodes::Block, table: SymbolTableRef, context:
                         context.symbol_table = loop_table.clone();
                 
                         let var_element = SymbolTableElement {
-                            symbol: Symbol::Variable {offset: 0},
+                            symbol: Symbol::Variable {offset: 0, ptr_id: None},
                             name: var_name,
                             symbol_type: Type::Any
                         };

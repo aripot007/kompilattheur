@@ -5,7 +5,7 @@ use inkwell::module::Module;
 use inkwell::targets::{CodeModel, InitializationConfig, RelocMode, Target, TargetMachine};
 use inkwell::targets::{FileType, TargetTriple};
 use inkwell::types::StructType;
-use inkwell::values::FunctionValue;
+use inkwell::values::{FunctionValue, PointerValue};
 use inkwell::OptimizationLevel;
 use tempfile::NamedTempFile;
 
@@ -13,6 +13,7 @@ use std::path::{Path, PathBuf};
 
 use crate::ast::nodes::Root;
 use crate::common::diagnostic::Diagnostic;
+use crate::common::symbol_table::SymbolTableRef;
 
 use super::dynamic_linker::get_dynamic_linker;
 use super::llvm::llvm_from_root;
@@ -29,6 +30,8 @@ pub struct CodeGen<'ctx> {
     pub current_function: FunctionValue<'ctx>,
     pub current_main_block: BasicBlock<'ctx>,
     pub main_function: FunctionValue<'ctx>,
+    pointers_table: Vec<PointerValue<'ctx>>,
+    pub current_symbol_table: Option<SymbolTableRef>,
 }
 
 pub struct CodeGenTypedefs<'ctx> {
@@ -103,6 +106,8 @@ impl<'ctx> CodeGen<'ctx> {
             smolpp_types: CodeGenTypedefs {
                 dynamic_type: context.opaque_struct_type("dynamic_type_struct"),
             },
+            pointers_table: Vec::new(),
+            current_symbol_table: None,
         };
 
         codegen.module.set_triple(&target_triple);
@@ -313,4 +318,17 @@ impl<'ctx> CodeGen<'ctx> {
             eprintln!("Error during LLVM generation");
         }
     }
+
+    /// Register a pointer in the pointer table
+    pub fn register_pointer(&mut self, ptr: PointerValue<'ctx>) -> usize {
+        let id = self.pointers_table.len();
+        self.pointers_table.push(ptr);
+        return id;
+    }
+
+    /// Get a pointer from the pointer table
+    pub fn get_pointer(&self, id: usize) -> Option<&PointerValue<'ctx>> {
+        return self.pointers_table.get(id);
+    }
+    
 }

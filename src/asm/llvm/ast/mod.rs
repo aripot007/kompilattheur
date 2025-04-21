@@ -6,3 +6,5 @@ mod expression;
 pub use expression::llvm_compute_expr;
 mod factor;
 pub use factor::llvm_compute_factor;
+mod assign;
+pub use assign::llvm_from_assign;

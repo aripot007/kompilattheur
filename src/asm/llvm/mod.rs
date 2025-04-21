@@ -15,4 +15,6 @@ pub enum LLVMCodegenError {
     Unimplemented(String),
     #[error("Builder Error : {0:?}")]
     BuilderError(#[from] BuilderError),
+    #[error("Invalid Destination expression : {0}")]
+    InvalidDestination(String),
 }

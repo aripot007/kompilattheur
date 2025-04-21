@@ -10,7 +10,7 @@ pub fn compute_mult_unchecked<'ctx>(x: SmolVar<'ctx>, y: SmolVar<'ctx>, cg: &mut
     let x_val = cg.get_variable_value(x)?.into_int_value();
     let y_val = cg.get_variable_value(y)?.into_int_value();
     let res = cg.builder.build_int_mul(x_val, y_val, "mult")?;
-    return Ok(cg.create_variable(Type::Int, res));
+    return cg.create_variable(Type::Int, res);
 }
 
 pub fn compute_div<'ctx>(x: SmolVar<'ctx>, y: SmolVar<'ctx>, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
@@ -23,7 +23,7 @@ pub fn compute_div_unchecked<'ctx>(x: SmolVar<'ctx>, y: SmolVar<'ctx>, cg: &mut 
     let x_val = cg.get_variable_value(x)?.into_int_value();
     let y_val = cg.get_variable_value(y)?.into_int_value();
     let res = cg.builder.build_int_signed_div(x_val, y_val, "div")?;
-    return Ok(cg.create_variable(Type::Int, res));
+    return cg.create_variable(Type::Int, res);
 }
 
 pub fn compute_mod<'ctx>(x: SmolVar<'ctx>, y: SmolVar<'ctx>, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
@@ -36,7 +36,7 @@ pub fn compute_mod_unchecked<'ctx>(x: SmolVar<'ctx>, y: SmolVar<'ctx>, cg: &mut 
     let x_val = cg.get_variable_value(x)?.into_int_value();
     let y_val = cg.get_variable_value(y)?.into_int_value();
     let res = cg.builder.build_int_signed_rem(x_val, y_val, "mod")?;
-    return Ok(cg.create_variable(Type::Int, res));
+    return cg.create_variable(Type::Int, res);
 }
 
 pub fn compute_sub<'ctx>(x: SmolVar<'ctx>, y: SmolVar<'ctx>, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
@@ -49,7 +49,7 @@ pub fn compute_sub_unchecked<'ctx>(x: SmolVar<'ctx>, y: SmolVar<'ctx>, cg: &mut 
     let x_val = cg.get_variable_value(x)?.into_int_value();
     let y_val = cg.get_variable_value(y)?.into_int_value();
     let res = cg.builder.build_int_sub(x_val, y_val, "sub")?;
-    return Ok(cg.create_variable(Type::Int, res));
+    return cg.create_variable(Type::Int, res);
 }
 
 pub fn compute_add<'ctx>(x: SmolVar<'ctx>, y: SmolVar<'ctx>, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
@@ -62,5 +62,5 @@ pub fn compute_add_unchecked<'ctx>(x: SmolVar<'ctx>, y: SmolVar<'ctx>, cg: &mut 
     let x_val = cg.get_variable_value(x)?.into_int_value();
     let y_val = cg.get_variable_value(y)?.into_int_value();
     let res = cg.builder.build_int_add(x_val, y_val, "add")?;
-    return Ok(cg.create_variable(Type::Int, res));
+    return cg.create_variable(Type::Int, res);
 }

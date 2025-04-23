@@ -1,28 +1,14 @@
-use inkwell::values::StructValue;
 
-use crate::ast::nodes::FactorKind;
+use crate::asm::llvm::smolvar::SmolVar;
+use crate::ast::nodes::{AstNode, FactorKind};
+use crate::common::symbol_table::{get_symbol, Symbol, SymbolTableElement};
+use crate::common::types::{FileElement, IdToken};
 use crate::{asm::codegen::CodeGen, ast::nodes::Factor, common::diagnostic::Diagnostic, typing::Type};
 use crate::asm::llvm::LLVMCodegenError;
 
 use super::llvm_compute_expr;
 
-/// Create a constant variable with the given type and value
-macro_rules! const_variable {
-    ($cg: ident, $t: expr, $v: expr) => {
-        {
-            let var_type_discr = $t.get_discriminant();
-            let var_type_discr_val = $cg.context.i8_type().const_int(var_type_discr as u64, false);
-            $cg.smolpp_types.dynamic_type.const_named_struct(
-                &[
-                    var_type_discr_val.into(),
-                    $v.into(),
-                ]
-            )
-        }
-    };
-}
-
-pub fn llvm_compute_factor<'ctx>(factor: &Factor, cg: &mut CodeGen<'ctx>) -> Result<StructValue<'ctx>, LLVMCodegenError> {
+pub fn llvm_compute_factor<'ctx>(factor: &Factor, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
 
     match &factor.kind {
         FactorKind::String(file_element) => return llvm_compute_string_value(&file_element.element, cg),
@@ -31,48 +17,61 @@ pub fn llvm_compute_factor<'ctx>(factor: &Factor, cg: &mut CodeGen<'ctx>) -> Res
         FactorKind::False(_) => return llvm_compute_bool_value(false, cg),
         FactorKind::None(_) => return llvm_compute_none_value(cg),
         FactorKind::Expr(expr) => return llvm_compute_expr(expr, cg),
+        FactorKind::Identifier(FileElement { element: id_token, .. }) => return llvm_compute_identifier_value(id_token, cg),
         FactorKind::List(_) => return llvm_compute_list_value(cg),
-        FactorKind::Identifier(_)
-        | FactorKind::Call { identifier: _, args: _, localization: _ } => (),
+        FactorKind::Call { identifier: _, args: _, localization: _ } => (),
     }
 
     cg.errors.push(Diagnostic::unimplemented_llvm(factor));
    
-    return Err(());
+    return Err(LLVMCodegenError::Unimplemented(factor.get_string_repr()));
 }
 
-fn llvm_compute_string_value<'ctx>(s: &String, cg: &mut CodeGen<'ctx>) -> Result<StructValue<'ctx>, LLVMCodegenError> {
+fn llvm_compute_string_value<'ctx>(s: &String, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
     
-    let str_const_ptr = cg.builder.build_global_string_ptr(&s, "string_const").unwrap();
+    let str_const_ptr = cg.builder.build_global_string_ptr(&s, "string_const")?;
 
-    return Ok(const_variable!(cg, Type::String, str_const_ptr.as_pointer_value()));
+    return cg.create_variable(Type::String, str_const_ptr.as_pointer_value());
 }
 
-fn llvm_compute_int_value<'ctx>(value: u64, cg: &mut CodeGen<'ctx>) -> Result<StructValue<'ctx>, LLVMCodegenError> {
+fn llvm_compute_int_value<'ctx>(value: u64, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
+    let int_const = cg.context.i64_type().const_int(value, true);
 
-    let int_const = cg.context.i64_type().const_int(value, false);
-
-    return Ok(const_variable!(cg, Type::Int, int_const));
+    return cg.create_variable(Type::Int, int_const);
 }
 
-fn llvm_compute_bool_value<'ctx>(value: bool, cg: &mut CodeGen<'ctx>) -> Result<StructValue<'ctx>, LLVMCodegenError> {
+fn llvm_compute_bool_value<'ctx>(value: bool, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
 
-    let int_const = cg.context.i64_type().const_int(value as u64, false);
+    let int_const = cg.context.bool_type().const_int(value as u64, false);
 
-    return Ok(const_variable!(cg, Type::Bool, int_const));
+    return cg.create_variable(Type::Bool, int_const);
 }
 
-fn llvm_compute_none_value<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<StructValue<'ctx>, LLVMCodegenError> {
+fn llvm_compute_none_value<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
 
     let val = cg.context.i64_type().const_zero();
 
-    return Ok(const_variable!(cg, Type::None, val));
+    return cg.create_variable(Type::None, val);
 }
 
-fn llvm_compute_list_value<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<StructValue<'ctx>, LLVMCodegenError> {
+fn llvm_compute_list_value<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
 
     let val = cg.context.i64_type().const_zero();
 
-    return Ok(const_variable!(cg, Type::List, val));
+    return cg.create_variable(Type::List, val);
 }
 
+fn llvm_compute_identifier_value<'ctx>(id_token: &IdToken, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
+
+    let symbol: SymbolTableElement = get_symbol(cg.current_symbol_table.clone().unwrap(), &id_token.id).1.unwrap();
+    let val_ptr_id = match symbol.symbol {
+        Symbol::Variable { ptr_id, .. } => ptr_id.unwrap(),
+        Symbol::Parameter { .. } => todo!("Add param ptr_id"),
+        _ => panic!()
+    };
+    let val_ptr = *cg.get_pointer(val_ptr_id).unwrap();
+
+    let val = cg.builder.build_load(cg.smolpp_types.dynamic_type, val_ptr, format!("load_{}", id_token.name).as_str())?;
+
+    return Ok(val.into_struct_value());
+}

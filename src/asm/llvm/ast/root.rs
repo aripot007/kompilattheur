@@ -9,7 +9,7 @@ pub fn llvm_from_root(root: &Root, cg: &mut CodeGen) -> Result<(), LLVMCodegenEr
     // Return 0
     let i32_type = cg.context.i32_type();
     let ret_val = i32_type.const_int(0, false);
-    cg.builder.build_return(Some(&ret_val)).unwrap();
+    cg.builder.build_return(Some(&ret_val))?;
 
     return Ok(());
 }

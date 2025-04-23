@@ -1,4 +1,4 @@
-use super::{codegen::CodeGen, llvm::init_internal_generic_print_function};
+use super::{codegen::CodeGen, llvm::{init_internal_generic_print_function, LLVMCodegenError}};
 
 pub enum InternalFuctions {
     Main,
@@ -28,7 +28,7 @@ pub(super) use internal_function_prefix;
 impl Into<&'static str> for InternalFuctions {
     fn into(self) -> &'static str {
         match self {
-            InternalFuctions::Main => internal_function_prefix!("main"),
+            InternalFuctions::Main => "main",
             InternalFuctions::GenericPrint => internal_function_prefix!("generic_print"),
             InternalFuctions::Puts => "puts",
             InternalFuctions::Printf => "printf",
@@ -37,7 +37,7 @@ impl Into<&'static str> for InternalFuctions {
     }
 }
 
-pub(super) fn init_internal_functions<'ctx>(cg: &mut CodeGen<'ctx>) {
+pub(super) fn init_internal_functions<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
     
     //
     // syscalls (MUST be initialized first, used by other internal functions)
@@ -66,6 +66,7 @@ pub(super) fn init_internal_functions<'ctx>(cg: &mut CodeGen<'ctx>) {
     //
 
     // generic_print
-    init_internal_generic_print_function(cg);
+    init_internal_generic_print_function(cg)?;
 
+    return Ok(());
 }

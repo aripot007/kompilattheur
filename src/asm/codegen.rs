@@ -2,17 +2,18 @@ use inkwell::basic_block::BasicBlock;
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::module::Module;
-use inkwell::targets::{FileType, TargetTriple};
 use inkwell::targets::{CodeModel, InitializationConfig, RelocMode, Target, TargetMachine};
+use inkwell::targets::{FileType, TargetTriple};
 use inkwell::types::StructType;
-use inkwell::values::FunctionValue;
+use inkwell::values::{FunctionValue, PointerValue};
 use inkwell::OptimizationLevel;
 use tempfile::NamedTempFile;
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use crate::ast::nodes::Root;
 use crate::common::diagnostic::Diagnostic;
+use crate::common::symbol_table::SymbolTableRef;
 
 use super::dynamic_linker::get_dynamic_linker;
 use super::llvm::llvm_from_root;
@@ -29,6 +30,8 @@ pub struct CodeGen<'ctx> {
     pub current_function: FunctionValue<'ctx>,
     pub current_main_block: BasicBlock<'ctx>,
     pub main_function: FunctionValue<'ctx>,
+    pointers_table: Vec<PointerValue<'ctx>>,
+    pub current_symbol_table: Option<SymbolTableRef>,
 }
 
 pub struct CodeGenTypedefs<'ctx> {
@@ -36,7 +39,11 @@ pub struct CodeGenTypedefs<'ctx> {
 }
 
 impl<'ctx> CodeGen<'ctx> {
-    pub fn create(context: &'ctx Context, target_triple: &TargetTriple) -> Result<Self, String> {
+    pub fn create(
+        context: &'ctx Context,
+        target_triple: &TargetTriple,
+        source_file: &PathBuf,
+    ) -> Result<Self, String> {
         let config = InitializationConfig {
             asm_parser: true,
             asm_printer: true,
@@ -45,7 +52,7 @@ impl<'ctx> CodeGen<'ctx> {
             info: true,
             machine_code: true,
         };
-        Target::initialize_native(&config).map_err(|_| "Failed to initialize native target")?;
+        Target::initialize_native(&config).map_err(|s| format!("Failed to initialize native target : {}", s))?;
 
         let target = Target::from_triple(target_triple)
             .map_err(|e| format!("Failed to get target from triple: {}", e))?;
@@ -61,7 +68,20 @@ impl<'ctx> CodeGen<'ctx> {
             )
             .ok_or_else(|| "Failed to create target machine".to_string())?;
 
-        let module = context.create_module("smolpp");
+        let module = context.create_module(
+            source_file
+                .file_name()
+                .unwrap_or(std::ffi::OsStr::new("smolpp"))
+                .to_str()
+                .unwrap_or("smolpp"),
+        );
+        module.set_source_file_name(
+            source_file
+                .file_name()
+                .unwrap_or(std::ffi::OsStr::new("smolpp"))
+                .to_str()
+                .unwrap_or("smolpp"),
+        );
 
         // Add main function entry point
         let i32_type = context.i32_type();
@@ -86,46 +106,22 @@ impl<'ctx> CodeGen<'ctx> {
             smolpp_types: CodeGenTypedefs {
                 dynamic_type: context.opaque_struct_type("dynamic_type_struct"),
             },
+            pointers_table: Vec::new(),
+            current_symbol_table: None,
         };
 
         codegen.module.set_triple(&target_triple);
         
         codegen.init_smolpp_types();
         init_internal_global_consts(&codegen);
-        init_internal_functions(&mut codegen);
+        init_internal_functions(&mut codegen)
+            .map_err(|e| format!("Failed to initialize internal functions : {}", e))?;
 
         return Ok(codegen);
     }
 
     fn init_smolpp_types(&mut self) {
         self.init_dynamic_type();
-    }
-
-    fn init_dynamic_type(&mut self) {
-        let context = self.context;
-
-        let var_type_discriminant = context.i8_type();
-
-        let i64_type = context.i64_type();
-
-        let ptr_size = self
-            .target_machine
-            .get_target_data()
-            .get_pointer_byte_size(None)
-            * 8;
-
-        // Choose the largest type for the union
-        let union_size = i64_type.get_bit_width().max(ptr_size);
-        let var_value = context.custom_width_int_type(union_size);
-
-        // Create the struct type
-        self.smolpp_types.dynamic_type.set_body(
-            &[
-                var_type_discriminant.into(), // char type
-                var_value.into(),             // Simulated union (either u64 or pointer)
-            ],
-            false,
-        );
     }
 
     fn get_linker(&self) -> Result<String, String> {
@@ -193,7 +189,11 @@ impl<'ctx> CodeGen<'ctx> {
                     "15.0".to_string()
                 }
             };
-            let arch = target_triple.split('-').next().unwrap_or("arm64");
+            let triple_str = target_triple.to_string();
+            let triple_str = triple_str
+                .trim_start_matches("TargetTriple(\"")
+                .trim_end_matches("\")");
+            let arch = triple_str.split('-').next().unwrap_or("arm64");
             println!("Using macOS version: {}", macos_version);
 
             let mut cmd = std::process::Command::new("ld64.lld");
@@ -273,12 +273,17 @@ impl<'ctx> CodeGen<'ctx> {
         }
     }
 
-    pub fn generate_executable(&self, output_path: &Path, target_triple: &TargetTriple) -> Result<(), String> {
-        // Generate the executable
+    pub fn generate_binary(
+        &self,
+        output_path: &Path,
+        target_triple: &TargetTriple,
+    ) -> Result<(), String> {
+        // Generate the binary
         let dynamic_linker = self.get_linker()?;
 
-        let temp_file = NamedTempFile::new().map_err(|e| format!("Error opening temp file for linking : {}", e))?;
-        
+        let temp_file = NamedTempFile::new()
+            .map_err(|e| format!("Error opening temp file for linking : {}", e))?;
+
         // Compile the object file
         self.compile(temp_file.path(), FileType::Object, &self.target_machine)?;
 
@@ -290,7 +295,9 @@ impl<'ctx> CodeGen<'ctx> {
             &dynamic_linker,
         )?;
 
-        temp_file.close().map_err(|e| format!("Error closing temp file : {}", e))?;
+        temp_file
+            .close()
+            .map_err(|e| format!("Error closing temp file : {}", e))?;
 
         Ok(())
     }
@@ -311,4 +318,17 @@ impl<'ctx> CodeGen<'ctx> {
             eprintln!("Error during LLVM generation");
         }
     }
+
+    /// Register a pointer in the pointer table
+    pub fn register_pointer(&mut self, ptr: PointerValue<'ctx>) -> usize {
+        let id = self.pointers_table.len();
+        self.pointers_table.push(ptr);
+        return id;
+    }
+
+    /// Get a pointer from the pointer table
+    pub fn get_pointer(&self, id: usize) -> Option<&PointerValue<'ctx>> {
+        return self.pointers_table.get(id);
+    }
+    
 }

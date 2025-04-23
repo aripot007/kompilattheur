@@ -23,7 +23,7 @@ impl TypingContext {
         let t = Type::Weak(Weak::new());
 
         let symbol_entry = SymbolTableElement {
-            symbol: Symbol::Variable(),
+            symbol: Symbol::Variable{offset: 0, ptr_id: None},
             name: identifier.name.clone(),
             symbol_type: t.clone(),
         };

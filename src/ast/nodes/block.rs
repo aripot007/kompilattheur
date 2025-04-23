@@ -1,8 +1,7 @@
 use crate::{
     analysis_table::NonTerminal,
     common::{
-        localizable::Localizable,
-        types::{FileElement, Node, Tree},
+        localizable::Localizable, symbol_table::{get_symbol_table_index, SymbolTableRef}, types::{FileElement, Node, Tree}
     },
     parser::Lexem,
 };
@@ -12,6 +11,7 @@ use super::{parse_list, AstNode, Statement};
 pub struct Block {
     pub statements: Vec<Statement>,
     pub localization: FileElement<bool>,
+    pub symbol_table: Option<SymbolTableRef>,
 }
 
 impl AstNode for Block {
@@ -79,13 +79,19 @@ impl From<Tree<FileElement<Lexem>>> for Block {
         return Block {
             statements,
             localization,
+            symbol_table: None,
         };
     }
 }
 
 impl Into<Tree<String>> for Block {
     fn into(self) -> Tree<String> {
-        let root = Node::new(String::from("BLOCK"));
+        let table_index = match self.symbol_table {
+            Some(table) => get_symbol_table_index(table).to_string(),
+            None => "-".to_string(),
+        };
+        
+        let root = Node::new(format!("BLOCK (Table {})", table_index));
 
         for stmt in self.statements {
             root.borrow_mut().add_child(&root, stmt.into());

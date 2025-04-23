@@ -9,13 +9,10 @@ mod reader;
 mod typing;
 use analysis_table::{get_analysis_table, setup_analysis_table, AnalysisTable};
 use asm::codegen::CodeGen;
-use asm::execute::execute_executable;
+use asm::execute::execute_binary;
 use ast::generate_ast;
 use clap::{CommandFactory, Parser};
 use cli::{Commands, CompileArgs, GenerateTableArgs, PrintTableArgs, TargetStep};
-use common::symbol_table::{
-    enter_scope, exit_scope, get_scope, init_symbol_table, Symbol, SymbolTableElement,
-};
 use common::types::{FileElement, Tree};
 use inkwell::context::Context;
 use inkwell::targets::FileType::{Assembly, Object};
@@ -27,7 +24,7 @@ use std::fs::File;
 use std::io::{self, stdout, Write};
 use std::process::exit;
 use std::sync::OnceLock;
-use typing::{parse_types, Type};
+use typing::parse_types;
 use webbrowser;
 
 static FILE_PATH: OnceLock<String> = OnceLock::new();
@@ -46,7 +43,6 @@ fn main() {
             clap_complete::generate(shell, &mut cmd, name, &mut io::stdout());
             return;
         }
-        Some(Commands::SymbolTableExample) => symbol_table_example(),
         _ => compile(args.compile),
     }
 }
@@ -216,7 +212,7 @@ fn compile(args: CompileArgs) {
     let context = Context::create();
     let target_triple = TargetMachine::get_default_triple();
     println!("Target triple: {}", target_triple.to_string());
-    let mut codegen = CodeGen::create(&context, &target_triple).unwrap();
+    let mut codegen = CodeGen::create(&context, &target_triple, &file_path).unwrap();
     codegen.generate_llvm(&ast);
     if let Err(e) = codegen.verify() {
         eprintln!("LLVM codegen ended with errors: {}", e);
@@ -226,7 +222,7 @@ fn compile(args: CompileArgs) {
     if args.target_step == TargetStep::LLVMIR {
         let mut output_file = File::create(&args.output_file.unwrap_or("p.ll".into()))
             .expect("Error opening output file");
-        let llvm_ir = codegen.module.print_to_string().to_string();
+        let llvm_ir = codegen.module.to_string();
         write!(output_file, "{}", llvm_ir).expect("error writing to output");
         return;
     }
@@ -273,15 +269,20 @@ fn compile(args: CompileArgs) {
         }
     }
     if args.target == cli::TargetLanguage::Binary {
-        if let Err(e) = codegen.generate_executable(&output_file_name, &target_triple) {
+        if let Err(e) = codegen.generate_binary(&output_file_name, &target_triple) {
             eprintln!("Error generating binary: {}", e);
             exit(1);
         }
     }
 
     if args.run {
-        if let Err(e) = execute_executable(&args.output_file.unwrap_or("p.out".into())) {
-            eprintln!("Error executing program: {}", e);
+        let output_path = args.output_file.unwrap_or("p.out".into());
+        let absolute_path = output_path.canonicalize().unwrap_or_else(|_| {
+            eprintln!("Failed to get absolute path");
+            exit(1);
+        });
+        if let Err(e) = execute_binary(&absolute_path) {
+            eprintln!("{}", e);
             exit(1);
         }
     }
@@ -326,116 +327,4 @@ fn _print_analysis_table(table: &AnalysisTable, args: PrintTableArgs) {
         cli::TableFormat::Rust => write!(out_handle, "{}", table.display_rust(false)),
     }
     .expect("Error while printing table");
-}
-
-fn symbol_table_example() {
-    let root = init_symbol_table();
-    let node = root.clone();
-    node.borrow_mut().insert_symbol(
-        1,
-        SymbolTableElement {
-            symbol: Symbol::Function(),
-            name: String::from("main"),
-            symbol_type: Type::Any,
-        },
-    );
-    node.borrow_mut().insert_symbol(
-        2,
-        SymbolTableElement {
-            symbol: Symbol::Variable(),
-            name: String::from("x"),
-            symbol_type: Type::Any,
-        },
-    );
-
-    let node = enter_scope(node);
-    node.borrow_mut().insert_symbol(
-        3,
-        SymbolTableElement {
-            symbol: Symbol::Parameter(),
-            name: String::from("param1"),
-            symbol_type: Type::Any,
-        },
-    );
-    node.borrow_mut().insert_symbol(
-        4,
-        SymbolTableElement {
-            symbol: Symbol::Variable(),
-            name: String::from("y"),
-            symbol_type: Type::Any,
-        },
-    );
-    node.borrow_mut().insert_symbol(
-        5,
-        SymbolTableElement {
-            symbol: Symbol::Function(),
-            name: String::from("helper"),
-            symbol_type: Type::Any,
-        },
-    );
-
-    let node = enter_scope(node);
-    node.borrow_mut().insert_symbol(
-        6,
-        SymbolTableElement {
-            symbol: Symbol::Function(),
-            name: String::from("nested"),
-            symbol_type: Type::Any,
-        },
-    );
-    node.borrow_mut().insert_symbol(
-        7,
-        SymbolTableElement {
-            symbol: Symbol::Variable(),
-            name: String::from("z"),
-            symbol_type: Type::Any,
-        },
-    );
-
-    let node = exit_scope(node);
-    node.borrow_mut().insert_symbol(
-        8,
-        SymbolTableElement {
-            symbol: Symbol::Function(),
-            name: String::from("sibling"),
-            symbol_type: Type::Any,
-        },
-    );
-
-    let node = enter_scope(node);
-
-    let node = get_scope(node, 0).unwrap();
-    node.borrow_mut().insert_symbol(
-        9,
-        SymbolTableElement {
-            symbol: Symbol::Function(),
-            name: String::from("outer"),
-            symbol_type: Type::Any,
-        },
-    );
-
-    let node = enter_scope(node);
-    node.borrow_mut().insert_symbol(
-        10,
-        SymbolTableElement {
-            symbol: Symbol::Variable(),
-            name: String::from("w"),
-            symbol_type: Type::Any,
-        },
-    );
-
-    let node = exit_scope(node);
-
-    let node = enter_scope(node);
-    let node = exit_scope(node);
-
-    assert_eq!(
-        node.borrow().get_value().index,
-        root.borrow().get_value().index
-    );
-
-    let res = root.borrow().generate_unsafe_mermaid();
-    let mut output_file = File::create("p.out").expect("Error opening output file");
-    writeln!(output_file, "{}", res).expect("Error writing to output file");
-    println!("{}", res)
 }

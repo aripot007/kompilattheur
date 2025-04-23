@@ -1,4 +1,8 @@
-use crate::common::{diagnostic::Diagnostic, symbol_table::{get_symbol, Symbol, SymbolTableElement, SymbolTableRef}, types::IdToken};
+use crate::common::{
+    diagnostic::Diagnostic,
+    symbol_table::{get_symbol, Symbol, SymbolTableElement, SymbolTableRef},
+    types::IdToken,
+};
 
 use super::{Type, Weak};
 
@@ -33,7 +37,6 @@ impl TypingContext {
 
     /// Get a symbol type from the symbol table, or create an error
     pub fn get_symbol_type(&mut self, identifier: &IdToken) -> Option<Type> {
-
         match get_symbol(self.symbol_table.clone(), &identifier.id) {
             (_, Some(elt)) => Some(elt.symbol_type),
             (_, None) => None,
@@ -55,29 +58,27 @@ impl TypingContext {
 
     pub fn update_function_return(&mut self, identifier: &IdToken, symbol_type: Type) {
         let symbol_table = self.symbol_table.clone();
-        let (symbol_table, old_symbol_entry) = get_symbol(symbol_table, &identifier.id);
+        let (symbol_table, old_symbol_entry) = get_symbol(symbol_table, &identifier.id); // old_symbol_entry is a clone
         if let Some(old_symbol_entry) = old_symbol_entry {
-            if old_symbol_entry.symbol == Symbol::Function() {
-                match old_symbol_entry.symbol_type {
-                    // Match function or push error
+            if let Symbol::Function() = old_symbol_entry.symbol {
+                if let Type::Function(func) = old_symbol_entry.symbol_type {
+                    let old_return_type = (*func).returns;
+
+                    // Aristide UNION function with (old_return_type, symbol_type)
+
+                    let symbol_entry = SymbolTableElement {
+                        symbol: Symbol::Function(),
+                        name: identifier.name.clone(),
+                        symbol_type,
+                    };
+
+                    symbol_table
+                        .borrow_mut()
+                        .insert_symbol(identifier.id, symbol_entry);
+
+                    return;
                 }
-
-                let symbol_entry = SymbolTableElement {
-                    symbol: Symbol::Function(),
-                    name: identifier.name.clone(),
-                    symbol_type,
-                };
-
-                symbol_table
-                    .borrow_mut()
-                    .insert_symbol(identifier.id, symbol_entry);
-
-                // TODO(Romain): 
-                // create update symbol
-                // handle weak by adding type
-                // warming: dont make possible in weak pub, use Aristide func, merge
-
-                return;
+                panic!("Old symbol return type is not function")
             }
             panic!("Symbol is not a function");
         }

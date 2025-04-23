@@ -10,3 +10,4 @@ symbol_table.mmd
 output/*
 .vscode
 .direnv
+.DS_Store

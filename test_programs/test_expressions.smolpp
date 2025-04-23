@@ -13,5 +13,12 @@ print("c * 10 :")
 print(c * 10)
 
 thestring = "Hello world !"
-
 print(thestring)
+
+thestring = "Another one !"
+print(thestring)
+
+# This will panic
+print([1,2,3])
+
+print("This will not be printed !")

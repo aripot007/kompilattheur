@@ -1,0 +1,18 @@
+
+# Dubious comparison
+e = True
+f = [1,2,3]
+
+if e == f:
+    print("Ok")
+
+a = 12
+b = "a"
+
+# Erreurs de type
+c = a + b
+d = b - [12]
+
+# Symbole inconnu
+foo()
+

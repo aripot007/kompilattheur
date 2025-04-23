@@ -1,0 +1,7 @@
+a = [1,2,3]
+b = a[1] + "Hello"  # TypeError
+c = "Bonjour"
+d = True
+c = d  # TypeError
+
+

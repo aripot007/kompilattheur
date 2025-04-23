@@ -1,6 +1,6 @@
 use crate::{asm::{codegen::CodeGen, llvm::{smolvar::SmolVar, LLVMCodegenError}}, ast::nodes::{BinOp, Expression}, common::diagnostic::Diagnostic, typing::{Type, Typeable}};
 
-use super::{compute_add_unchecked, compute_div_unchecked, compute_mod_unchecked, compute_mult_unchecked, compute_sub_unchecked, llvm_compute_expr};
+use super::{compute_add_unchecked, compute_div_unchecked, compute_mod_unchecked, compute_mult_unchecked, compute_sub_unchecked, llvm_compute_expr, compare_int_values, compare_string_values, compare_none_values, compare_boolean_values, compare_list_values, compare_generic_values};
 
 pub fn llvm_compute_binop<'ctx>(e1: &Expression, op: &BinOp, e2: &Expression, cg: &mut CodeGen<'ctx>, root: &Expression) ->  Result<SmolVar<'ctx>, LLVMCodegenError> {
     match op {
@@ -11,10 +11,7 @@ pub fn llvm_compute_binop<'ctx>(e1: &Expression, op: &BinOp, e2: &Expression, cg
         | BinOp::GREATER
         | BinOp::GREATEREQ
         | BinOp::EQ
-        | BinOp::NEQ => {
-            cg.errors.push(Diagnostic::unimplemented_llvm(root));
-            Err(LLVMCodegenError::Unimplemented(format!("Comparison operation {} not implemented yet", op)))
-        }
+        | BinOp::NEQ => return llvm_compute_comparison(e1, op, e2, cg, root),
 
         BinOp::MULT
         | BinOp::DIV
@@ -56,5 +53,24 @@ fn llvm_compute_arithmetic<'ctx>(e1: &Expression, op: &BinOp, e2: &Expression, c
         // Weak types or non arithmetic types, not implemented yet
         cg.errors.push(Diagnostic::unimplemented_llvm(root));
         return Err(LLVMCodegenError::Unimplemented(String::from("Arithmetic for dynamically typed expressions is not implemented yet")));
+    }
+}
+
+fn llvm_compute_comparison<'ctx>(e1: &Expression, op: &BinOp, e2: &Expression, cg: &mut CodeGen<'ctx>, root: &Expression) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
+    let val1 = llvm_compute_expr(e1, cg)?;
+    let val2 =  llvm_compute_expr(e2, cg)?;
+
+    if e1.get_type() == &Type::Int && e2.get_type() == &Type::Int {
+        compare_int_values(&val1, &val2, op.clone(), cg)
+    } else if e1.get_type() == &Type::String && e2.get_type() == &Type::String {
+        compare_string_values(&val1, &val2, op.clone(), cg)
+    } else if e1.get_type() == &Type::None && e2.get_type() == &Type::None {
+        compare_none_values(&val1, &val2, op.clone(), cg)
+    } else if e1.get_type() == &Type::Bool && e2.get_type() == &Type::Bool {
+        compare_boolean_values(&val1, &val2, op.clone(), cg)
+    } else if e1.get_type() == &Type::List && e2.get_type() == &Type::List {
+        compare_list_values(&val1, &val2, op.clone(), cg)
+    } else {
+        compare_generic_values(&val1, &val2, op.clone(), cg)
     }
 }

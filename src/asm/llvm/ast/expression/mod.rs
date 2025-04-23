@@ -6,3 +6,5 @@ mod binop;
 pub use binop::*;
 mod arithmetic;
 pub(self) use arithmetic::*;
+mod comparison;
+pub(self) use comparison::*;

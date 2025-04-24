@@ -61,16 +61,16 @@ fn llvm_compute_comparison<'ctx>(e1: &Expression, op: &BinOp, e2: &Expression, c
     let val2 =  llvm_compute_expr(e2, cg)?;
 
     if e1.get_type() == &Type::Int && e2.get_type() == &Type::Int {
-        compare_int_values(&val1, &val2, op.clone(), cg)
+        compare_int_values(val1, val2, op.clone(), cg)
     } else if e1.get_type() == &Type::String && e2.get_type() == &Type::String {
-        compare_string_values(&val1, &val2, op.clone(), cg)
+        compare_string_values(val1, val2, op.clone(), cg)
     } else if e1.get_type() == &Type::None && e2.get_type() == &Type::None {
-        compare_none_values(&val1, &val2, op.clone(), cg)
+        compare_none_values(val1, val2, op.clone(), cg)
     } else if e1.get_type() == &Type::Bool && e2.get_type() == &Type::Bool {
-        compare_boolean_values(&val1, &val2, op.clone(), cg)
+        compare_boolean_values(val1, val2, op.clone(), cg)
     } else if e1.get_type() == &Type::List && e2.get_type() == &Type::List {
-        compare_list_values(&val1, &val2, op.clone(), cg)
+        compare_list_values(val1, val2, op.clone(), cg)
     } else {
-        compare_generic_values(&val1, &val2, op.clone(), cg)
+        compare_generic_values(val1, val2, op.clone(), cg)
     }
 }

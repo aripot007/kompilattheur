@@ -169,7 +169,6 @@ fn generate_from_block(
                 loop_table.borrow_mut().insert_symbol(var_id, var_element);
 
                 let _ = generate_from_block(&mut for_loop.block, loop_table.clone(), context);
-                let _ = generate_from_block(&mut for_loop.block, loop_table.clone(), context);
 
                 table = exit_scope(loop_table);
                 context.symbol_table = table.clone();

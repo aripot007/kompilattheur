@@ -76,7 +76,7 @@ impl Diagnostic {
             root,
             DiagnosticGravity::Error,
             String::from("NotImplemented"),
-            format!("Expression {} implemented", "not".color(Color::Red)),
+            format!("Expression not implemented"),
         )
     }
 

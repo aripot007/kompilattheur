@@ -175,7 +175,6 @@ impl Into<Tree<String>> for &Expression {
                 return root;
             }
             ExpressionKind::Factor(f) => {
-                
                 let mut root = f.into();
 
                 // Add ghost type node for debugging
@@ -186,7 +185,7 @@ impl Into<Tree<String>> for &Expression {
                 }
 
                 root
-            },
+            }
             ExpressionKind::NotImplemented => Node::new(String::from("EXPR (NI)")),
         }
     }

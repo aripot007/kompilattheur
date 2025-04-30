@@ -26,13 +26,14 @@ pub fn execute_binary(exe_path: &Path) -> Result<(), String> {
 
 pub fn execute(engine: ExecutionEngine) {
     unsafe {
-        let main_function: JitFunction<MainFunction> = match engine.get_function(InternalFuctions::Main.into()) {
-            Ok(func) => func,
-            Err(e) => {
-                eprintln!("Failed to get main function: {}", e);
-                return;
-            }
-        };
+        let main_function: JitFunction<MainFunction> =
+            match engine.get_function(InternalFuctions::Main.into()) {
+                Ok(func) => func,
+                Err(e) => {
+                    eprintln!("Failed to get main function: {}", e);
+                    return;
+                }
+            };
         main_function.call();
         libc::fflush(std::ptr::null_mut());
     };

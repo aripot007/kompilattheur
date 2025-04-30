@@ -1,7 +1,9 @@
 use crate::{
     analysis_table::NonTerminal,
     common::{
-        localizable::Localizable, symbol_table::{get_symbol_table_index, SymbolTableRef}, types::{FileElement, Node, Tree}
+        localizable::Localizable,
+        symbol_table::{get_symbol_table_index, SymbolTableRef},
+        types::{FileElement, Node, Tree},
     },
     parser::Lexem,
 };
@@ -90,7 +92,7 @@ impl Into<Tree<String>> for Block {
             Some(table) => get_symbol_table_index(table).to_string(),
             None => "-".to_string(),
         };
-        
+
         let root = Node::new(format!("BLOCK (Table {})", table_index));
 
         for stmt in self.statements {

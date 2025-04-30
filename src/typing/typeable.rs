@@ -6,7 +6,7 @@ pub trait Typeable {
 
     /// Returns true if the object was typed before
     fn is_typed(&self) -> bool;
-    
+
     /// Return the type or panics if the it wasn't typed before
     fn get_type(&self) -> &Type;
 

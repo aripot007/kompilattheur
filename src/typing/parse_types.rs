@@ -1,8 +1,7 @@
 use crate::ast::nodes::{ExpressionKind, FactorKind};
 use crate::common::diagnostic::Diagnostic;
 use crate::common::symbol_table::{
-    enter_scope, exit_scope, get_symbol, init_symbol_table, Symbol, SymbolTableElement,
-    SymbolTableRef,
+    enter_scope, exit_scope, init_symbol_table, Symbol, SymbolTableElement, SymbolTableRef,
 };
 use crate::{
     ast::nodes::{self, Factor, Statement},
@@ -33,12 +32,10 @@ fn generate_from_node_root(
 ) -> SymbolTableRef {
     let mut table = table;
 
-
     // Process all function definitions
     for mut def in &mut root.defs.defs {
         table = generate_from_def(&mut def, table, context);
     }
-
 
     // Process the main block
     table = generate_from_block(&mut root.block, table, context);
@@ -72,10 +69,6 @@ fn generate_from_def(
         .borrow_mut()
         .insert_symbol(func_id, symbol_table_element);
 
-    table
-        .borrow_mut()
-        .insert_symbol(func_id, symbol_table_element);
-
     // Enter a new scope for this function
     let function_table = enter_scope(table.clone());
     context.symbol_table = function_table.clone();
@@ -84,22 +77,16 @@ fn generate_from_def(
         let param_id = param.identifier.element.id;
         let param_name = param.identifier.element.name.clone();
         let param_element = SymbolTableElement {
-            symbol: Symbol::Parameter{offset: 0},
+            symbol: Symbol::Parameter { offset: 0 },
             name: param_name,
             symbol_type: Type::Weak(Weak::new()),
-            symbol_type: Type::Weak(Weak::new()),
         };
-        function_table
-            .borrow_mut()
-            .insert_symbol(param_id, param_element);
         function_table
             .borrow_mut()
             .insert_symbol(param_id, param_element);
     }
 
     generate_from_block(&mut def.block, function_table.clone(), context);
-
-    // TODO(Romain): check return type if empty type Weak None
 
     context.symbol_table = table.clone();
     context.func_id = None;
@@ -123,35 +110,48 @@ fn generate_from_block(
                     Err(()) => continue, // No use in typing the value if the destination cannot be typed
                 };
 
-                        // If the destination is a single identifier, check or set the type with the value
-                        if let ExpressionKind::Factor(Factor {factor_type: _, kind: FactorKind::Identifier(id)}) = &assign.destination.kind {
-                            // Clone all the data we need before any borrowing
-                            let id_element = id.element.clone();
-                            
-                            // TODO : check if types are compatible
-                            match context.get_symbol_type(&id_element) {
-                                Some(_) => (),
-                                None => {
-                                    // Symbol does not exist, insert it
-                                    context.add_symbol(&id_element, Symbol::Variable{offset: 0, ptr_id: None}, value_type);
-                                }
-                            }
-                        }
+                // If the destination is a single identifier, check or set the type with the value
+                if let ExpressionKind::Factor(Factor {
+                    factor_type: _,
+                    kind: FactorKind::Identifier(id),
+                }) = &assign.destination.kind
+                {
+                    // Clone all the data we need before any borrowing
+                    let id_element = id.element.clone();
 
-            },
+                    // TODO : check if types are compatible
+                    match context.get_symbol_type(&id_element) {
+                        Some(_) => (),
+                        None => {
+                            // Symbol does not exist, insert it
+                            context.add_symbol(
+                                &id_element,
+                                Symbol::Variable {
+                                    offset: 0,
+                                    ptr_id: None,
+                                },
+                                value_type,
+                            );
+                        }
+                    }
+                }
+            }
             Statement::For(ref mut for_loop) => {
-                        let var_id = for_loop.var.element.id;
-                        let var_name = for_loop.var.element.name.clone();
-                
-                        let loop_table = enter_scope(table.clone());
-                        context.symbol_table = loop_table.clone();
-                
-                        let var_element = SymbolTableElement {
-                            symbol: Symbol::Variable {offset: 0, ptr_id: None},
-                            name: var_name,
-                            symbol_type: Type::Any
-                        };
-                        loop_table.borrow_mut().insert_symbol(var_id, var_element);
+                let var_id = for_loop.var.element.id;
+                let var_name = for_loop.var.element.name.clone();
+
+                let loop_table = enter_scope(table.clone());
+                context.symbol_table = loop_table.clone();
+
+                let var_element = SymbolTableElement {
+                    symbol: Symbol::Variable {
+                        offset: 0,
+                        ptr_id: None,
+                    },
+                    name: var_name,
+                    symbol_type: Type::Any,
+                };
+                loop_table.borrow_mut().insert_symbol(var_id, var_element);
 
                 let _ = generate_from_block(&mut for_loop.block, loop_table.clone(), context);
 
@@ -203,10 +203,10 @@ fn generate_from_block(
                     if let Some(id) = context.func_id.clone() {
                         context.update_function_return(&id, res);
                     } else {
-                        panic!("Function ID in context not set")
+                        // TODO(Romain): error user return outside function, create function in diagnostics.rs
                     }
                 } else {
-                    // TODO(Romain): handle error
+                    // TODO(Romain): error when merging, add error message in context, create function in diagnostics.rs
                 }
             }
             Statement::NotImplemented => todo!(),

@@ -1,28 +1,47 @@
 use inkwell::{values::BasicValue, AddressSpace};
 
-use crate::{asm::{codegen::CodeGen, get_internal_func, get_internal_global_const, internal_function_prefix, internal_global_constants::RuntimeErrorMsg, InternalFuctions, InternalGlobalConst}, typing::Type};
+use crate::{
+    asm::{
+        codegen::CodeGen, get_internal_func, get_internal_global_const, internal_function_prefix,
+        internal_global_constants::RuntimeErrorMsg, InternalFuctions, InternalGlobalConst,
+    },
+    typing::Type,
+};
 
-use super::{panic::{smolpp_panic, smolpp_panic_with_unreachable}, smolvar::SmolVar, LLVMCodegenError};
+use super::{
+    panic::{smolpp_panic, smolpp_panic_with_unreachable},
+    smolvar::SmolVar,
+    LLVMCodegenError,
+};
 
 macro_rules! llvm_puts {
     ($cg: expr, $value: expr, $name: literal) => {
-        $cg.builder
-            .build_call(
-                $cg.module.get_function(InternalFuctions::Puts.into()).unwrap(),
-                &[$value.into()], $name)?;
+        $cg.builder.build_call(
+            $cg.module
+                .get_function(InternalFuctions::Puts.into())
+                .unwrap(),
+            &[$value.into()],
+            $name,
+        )?;
     };
 }
 
 /// Generate LLVM to print a None value
-pub fn print_none_value<'ctx>(_value: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
-    let none_str_ptr = get_internal_global_const!(cg, InternalGlobalConst::NoneString).as_pointer_value();
+pub fn print_none_value<'ctx>(
+    _value: &SmolVar<'ctx>,
+    cg: &CodeGen<'ctx>,
+) -> Result<(), LLVMCodegenError> {
+    let none_str_ptr =
+        get_internal_global_const!(cg, InternalGlobalConst::NoneString).as_pointer_value();
     llvm_puts!(cg, none_str_ptr, "puts_none");
     return Ok(());
 }
 
 /// Generate LLVM to print a int value
-pub fn print_int_value<'ctx>(variable: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
-
+pub fn print_int_value<'ctx>(
+    variable: &SmolVar<'ctx>,
+    cg: &CodeGen<'ctx>,
+) -> Result<(), LLVMCodegenError> {
     // Get the variable value as int
     let value = cg.get_variable_value(*variable)?.into_int_value();
 
@@ -31,22 +50,29 @@ pub fn print_int_value<'ctx>(variable: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> Re
         get_internal_func!(cg, InternalFuctions::Printf),
         &[
             // Format string
-            get_internal_global_const!(cg, InternalGlobalConst::IntFormatStringWithNewline).as_pointer_value().into(),
-            value.into() // value
+            get_internal_global_const!(cg, InternalGlobalConst::IntFormatStringWithNewline)
+                .as_pointer_value()
+                .into(),
+            value.into(), // value
         ],
-        "printf_int"
+        "printf_int",
     )?;
     return Ok(());
 }
 
 /// Generate LLVM to print a String value
-pub fn print_string_value<'ctx>(variable: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
+pub fn print_string_value<'ctx>(
+    variable: &SmolVar<'ctx>,
+    cg: &CodeGen<'ctx>,
+) -> Result<(), LLVMCodegenError> {
     let ptr_type = cg.context.ptr_type(AddressSpace::default());
 
     let value_generic = cg.get_variable_value(*variable)?;
 
     let value = match value_generic.is_int_value() {
-        true => cg.builder.build_int_to_ptr(value_generic.into_int_value(), ptr_type, "str_ptr")?,
+        true => cg
+            .builder
+            .build_int_to_ptr(value_generic.into_int_value(), ptr_type, "str_ptr")?,
         false => value_generic.into_pointer_value(),
     };
 
@@ -56,13 +82,19 @@ pub fn print_string_value<'ctx>(variable: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) ->
 }
 
 /// Generate LLVM to print a Bool value
-pub fn print_bool_value<'ctx>(variable: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
-
+pub fn print_bool_value<'ctx>(
+    variable: &SmolVar<'ctx>,
+    cg: &CodeGen<'ctx>,
+) -> Result<(), LLVMCodegenError> {
     let value = cg.get_variable_value(*variable)?.into_int_value();
-    let bool_value = cg.builder.build_int_cast(value, cg.context.bool_type(), "value_as_bool")?;
+    let bool_value = cg
+        .builder
+        .build_int_cast(value, cg.context.bool_type(), "value_as_bool")?;
 
     let false_val = cg.context.bool_type().const_zero();
-    let cdt = cg.builder.build_int_compare(inkwell::IntPredicate::NE, bool_value, false_val, "cmp")?;
+    let cdt =
+        cg.builder
+            .build_int_compare(inkwell::IntPredicate::NE, bool_value, false_val, "cmp")?;
 
     // Create basic blocks if-else
     let then_block = cg.context.append_basic_block(cg.current_function, "then");
@@ -70,18 +102,26 @@ pub fn print_bool_value<'ctx>(variable: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> R
     let merge_block = cg.context.append_basic_block(cg.current_function, "end");
 
     // Conditional branch
-    cg.builder.build_conditional_branch(cdt, then_block, else_block)?;
+    cg.builder
+        .build_conditional_branch(cdt, then_block, else_block)?;
 
     // "Then" block : value is True
     cg.builder.position_at_end(then_block);
-    llvm_puts!(cg, get_internal_global_const!(cg, InternalGlobalConst::TrueString).as_pointer_value(), "puts_bool_true");
+    llvm_puts!(
+        cg,
+        get_internal_global_const!(cg, InternalGlobalConst::TrueString).as_pointer_value(),
+        "puts_bool_true"
+    );
     // Go back to the main execution
     cg.builder.build_unconditional_branch(merge_block)?;
 
-
     // "Else" block : value is False
     cg.builder.position_at_end(else_block);
-    llvm_puts!(cg, get_internal_global_const!(cg, InternalGlobalConst::FalseString).as_pointer_value(), "puts_bool_false");
+    llvm_puts!(
+        cg,
+        get_internal_global_const!(cg, InternalGlobalConst::FalseString).as_pointer_value(),
+        "puts_bool_false"
+    );
     // Go back to the main execution
     cg.builder.build_unconditional_branch(merge_block)?;
 
@@ -89,35 +129,48 @@ pub fn print_bool_value<'ctx>(variable: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> R
     cg.builder.position_at_end(merge_block);
 
     return Ok(());
-
 }
 
 /// Generate LLVM to print a List value
-pub fn print_list_value<'ctx>(value: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
+pub fn print_list_value<'ctx>(
+    value: &SmolVar<'ctx>,
+    cg: &CodeGen<'ctx>,
+) -> Result<(), LLVMCodegenError> {
     smolpp_panic(cg, RuntimeErrorMsg::PanicNotImplemented, &[])?;
     return Ok(());
 }
 
 /// Generate LLVM to print any value.
-pub fn print_any_value<'ctx>(value: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
-    cg.builder.build_call(get_internal_func!(cg, InternalFuctions::GenericPrint), &[value.as_basic_value_enum().into()], "generic_print_call")?;
+pub fn print_any_value<'ctx>(
+    value: &SmolVar<'ctx>,
+    cg: &CodeGen<'ctx>,
+) -> Result<(), LLVMCodegenError> {
+    cg.builder.build_call(
+        get_internal_func!(cg, InternalFuctions::GenericPrint),
+        &[value.as_basic_value_enum().into()],
+        "generic_print_call",
+    )?;
     return Ok(());
 }
 
 /// Initialize the internal "generic_print" function that can print any value
-pub fn init_internal_generic_print_function<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
-
+pub fn init_internal_generic_print_function<'ctx>(
+    cg: &mut CodeGen<'ctx>,
+) -> Result<(), LLVMCodegenError> {
     let void_type = cg.context.void_type();
     let var_type = cg.smolpp_types.dynamic_type;
 
     // Register the function in the module
     let func_type = void_type.fn_type(&[var_type.into()], false);
-    let function = cg.module
+    let function = cg
+        .module
         .add_function(InternalFuctions::GenericPrint.into(), func_type, None);
 
     // Build the function
-    let entry = cg.context.append_basic_block(function, internal_function_prefix!("generic_print_entry"));
-    
+    let entry = cg
+        .context
+        .append_basic_block(function, internal_function_prefix!("generic_print_entry"));
+
     // Switch builder to the function block
     cg.builder.position_at_end(entry);
     cg.current_function = function;
@@ -137,21 +190,36 @@ pub fn init_internal_generic_print_function<'ctx>(cg: &mut CodeGen<'ctx>) -> Res
     let i8_type = cg.context.i8_type();
 
     cg.builder.build_switch(
-        type_field, 
+        type_field,
         default_block,
         &[
-            (i8_type.const_int(Type::None.get_bitmask().into(), false), case_none),
-            (i8_type.const_int(Type::Bool.get_bitmask().into(), false), case_bool),
-            (i8_type.const_int(Type::Int.get_bitmask().into(), false), case_int),
-            (i8_type.const_int(Type::String.get_bitmask().into(), false), case_string),
-            (i8_type.const_int(Type::List.get_bitmask().into(), false), case_list),
-        ]
+            (
+                i8_type.const_int(Type::None.get_bitmask().into(), false),
+                case_none,
+            ),
+            (
+                i8_type.const_int(Type::Bool.get_bitmask().into(), false),
+                case_bool,
+            ),
+            (
+                i8_type.const_int(Type::Int.get_bitmask().into(), false),
+                case_int,
+            ),
+            (
+                i8_type.const_int(Type::String.get_bitmask().into(), false),
+                case_string,
+            ),
+            (
+                i8_type.const_int(Type::List.get_bitmask().into(), false),
+                case_list,
+            ),
+        ],
     )?;
 
     cg.builder.position_at_end(case_none);
     print_none_value(&param, cg)?;
     cg.builder.build_return(None)?;
-    
+
     cg.builder.position_at_end(case_bool);
     print_bool_value(&param, cg)?;
     cg.builder.build_return(None)?;
@@ -171,7 +239,11 @@ pub fn init_internal_generic_print_function<'ctx>(cg: &mut CodeGen<'ctx>) -> Res
     // Default case, print error message
     cg.builder.position_at_end(default_block);
 
-    smolpp_panic_with_unreachable(cg, RuntimeErrorMsg::PanicInvalidInternalTypeValueFormatString, &[type_field.into()])?;
+    smolpp_panic_with_unreachable(
+        cg,
+        RuntimeErrorMsg::PanicInvalidInternalTypeValueFormatString,
+        &[type_field.into()],
+    )?;
 
     // Return builder to main block
     cg.current_function = cg.main_function;

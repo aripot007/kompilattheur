@@ -4,6 +4,7 @@ use crate::{
     ast::nodes::parse_list_filter,
     common::{
         localizable::Localizable,
+        symbol_table::get_symbol,
         types::{file_element::file_element_from, FileElement, IdToken, Node, Token, Tree},
     },
     parser::Lexem,
@@ -69,7 +70,16 @@ impl From<Tree<FileElement<Lexem>>> for Def {
 
 impl Into<Tree<String>> for Def {
     fn into(self) -> Tree<String> {
-        let root = Node::new(String::from("DEF"));
+        let f_type = match &self.block.symbol_table {
+            None => String::from(""),
+            Some(table) => get_symbol(table.clone(), &self.identifier.element.id)
+                .1 // 0 : symbol table, 1 : symbol
+                .expect("No symbol in symbol table")
+                .symbol_type
+                .to_string(),
+        };
+
+        let root = Node::new(String::from(format!("Def {}", f_type)));
 
         root.borrow_mut().add_child(
             &root,

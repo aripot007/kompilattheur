@@ -1,0 +1,14 @@
+#!/bin/sh
+
+echo "Running cargo fmt --check..."
+cargo fmt --all -- --check
+
+result=$?
+
+if [ $result -ne 0 ]; then
+    echo "❌ Formatting check failed. Please run 'cargo fmt' to fix formatting issues."
+    exit 1
+fi
+
+echo "✅ Formatting check passed."
+exit 0

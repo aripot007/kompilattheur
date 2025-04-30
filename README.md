@@ -9,7 +9,7 @@
 1. [Usage](#usage)
 1. [Examples](#examples)
 1. [Testing](#testing)
-1. [Acknowledgements](#acknowledgements)
+1. [Contributing](#contributing)
 
 ---
 
@@ -159,3 +159,15 @@ $ cargo test
 ### Reporting Issues
 
 If you encounter any issues or have feature requests, please open an issue on the GitHub repository.
+
+## Contributing
+
+### Setting up Git hooks
+
+To ensure consistent code formatting, the project includes git hooks. After cloning, run:
+
+```bash
+./setup-hooks.sh
+```
+
+This will set up a pre-commit hook that runs `cargo fmt --check` before each commit to ensure proper code formatting.

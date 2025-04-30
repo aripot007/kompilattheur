@@ -233,16 +233,17 @@ fn generate_from_block(
                 let _ = expr.parse_type(context);
             }
             Statement::Return(ref mut expr) => {
-                let res = expr.parse_type(context);
-                if let Ok(res) = res {
-                    if let Some(id) = context.func_id.clone() {
-                        context.update_function_return(&id, res);
-                    } else {
-                        // TODO(Romain): error user return outside function, create function in diagnostics.rs
-                    }
-                } else {
-                    // TODO(Romain): error when merging, add error message in context, create function in diagnostics.rs
-                }
+                let Ok(res) = expr.parse_type(context) else {
+                    // Handle by parse type
+                    continue;
+                };
+                let Some(id) = context.func_id.clone() else {
+                    context
+                        .errors
+                        .push(Diagnostic::return_outside_function(statement));
+                    continue;
+                };
+                context.update_function_return(&id, res);
             }
             Statement::NotImplemented => todo!(),
         }

@@ -203,7 +203,6 @@ fn generate_from_block(
                         ));
                         continue;
                     }
-                } else {
                 }
 
                 let if_table = enter_scope(table.clone());

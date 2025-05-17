@@ -1,5 +1,5 @@
 use crate::ast::nodes::{ExpressionKind, FactorKind};
-use crate::common::diagnostic::Diagnostic;
+use crate::common::diagnostic::{Diagnostic, DiagnosticGravity};
 use crate::common::symbol_table::{
     enter_scope, exit_scope, init_symbol_table, Symbol, SymbolTableElement, SymbolTableRef,
 };
@@ -7,6 +7,8 @@ use crate::{
     ast::nodes::{self, Factor, Statement},
     typing::{Function, Type, Typeable, TypingContext, Weak},
 };
+
+use super::diagnostics;
 
 pub fn parse_types(root: nodes::Root) -> (nodes::Root, SymbolTableRef, TypingContext) {
     let table = init_symbol_table();
@@ -110,7 +112,20 @@ fn generate_from_block(
             Statement::Assign(ref mut assign) => {
                 let value_type: Type = match assign.value.parse_type(context) {
                     Ok(t) => t,
-                    Err(()) => continue, // No use in typing the value if the destination cannot be typed
+                    Err(()) => {
+                        context.errors.push(Diagnostic::from_localizable_ref(
+                            &assign.value,
+                            DiagnosticGravity::Error,
+                            "AssignationTypingError".into(),
+                            format!("Could not parse destination type"),
+                        ));
+                        continue;
+                    } // No use in typing the value if the destination cannot be typed
+                };
+
+                let dest_val = match assign.destination.parse_type(context) {
+                    Ok(t) => t,
+                    Err(()) => continue,
                 };
 
                 // If the destination is a single identifier, check or set the type with the value

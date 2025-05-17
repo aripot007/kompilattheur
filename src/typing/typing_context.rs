@@ -60,7 +60,7 @@ impl TypingContext {
 
     pub fn update_function_return(&mut self, identifier: &IdToken, symbol_type: Type) {
         let symbol_table = self.symbol_table.clone();
-        let (symbol_table, old_symbol_entry) = get_symbol(symbol_table, &identifier.id); // old_symbol_entry is a clone
+        let (_, old_symbol_entry) = get_symbol(symbol_table, &identifier.id); // old_symbol_entry is a clone
         let old_symbol_entry = old_symbol_entry.expect("Function not found");
 
         if Symbol::Function() != old_symbol_entry.symbol {
@@ -68,23 +68,12 @@ impl TypingContext {
         }
 
         if let Type::Function(mut func) = old_symbol_entry.symbol_type {
-            let old_return_type = (*func).returns;
-
-            // TODO(Aristide): UNION function with (old_return_type, symbol_type)
-            func.returns = symbol_type;
-
-            let symbol_entry = SymbolTableElement {
-                symbol: Symbol::Function(),
-                name: identifier.name.clone(),
-                symbol_type: Type::Function(func),
-            };
-
-            symbol_table
-                .borrow_mut()
-                .insert_symbol(identifier.id, symbol_entry);
-
-            return;
+            match (*func).returns {
+                Type::Weak(ref mut w) => w.add_type(symbol_type),
+                _ => panic!("Invalid function return type"),
+            }
+        } else {
+            panic!("Old symbol return type is not function");
         }
-        panic!("Old symbol return type is not function")
     }
 }

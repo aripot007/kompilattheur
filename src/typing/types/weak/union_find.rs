@@ -42,6 +42,12 @@ impl UnionFind {
         return &self.elements[id];
     }
 
+    /// Find an element by id
+    pub fn find_elt_mut(&mut self, id: usize) -> &mut HashSet<Type> {
+        let id = self.find(id);
+        return &mut self.elements[id];
+    }
+
     pub fn set_elt(&mut self, id: usize, elt: HashSet<Type>) {
         let id = self.find(id);
         self.elements[id] = elt;

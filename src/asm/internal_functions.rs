@@ -1,4 +1,7 @@
-use super::{codegen::CodeGen, llvm::{init_internal_generic_print_function, LLVMCodegenError}};
+use super::{
+    codegen::CodeGen,
+    llvm::{init_internal_generic_print_function, LLVMCodegenError},
+};
 
 pub enum InternalFuctions {
     Main,
@@ -37,15 +40,16 @@ impl Into<&'static str> for InternalFuctions {
     }
 }
 
-pub(super) fn init_internal_functions<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
-    
+pub(super) fn init_internal_functions<'ctx>(
+    cg: &mut CodeGen<'ctx>,
+) -> Result<(), LLVMCodegenError> {
     //
     // syscalls (MUST be initialized first, used by other internal functions)
     //
 
     let i32_type = cg.context.i32_type();
     let ptr_type = cg.context.ptr_type(inkwell::AddressSpace::default());
-    
+
     // puts
     let puts_type = i32_type.fn_type(&[ptr_type.into()], false);
     cg.module
@@ -56,12 +60,11 @@ pub(super) fn init_internal_functions<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<()
     cg.module
         .add_function(InternalFuctions::Printf.into(), printf_type, None);
 
-
     // llvm.trap
     let trap_type = cg.context.void_type().fn_type(&[], false);
     cg.module.add_function("llvm.trap", trap_type, None);
 
-    // 
+    //
     // Internal functions
     //
 

@@ -33,15 +33,18 @@ impl Type {
             Type::String => 0b00001000,
             Type::List => 0b00010000,
             Type::Any => 0b00011111,
-            Type::Weak(w) => {
-                w.get_possible().iter().map(Type::get_bitmask).reduce(u8::bitor).unwrap_or(0)
-            },
-            | Type::NTuple(_)
-            | Type::Function(_) => panic!("Cannot get discriminant for type {}", self),
+            Type::Weak(w) => w
+                .get_possible()
+                .iter()
+                .map(Type::get_bitmask)
+                .reduce(u8::bitor)
+                .unwrap_or(0),
+            Type::NTuple(_) | Type::Function(_) => {
+                panic!("Cannot get discriminant for type {}", self)
+            }
         }
     }
 }
-
 
 impl Display for Type {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -54,7 +57,7 @@ impl Display for Type {
             Type::Any => write!(f, "any"),
             Type::NTuple(t) => t.fmt(f),
             Type::Function(t) => (*(t.as_ref())).fmt(f),
-            Type::Weak(t) => t.fmt(f), 
+            Type::Weak(t) => t.fmt(f),
         }
     }
 }
@@ -63,15 +66,14 @@ impl Type {
     pub fn get_decalage(&self) -> usize {
         match self {
             Type::None => 0,
-            Type::Bool => WORD_SIZE*2,
-            Type::Int => WORD_SIZE*2,
-            Type::String => WORD_SIZE*2,
-            Type::List => WORD_SIZE*2,
-            Type::Any => WORD_SIZE*2,
+            Type::Bool => WORD_SIZE * 2,
+            Type::Int => WORD_SIZE * 2,
+            Type::String => WORD_SIZE * 2,
+            Type::List => WORD_SIZE * 2,
+            Type::Any => WORD_SIZE * 2,
             Type::NTuple(_) => panic!("You shouldn't ask for the decalage of a NTuple"),
             Type::Function(_) => panic!("You shouldn't ask for the decalage of a Function"),
             Type::Weak(t) => t.get_decalage(),
         }
     }
-
 }

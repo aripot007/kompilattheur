@@ -29,9 +29,7 @@ impl From<Tree<FileElement<Lexem>>> for Param {
         };
         let identifier: FileElement<IdToken> = file_element_from!(id_elem, id_token);
 
-        return Param {
-            identifier,
-        };
+        return Param { identifier };
     }
 }
 

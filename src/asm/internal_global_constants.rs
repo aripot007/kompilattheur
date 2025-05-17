@@ -4,11 +4,9 @@ use super::codegen::CodeGen;
 
 /// Internal global constants
 pub enum InternalGlobalConst {
-    
     //
     // Printing strings
     //
-
     /// String representation for the None type
     NoneString,
     /// String representation for the bool value True
@@ -19,19 +17,16 @@ pub enum InternalGlobalConst {
     //
     // Format strings
     //
-
     /// Format string for printing int with an ending newline
     IntFormatStringWithNewline,
     /// Format string for converting int to string (eg. for concatenation)
     IntFormatString,
-
 }
 
 /// Internal global string constants used for runtime error printing
 pub enum RuntimeErrorMsg {
-
     /// Used when an invalid type value is encountered during type comparison.
-    /// 
+    ///
     /// Takes the type value as an i8 argument
     PanicInvalidInternalTypeValueFormatString,
 
@@ -39,7 +34,7 @@ pub enum RuntimeErrorMsg {
     PanicNotImplemented,
 
     /// Used when the type of a variable is not what was expected
-    /// 
+    ///
     /// Takes a string message as an argument
     TypeError,
 }
@@ -57,7 +52,9 @@ impl Into<&'static str> for InternalGlobalConst {
             InternalGlobalConst::TrueString => internal_global_prefix!("true_string"),
             InternalGlobalConst::FalseString => internal_global_prefix!("false_string"),
             InternalGlobalConst::IntFormatString => internal_global_prefix!("int_fmt_string"),
-            InternalGlobalConst::IntFormatStringWithNewline => internal_global_prefix!("int_fmt_string_newline"),
+            InternalGlobalConst::IntFormatStringWithNewline => {
+                internal_global_prefix!("int_fmt_string_newline")
+            }
         }
     }
 }
@@ -65,19 +62,24 @@ impl Into<&'static str> for InternalGlobalConst {
 impl Into<&'static str> for RuntimeErrorMsg {
     fn into(self) -> &'static str {
         match self {
-            RuntimeErrorMsg::PanicInvalidInternalTypeValueFormatString => internal_global_prefix!("panic_invalid_type_fmt_string"),
+            RuntimeErrorMsg::PanicInvalidInternalTypeValueFormatString => {
+                internal_global_prefix!("panic_invalid_type_fmt_string")
+            }
             RuntimeErrorMsg::PanicNotImplemented => internal_global_prefix!("panic_unimplemented"),
             RuntimeErrorMsg::TypeError => internal_global_prefix!("error_type"),
         }
     }
 }
 
-fn create_global_string<'ctx, T: Into::<&'static str>>(name: T, value: &str, cg: &CodeGen<'ctx>) {
-
+fn create_global_string<'ctx, T: Into<&'static str>>(name: T, value: &str, cg: &CodeGen<'ctx>) {
     let string_value = cg.context.const_string(value.as_bytes(), true);
 
     // Declare it as a global variable
-    let global_var = cg.module.add_global(string_value.get_type(), Some(AddressSpace::default()), name.into());
+    let global_var = cg.module.add_global(
+        string_value.get_type(),
+        Some(AddressSpace::default()),
+        name.into(),
+    );
     global_var.set_initializer(&string_value);
     global_var.set_constant(true);
 }
@@ -93,7 +95,6 @@ pub(super) use get_internal_global_const;
 
 /// Initialize internal global constants used by smolpp (eg. error strings)
 pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
-
     // Printing strings
     create_global_string(InternalGlobalConst::NoneString, "None", cg);
     create_global_string(InternalGlobalConst::TrueString, "True", cg);
@@ -104,7 +105,15 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
     create_global_string(InternalGlobalConst::IntFormatStringWithNewline, "%d\n", cg);
 
     // Error messages
-    create_global_string(RuntimeErrorMsg::PanicInvalidInternalTypeValueFormatString, "PANIC: Invalid internal type value %d\n", cg);
-    create_global_string(RuntimeErrorMsg::PanicNotImplemented, "PANIC: LLVM not implemented yet\n", cg);
+    create_global_string(
+        RuntimeErrorMsg::PanicInvalidInternalTypeValueFormatString,
+        "PANIC: Invalid internal type value %d\n",
+        cg,
+    );
+    create_global_string(
+        RuntimeErrorMsg::PanicNotImplemented,
+        "PANIC: LLVM not implemented yet\n",
+        cg,
+    );
     create_global_string(RuntimeErrorMsg::TypeError, "TypeError: %s\n", cg);
 }

@@ -22,7 +22,10 @@ mod assign;
 pub use assign::Assign;
 
 use crate::{
-    common::{localizable::Localizable, types::{FileElement, Tree}},
+    common::{
+        localizable::Localizable,
+        types::{FileElement, Tree},
+    },
     parser::Lexem,
 };
 

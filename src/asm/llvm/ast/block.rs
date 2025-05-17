@@ -1,26 +1,47 @@
-use crate::{asm::{codegen::CodeGen, llvm::{print::*, smolvar::SmolVar, LLVMCodegenError}}, ast::nodes::{AstNode, Block, Conditional, Expression, Statement}, common::{diagnostic::{Diagnostic, DiagnosticGravity}, symbol_table::Symbol}, typing::{Type, Typeable}};
-use super::{llvm_compute_expr, llvm_from_assign, llvm_from_bool_condition};
+use super::{llvm_compute_expr, llvm_from_assign, llvm_from_conditional};
+use crate::{
+    asm::{
+        codegen::CodeGen,
+        llvm::{print::*, smolvar::SmolVar, LLVMCodegenError},
+    },
+    ast::nodes::{AstNode, Block, Conditional, Expression, Statement},
+    common::{
+        diagnostic::{Diagnostic, DiagnosticGravity},
+        symbol_table::Symbol,
+    },
+    typing::{Type, Typeable},
+};
 
-pub fn llvm_from_block<'ctx>(block: &Block, cg: &mut CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
-
+pub fn llvm_from_block<'ctx>(
+    block: &Block,
+    cg: &mut CodeGen<'ctx>,
+) -> Result<(), LLVMCodegenError> {
     let mut error = false;
 
     // Allocate memory on the stack for each variable
     if let Some(table_tree) = &block.symbol_table {
         let mut symbol_table = table_tree.borrow().get_value();
         for (_, symbol) in symbol_table.table.iter_mut() {
-
             if let Symbol::Variable { offset, ptr_id } = symbol.symbol {
                 if ptr_id.is_some() {
-                    println!("Variable pointer for symbol {} is not None at block start", symbol.name);
+                    println!(
+                        "Variable pointer for symbol {} is not None at block start",
+                        symbol.name
+                    );
                     continue;
                 }
 
                 // Allocate memory
-                let ptr = cg.builder.build_alloca(cg.smolpp_types.dynamic_type, format!("alloca_var_{}", symbol.name).as_str())?;
+                let ptr = cg.builder.build_alloca(
+                    cg.smolpp_types.dynamic_type,
+                    format!("alloca_var_{}", symbol.name).as_str(),
+                )?;
 
                 // Store initial value with correct type
-                let val = cg.create_variable(symbol.symbol_type.clone(), cg.context.i64_type().const_zero())?;
+                let val = cg.create_variable(
+                    symbol.symbol_type.clone(),
+                    cg.context.i64_type().const_zero(),
+                )?;
                 cg.builder.build_store(ptr, val)?;
 
                 // Register the pointer in the codegen context and update its reference in the symbol table
@@ -31,7 +52,6 @@ pub fn llvm_from_block<'ctx>(block: &Block, cg: &mut CodeGen<'ctx>) -> Result<()
 
         // Update table
         table_tree.borrow_mut().set_value(symbol_table);
-
     } else {
         panic!("Symbol table not initialized in block")
     }
@@ -41,7 +61,6 @@ pub fn llvm_from_block<'ctx>(block: &Block, cg: &mut CodeGen<'ctx>) -> Result<()
     cg.current_symbol_table = block.symbol_table.clone();
 
     for stmt in &block.statements {
-
         match stmt {
             Statement::Print(expr) => llvm_from_print(expr, cg)?,
             Statement::Assign(assign) => llvm_from_assign(assign, cg)?,
@@ -54,7 +73,6 @@ pub fn llvm_from_block<'ctx>(block: &Block, cg: &mut CodeGen<'ctx>) -> Result<()
                 error = true;
             }
         }
-
     }
 
     // Restore symbol table
@@ -63,13 +81,14 @@ pub fn llvm_from_block<'ctx>(block: &Block, cg: &mut CodeGen<'ctx>) -> Result<()
     if error {
         return Err(LLVMCodegenError::Unimplemented(String::from("Block")));
     }
-    
+
     return Ok(());
 }
 
-
-fn llvm_from_print<'ctx>(expr: &Expression, cg: &mut CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
-
+fn llvm_from_print<'ctx>(
+    expr: &Expression,
+    cg: &mut CodeGen<'ctx>,
+) -> Result<(), LLVMCodegenError> {
     let expr_value: SmolVar<'ctx> = llvm_compute_expr(expr, cg)?;
 
     match expr.get_type() {
@@ -78,17 +97,19 @@ fn llvm_from_print<'ctx>(expr: &Expression, cg: &mut CodeGen<'ctx>) -> Result<()
         Type::Int => print_int_value(&expr_value, cg)?,
         Type::String => print_string_value(&expr_value, cg)?,
         Type::List => print_list_value(&expr_value, cg)?,
-        Type::Weak(_)
-        | Type::Any => print_any_value(&expr_value, cg)?,
+        Type::Weak(_) | Type::Any => print_any_value(&expr_value, cg)?,
         _ => {
-                cg.errors.push(Diagnostic::from_localizable_ref(
-                    expr,
-                    DiagnosticGravity::Error,
-                    String::from("UnimplementedLLVM"),
-                    format!("Unimplemented llvm for expression {}", expr.get_string_repr())
-                ));
-                return Err(LLVMCodegenError::Unimplemented(expr.get_string_repr()));
-            }
+            cg.errors.push(Diagnostic::from_localizable_ref(
+                expr,
+                DiagnosticGravity::Error,
+                String::from("UnimplementedLLVM"),
+                format!(
+                    "Unimplemented llvm for expression {}",
+                    expr.get_string_repr()
+                ),
+            ));
+            return Err(LLVMCodegenError::Unimplemented(expr.get_string_repr()));
+        }
     };
 
     return Ok(());

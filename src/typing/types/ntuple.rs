@@ -9,16 +9,12 @@ pub struct NTuple {
 
 impl From<Vec<Type>> for NTuple {
     fn from(vals: Vec<Type>) -> Self {
-        NTuple {
-            vals
-        }
+        NTuple { vals }
     }
 }
 
 impl Display for NTuple {
-
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        
         if self.vals.len() == 0 {
             return Type::None.fmt(f);
         }

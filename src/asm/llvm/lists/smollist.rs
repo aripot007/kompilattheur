@@ -1,4 +1,4 @@
-use inkwell::{values::{IntValue, PointerValue, StructValue}, AddressSpace};
+use inkwell::{values::{ArrayValue, IntValue, PointerValue, StructValue}, AddressSpace};
 use crate::{asm::{codegen::CodeGen, llvm::{smolvar::SmolVar, LLVMCodegenError}}, typing::Type};
 
 pub(super) type SmolList<'ctx> = StructValue<'ctx>;
@@ -96,7 +96,7 @@ impl<'ctx> CodeGen<'ctx> {
         let list_struct = self.builder.build_load(self.smolpp_types.list_type, list_struct_ptr, "list_struct")?.into_struct_value();
 
         // Free the underlying array
-        let array_ptr = self.get_list_array(list_struct)?;
+        let array_ptr = self.get_list_array_ptr(list_struct)?;
         self.builder.build_free(array_ptr)?;
 
         // Free the list array
@@ -121,12 +121,11 @@ impl<'ctx> CodeGen<'ctx> {
         return Ok(self.builder.build_insert_value(list, capacity, 1, "set_list_cap")?.into_struct_value());
     }
 
-    fn get_list_array(&self, list: SmolList<'ctx>) -> Result<PointerValue<'ctx>, LLVMCodegenError> {
-        return Ok(self.builder.build_extract_value(list, 2, "list_array")?.into_pointer_value());
+    pub fn get_list_array_ptr(&self, list: SmolList<'ctx>) -> Result<PointerValue<'ctx>, LLVMCodegenError> {
+        return Ok(self.builder.build_extract_value(list, 2, "list_array_ptr")?.into_pointer_value());
     }
 
-    fn set_list_array(&self, list: SmolList<'ctx>, ptr: PointerValue<'ctx>) -> Result<SmolList<'ctx>, LLVMCodegenError> {
-        return Ok(self.builder.build_insert_value(list, ptr, 2, "set_list_array")?.into_struct_value());
+    fn set_list_array_ptr(&self, list: SmolList<'ctx>, ptr: PointerValue<'ctx>) -> Result<SmolList<'ctx>, LLVMCodegenError> {
+        return Ok(self.builder.build_insert_value(list, ptr, 2, "set_list_array_ptr")?.into_struct_value());
     }
-
 }

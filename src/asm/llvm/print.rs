@@ -1,8 +1,8 @@
-use inkwell::{values::BasicValue, AddressSpace};
+use inkwell::{basic_block::BasicBlock, values::BasicValue, AddressSpace, IntPredicate};
 
 use crate::{asm::{codegen::CodeGen, get_internal_func, get_internal_global_const, internal_function_prefix, internal_global_constants::RuntimeErrorMsg, InternalFuctions, InternalGlobalConst}, typing::Type};
 
-use super::{panic::{smolpp_panic, smolpp_panic_with_unreachable}, smolvar::SmolVar, LLVMCodegenError};
+use super::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError};
 
 macro_rules! llvm_puts {
     ($cg: expr, $value: expr, $name: literal) => {
@@ -93,9 +93,81 @@ pub fn print_bool_value<'ctx>(variable: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> R
 }
 
 /// Generate LLVM to print a List value
-pub fn print_list_value<'ctx>(value: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
-    smolpp_panic(cg, RuntimeErrorMsg::PanicNotImplemented, &[])?;
-    return Ok(());
+pub fn print_list_value<'ctx>(variable: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> Result<BasicBlock<'ctx>, LLVMCodegenError> {
+    
+    // TODO : Escape strings
+
+    let opening_str = get_internal_global_const!(cg, InternalGlobalConst::ListOpeningStr).as_pointer_value();
+    let closing_str = get_internal_global_const!(cg, InternalGlobalConst::ListClosingStr).as_pointer_value();
+    let separator = get_internal_global_const!(cg, InternalGlobalConst::ListSeparatorStr).as_pointer_value();
+
+    let puts_func = cg.module.get_function(InternalFuctions::Puts.into()).unwrap();
+
+    let ptr_type = cg.context.ptr_type(AddressSpace::default());
+    let list_ptr = cg.get_variable_value(*variable)?;
+    let list_ptr = cg.builder.build_int_to_ptr(list_ptr.into_int_value(), ptr_type, "list_ptr")?;
+    let list = cg.builder.build_load(cg.smolpp_types.list_type, list_ptr, "list")?.into_struct_value();
+
+    cg.builder.build_call(puts_func, &[opening_str.into()], "print_opening_brace")?;
+
+    let len = cg.get_list_length(list)?;
+    let array_ptr = cg.get_list_array_ptr(list)?;
+
+    // int i = 0
+    // loop: {
+    //   print(list[i])
+    //   i++;
+    //   if (i >= len) goto loop_end;
+    //   merge:
+    //   print(", ")
+    // }
+    // loop_end:
+
+    let i_ptr = cg.builder.build_alloca(cg.context.i64_type(), "list_print_loop_counter")?;
+    cg.builder.build_store(i_ptr, cg.context.i64_type().const_zero())?;
+
+    let current_block = cg.builder.get_insert_block().expect("Builder is not in a block");
+    let loop_block = cg.context.insert_basic_block_after(current_block, "list_print_loop");
+    let merge_block = cg.context.insert_basic_block_after(loop_block, "list_print_loop_merge");
+    let loop_end = cg.context.insert_basic_block_after(merge_block, "list_print_loop_end");
+
+    cg.builder.build_unconditional_branch(loop_block)?;
+    cg.builder.position_at_end(loop_block);
+
+    // Load i value
+    let i = cg.builder.build_load(cg.context.i64_type(), i_ptr, "i.val")?.into_int_value();
+
+    // Get list[i]
+    let list_i_ptr = unsafe {
+        cg.builder.build_gep(
+            cg.smolpp_types.dynamic_type, 
+            array_ptr, 
+            &[i.into()],
+            "list_i_ptr")
+    }?;
+    let list_i = cg.builder.build_load(cg.smolpp_types.dynamic_type, list_i_ptr, "list_i")?;
+    
+    // Print element
+    print_any_value(&list_i.into_struct_value(), cg)?;
+
+    // i++
+    let one = cg.context.i64_type().const_int(1, false);
+    let i = cg.builder.build_int_add(i, one, "increase")?;
+
+    // if (i >= len) goto loop_end;
+    let cmp = cg.builder.build_int_compare(IntPredicate::UGE, i, len, "list_print_loop_cond")?;
+    cg.builder.build_conditional_branch(cmp, loop_end, merge_block)?;
+
+    // print(", ")
+    cg.builder.position_at_end(merge_block);
+    cg.builder.build_call(puts_func, &[separator.into()], "print_separator")?;
+    cg.builder.build_unconditional_branch(loop_block)?;
+
+    // loop_end:
+    cg.builder.position_at_end(loop_end);
+    cg.builder.build_call(puts_func, &[closing_str.into()], "print_closing_brace")?;
+
+    return Ok(loop_end);
 }
 
 /// Generate LLVM to print any value.

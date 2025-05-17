@@ -5,7 +5,7 @@ use crate::{
         codegen::CodeGen,
         llvm::{assert_assignation_type, smolvar::SmolVar, LLVMCodegenError},
     },
-    ast::nodes::{Assign, AstNode, Expression, ExpressionKind, Factor, FactorKind},
+    ast::nodes::{Assign, AstNode, BinOp, Expression, ExpressionKind, Factor, FactorKind},
     common::{
         diagnostic::Diagnostic,
         symbol_table::{get_symbol, Symbol, SymbolTableElement},
@@ -55,7 +55,10 @@ fn compute_destination_ptr<'ctx>(
                 dest_expr.get_string_repr(),
             ));
         }
-        ExpressionKind::BINOP(_, _, _) | ExpressionKind::NotImplemented => {
+        ExpressionKind::BINOP(expr1, binop, expr2) => {
+            return access_to_ptr(expr1, binop, expr2, cg)
+        }
+        ExpressionKind::NotImplemented => {
             cg.errors.push(Diagnostic::unimplemented_llvm(dest_expr));
             return Err(LLVMCodegenError::Unimplemented(dest_expr.get_string_repr()));
         }
@@ -101,4 +104,33 @@ fn factor_to_dest_ptr<'ctx>(
             ));
         }
     }
+}
+
+fn access_to_ptr<'ctx>(
+    expr1: &Expression,
+    binop: &BinOp,
+    expr2: &Expression,
+    cg: &mut CodeGen<'ctx>,
+) -> Result<Option<PointerValue<'ctx>>, LLVMCodegenError> {
+    // Only handle access operations
+    if !matches!(*binop, BinOp::ACCESS) {
+        cg.errors.push(Diagnostic::invalid_destination_expr(expr1));
+        return Err(LLVMCodegenError::InvalidDestination(format!(
+            "Invalid binary operation for destination: {}",
+            expr1.get_string_repr()
+        )));
+    }
+
+    // TODO: Implement pointer access for array indexing and struct field access
+    let error_msg = format!(
+        "Access operation not implemented: {} {} {}",
+        expr1.get_string_repr(),
+        binop,
+        expr2.get_string_repr()
+    );
+
+    // Add diagnostic
+    cg.errors.push(Diagnostic::unimplemented_llvm(expr1));
+
+    Err(LLVMCodegenError::Unimplemented(error_msg))
 }

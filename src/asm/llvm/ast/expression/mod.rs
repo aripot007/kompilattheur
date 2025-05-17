@@ -7,5 +7,5 @@ pub use binop::*;
 mod arithmetic;
 pub(self) use arithmetic::*;
 
-mod comparaison;
-pub(self) use comparaison::*;
+mod comparison;
+pub(self) use comparison::*;

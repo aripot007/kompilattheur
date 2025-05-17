@@ -137,6 +137,7 @@ pub fn init_symbol_table() -> SymbolTableRef {
 /// let node = enter_scope(node);
 /// ```
 pub fn enter_scope(parent: Rc<RefCell<Node<SymbolTable>>>) -> Rc<RefCell<Node<SymbolTable>>> {
+    println!("Entering scope");
     let index = parent.borrow().get_value().last_given_index + 1;
     let last_given_index = index.clone();
     let child = Node::new(SymbolTable::new(index, last_given_index));
@@ -241,20 +242,19 @@ fn get_scope_rec(
 /// * `base` - the node given as an argument
 /// * `symbol` / `None` - the symbol if it exists, otherwise None
 pub fn get_symbol(
-    node: Rc<RefCell<Node<SymbolTable>>>,
+    node: &Rc<RefCell<Node<SymbolTable>>>,
     key: &usize,
-) -> (Rc<RefCell<Node<SymbolTable>>>, Option<SymbolTableElement>) {
-    let base = node.clone();
-    let symbol = get_symbol_rec(node, key);
-    (base, symbol)
+) -> Option<SymbolTableElement> {
+    let symbol = get_symbol_rec(&node, key);
+    symbol
 }
 
-fn get_symbol_rec(node: Rc<RefCell<Node<SymbolTable>>>, key: &usize) -> Option<SymbolTableElement> {
+fn get_symbol_rec(node: &Rc<RefCell<Node<SymbolTable>>>, key: &usize) -> Option<SymbolTableElement> {
     if let Some(sym) = node.borrow().get_value().table.get(key) {
         return Some(sym.clone());
     } else {
         match node.borrow().get_parent() {
-            Some(parent) => return get_symbol_rec(parent, key),
+            Some(parent) => return get_symbol_rec(&parent, key),
             _ => return None,
         }
     }
@@ -513,21 +513,21 @@ flowchart TD
             },
         );
 
-        let (node, symbol) = get_symbol(node, &1);
+        let symbol = get_symbol(&node, &1);
         let res = format!("{:?}", symbol);
         assert_eq!(
             res,
             "Some(SymbolTableElement { symbol: Function, name: \"func2\", symbol_type: Any })"
         );
 
-        let (node, symbol) = get_symbol(node, &2);
+        let symbol = get_symbol(&node, &2);
         let res = format!("{:?}", symbol);
         assert_eq!(
             res,
             "Some(SymbolTableElement { symbol: Variable, name: \"var2\", symbol_type: Any })"
         );
 
-        let (node, symbol) = get_symbol(node, &3);
+        let symbol = get_symbol(&node, &3);
         let res = format!("{:?}", symbol);
         assert_eq!(
             res,
@@ -535,7 +535,7 @@ flowchart TD
         );
 
         let node = exit_scope(node);
-        let (_node, symbol) = get_symbol(node, &3);
+        let symbol = get_symbol(&node, &3);
         assert!(symbol.is_none());
     }
 
@@ -662,36 +662,36 @@ flowchart TD
             root.borrow().get_value().index
         );
 
-        let (node, symbol) = get_symbol(node, &1);
+        let symbol = get_symbol(&node, &1);
         let res = format!("{:?}", symbol);
         assert_eq!(
             res,
             "Some(SymbolTableElement { symbol: Function, name: \"func1\", symbol_type: Any })"
         );
 
-        let (node, symbol) = get_symbol(node, &7);
+        let symbol = get_symbol(&node, &7);
         assert!(symbol.is_none());
 
         let node = get_scope(node, 2).unwrap();
-        let (node, symbol) = get_symbol(node, &7);
+        let symbol = get_symbol(&node, &7);
         let res = format!("{:?}", symbol);
         assert_eq!(
             res,
             "Some(SymbolTableElement { symbol: Variable, name: \"var3\", symbol_type: Any })"
         );
-        let (node, symbol) = get_symbol(node, &5);
+        let symbol = get_symbol(&node, &5);
         let res = format!("{:?}", symbol);
         assert_eq!(
             res,
             "Some(SymbolTableElement { symbol: Function, name: \"func2\", symbol_type: Any })"
         );
-        let (node, symbol) = get_symbol(node, &2);
+        let symbol = get_symbol(&node, &2);
         let res = format!("{:?}", symbol);
         assert_eq!(
             res,
             "Some(SymbolTableElement { symbol: Variable, name: \"var1\", symbol_type: Any })"
         );
-        let (_node, symbol) = get_symbol(node, &10);
+        let symbol = get_symbol(&node, &10);
         assert!(symbol.is_none());
 
         let res = root.borrow().generate_unsafe_mermaid();

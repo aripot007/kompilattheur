@@ -71,9 +71,9 @@ pub fn llvm_from_block<'ctx>(
             Statement::For(for_loop) => llvm_from_for_loop(for_loop, cg)?,
             Statement::Return(expr) => llvm_from_return(expr, cg)?,
             Statement::Expr(expr) => {
-                let _ = llvm_compute_expr(expr, cg)?;
+                llvm_compute_expr(expr, cg)?;
             }
-            Statement::For(_) | Statement::NotImplemented => {
+            Statement::NotImplemented => {
                 cg.errors.push(Diagnostic::unimplemented_llvm(stmt));
                 error = true;
             }

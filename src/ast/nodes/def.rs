@@ -97,8 +97,7 @@ impl Into<Tree<String>> for Def {
     fn into(self) -> Tree<String> {
         let f_type = match &self.block.symbol_table {
             None => String::from(""),
-            Some(table) => get_symbol(table.clone(), &self.identifier.element.id)
-                .1 // 0 : symbol table, 1 : symbol
+            Some(table) => get_symbol(&table, &self.identifier.element.id)
                 .expect("No symbol in symbol table")
                 .symbol_type
                 .to_string(),

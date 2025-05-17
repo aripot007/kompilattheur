@@ -135,6 +135,5 @@ fn llvm_compute_function_call<'ctx>(
 
     let struct_value = StructValue::try_from(return_value).unwrap();
 
-    // Return a SmolVar with None type
     return Ok(struct_value);
 }

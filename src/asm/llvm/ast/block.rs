@@ -1,4 +1,4 @@
-use super::{llvm_compute_expr, llvm_from_assign, llvm_from_return};
+use super::{llvm_compute_expr, llvm_from_assign, llvm_from_conditional, llvm_from_return};
 use crate::{
     asm::{
         codegen::CodeGen,
@@ -66,9 +66,7 @@ pub fn llvm_from_block<'ctx>(
             Statement::Assign(assign) => llvm_from_assign(assign, cg)?,
             Statement::Conditional(cond) => llvm_from_conditional(cond, cg)?,
             Statement::Return(expr) => llvm_from_return(expr, cg)?,
-            Statement::For(_)
-            | Statement::Expr(_)
-            | Statement::NotImplemented => {
+            Statement::For(_) | Statement::Expr(_) | Statement::NotImplemented => {
                 cg.errors.push(Diagnostic::unimplemented_llvm(stmt));
                 error = true;
             }

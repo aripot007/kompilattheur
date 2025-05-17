@@ -12,3 +12,5 @@ mod defs;
 pub use defs::llvm_from_defs;
 mod def_return;
 pub use def_return::llvm_from_return;
+mod conditional;
+pub use conditional::llvm_from_conditional;

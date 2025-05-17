@@ -98,3 +98,29 @@ print(None==None)
 
 print("None != None")
 print(None!=None)
+
+print("1 == None")
+print(1 == None)
+
+print("1 != None")
+print(1 != None)
+
+print("1 == True")
+print(1 == True)
+
+print("1 != True")
+print(1 != True)
+
+print("False == 1")
+print(False == 1)
+
+print("False != 1")
+print(False != 1)
+
+print("'abc' == 1")
+print("abc" == 1)
+print("'abc' != 1")
+print("abc" != 1)
+
+print("'abc' == 'abc'")
+print("abc" == "abc")

@@ -91,3 +91,10 @@ pub fn assert_assignation_type<'ctx>(destination: &SmolVar<'ctx>, value: &SmolVa
 
     return create_assert_type_branch(cdt, cg, String::from("Incompatible types during assignation"));
 }
+
+pub fn assert_dyn_type<'ctx>(value1: &SmolVar<'ctx>, value2: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> Result<BasicBlock<'ctx>, LLVMCodegenError> {
+    let t1 = cg.get_variable_type(*value1)?;
+    let t2 = cg.get_variable_type(*value2)?;
+    let cdt = cg.builder.build_int_compare(IntPredicate::EQ, t1, t2, "assert_dyn_type")?;
+    return create_assert_type_branch(cdt, cg, String::from("Runtime type mismatch in comparison"));
+}

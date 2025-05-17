@@ -8,6 +8,6 @@ if ! brew list lld &>/dev/null; then
 fi
 
 # Exporter les variables d'environnement nécessaires
-export LLVM_SYS_180_PREFIX=$(brew --prefix llvm@15)
-export PATH="$LLVM_SYS_180_PREFIX/bin:$PATH"
+export LLVM_SYS_150_PREFIX=$(brew --prefix llvm@15)
+export PATH="$LLVM_SYS_150_PREFIX/bin:$PATH"
 export LIBRARY_PATH=/opt/homebrew/lib:$LIBRARY_PATH

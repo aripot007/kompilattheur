@@ -10,7 +10,7 @@ pub use weak::*;
 
 static WORD_SIZE: usize = 8;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub enum Type {
     None,
     Bool,

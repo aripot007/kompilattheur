@@ -68,23 +68,12 @@ impl TypingContext {
         }
 
         if let Type::Function(mut func) = old_symbol_entry.symbol_type {
-            let old_return_type = (*func).returns;
-
-            // TODO(Aristide): UNION function with (old_return_type, symbol_type)
-            func.returns = symbol_type;
-
-            let symbol_entry = SymbolTableElement {
-                symbol: Symbol::Function(),
-                name: identifier.name.clone(),
-                symbol_type: Type::Function(func),
-            };
-
-            symbol_table
-                .borrow_mut()
-                .insert_symbol(identifier.id, symbol_entry);
-
-            return;
+            match (*func).returns {
+                Type::Weak(ref mut w) => w.add_type(symbol_type),
+                _ => panic!("Invalid function return type"),
+            }
+        } else {
+            panic!("Old symbol return type is not function");
         }
-        panic!("Old symbol return type is not function")
     }
 }

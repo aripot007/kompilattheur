@@ -2,5 +2,14 @@
 def f():
     return "a"
 
-f()
+def g():
+    print("Hello")
+
+def h():
+    if True:
+        return 1
+    else:
+        if False:
+            return [1,2,3]
+
 f()

@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use super::Type;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub struct Function {
     pub args: Vec<Type>,
     pub returns: Type,

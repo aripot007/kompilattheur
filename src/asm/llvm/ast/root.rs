@@ -5,7 +5,7 @@ use crate::{
 };
 
 pub fn llvm_from_root(root: &Root, cg: &mut CodeGen) -> Result<(), LLVMCodegenError> {
-    // llvm from defs
+    // TODO(Romain): llvm_from_defs
     llvm_from_block(&root.block, cg)?;
 
     // Return 0

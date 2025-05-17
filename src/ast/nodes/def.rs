@@ -1,11 +1,16 @@
 use super::{AstNode, Block, Param};
+use crate::ast::nodes::{Expression, ExpressionKind};
+use crate::typing::Type;
 use crate::{
     analysis_table::NonTerminal,
-    ast::nodes::parse_list_filter,
+    ast::nodes::{parse_list_filter, Factor, FactorKind, Statement},
     common::{
         localizable::Localizable,
         symbol_table::get_symbol,
-        types::{file_element::file_element_from, FileElement, IdToken, Node, Token, Tree},
+        types::{
+            file_element::{empty_file_elt, file_element_from},
+            FileElement, IdToken, Node, Token, Tree,
+        },
     },
     parser::Lexem,
 };
@@ -49,7 +54,27 @@ impl From<Tree<FileElement<Lexem>>> for Def {
             is_param_node,
         );
 
-        let block = Block::from(root.borrow().get_children()[6].clone());
+        let mut block = Block::from(root.borrow().get_children()[6].clone());
+        let mut add_return = false;
+        if let Some(last_statement) = block.statements.last() {
+            if !matches!(last_statement, Statement::Return(_)) {
+                add_return = true;
+            }
+            // if last statement return ok
+        } else {
+            add_return = true;
+        }
+        if add_return {
+            let factor = Factor {
+                factor_type: Some(Type::None),
+                kind: FactorKind::None(empty_file_elt!(Token::None)),
+            };
+            let expr = Expression {
+                expr_type: Option::Some(Type::None),
+                kind: ExpressionKind::Factor(factor),
+            };
+            block.statements.push(Statement::Return(expr));
+        }
 
         let localization = FileElement {
             element: true,

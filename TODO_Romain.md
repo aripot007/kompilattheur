@@ -9,7 +9,7 @@ llvm_from_def
 setup builder
 call llvm_for_block 
 /!\ dont generate warning return
-check if last statement is return in AST if no add return None
+check if last statement in block (no problem if, fallback) is return in AST if no add return None
 based on llvm_compute_none_value create None var
 function_value = cg.module.add_function(...)
 

@@ -1,4 +1,4 @@
-use inkwell::{values::{ArrayValue, IntValue, PointerValue, StructValue}, AddressSpace};
+use inkwell::{types::BasicType, values::{ArrayValue, IntValue, PointerValue, StructValue}, AddressSpace};
 use crate::{asm::{codegen::CodeGen, llvm::{smolvar::SmolVar, LLVMCodegenError}}, typing::Type};
 
 pub(super) type SmolList<'ctx> = StructValue<'ctx>;
@@ -75,6 +75,9 @@ impl<'ctx> CodeGen<'ctx> {
                 list_ptr
             }
         };
+
+        let val_type = self.smolpp_types.dynamic_type.get_field_type_at_index(1).unwrap();
+        let list_ptr = self.builder.build_ptr_to_int(list_ptr, val_type.into_int_type(), "list_ptr")?;
 
         return self.create_variable(Type::List, list_ptr);
     }

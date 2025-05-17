@@ -94,7 +94,7 @@ fn llvm_from_print<'ctx>(
         Type::Bool => print_bool_value(&expr_value, cg)?,
         Type::Int => print_int_value(&expr_value, cg)?,
         Type::String => print_string_value(&expr_value, cg)?,
-        Type::List => print_list_value(&expr_value, cg)?,
+        Type::List => print_list_value(&expr_value, cg).map(|_| ())?,
         Type::Weak(_) | Type::Any => print_any_value(&expr_value, cg)?,
         _ => {
             cg.errors.push(Diagnostic::from_localizable_ref(

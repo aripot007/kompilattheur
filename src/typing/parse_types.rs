@@ -218,7 +218,6 @@ fn generate_from_block(
                     context.symbol_table = else_table.clone();
 
                     let _ = generate_from_block(else_block, else_table.clone(), context);
-                    let _ = generate_from_block(else_block, else_table.clone(), context);
 
                     table = exit_scope(else_table);
                     context.symbol_table = table.clone();

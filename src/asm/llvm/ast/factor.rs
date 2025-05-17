@@ -6,6 +6,7 @@ use crate::common::symbol_table::{get_symbol, Symbol, SymbolTableElement};
 use crate::common::types::{FileElement, IdToken};
 use crate::{asm::codegen::CodeGen, ast::nodes::Factor, typing::Type};
 use inkwell::values::{BasicMetadataValueEnum, StructValue};
+use inkwell::AddressSpace;
 
 use super::llvm_compute_expr;
 
@@ -27,7 +28,7 @@ pub fn llvm_compute_factor<'ctx>(
         FactorKind::Identifier(FileElement {
             element: id_token, ..
         }) => return llvm_compute_identifier_value(id_token, cg),
-        FactorKind::List(_) => return llvm_compute_list_value(cg),
+        FactorKind::List(values) => return llvm_compute_list_value(values, cg),
         FactorKind::Call {
             identifier,
             args,
@@ -72,11 +73,45 @@ fn llvm_compute_none_value<'ctx>(
 }
 
 fn llvm_compute_list_value<'ctx>(
+    values: &Vec<Expression>,
     cg: &mut CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    let val = cg.context.i64_type().const_zero();
+    let capa = cg.context.i64_type().const_int(values.len() as u64, false);
+    let (val, list_struct_ptr) = cg.create_list_variable(capa, false)?;
 
-    return cg.create_variable(Type::List, val);
+    // Update len
+    let len_ptr =
+        cg.builder
+            .build_struct_gep(cg.smolpp_types.list_type, list_struct_ptr, 0, "len_ptr")?;
+    cg.builder.build_store(len_ptr, capa)?;
+
+    let array_ptr_ptr = cg.builder.build_struct_gep(
+        cg.smolpp_types.list_type,
+        list_struct_ptr,
+        2,
+        "array_ptr_ptr",
+    )?;
+    let array_ptr = cg.builder.build_load(
+        cg.context.ptr_type(AddressSpace::default()),
+        array_ptr_ptr,
+        "array_ptr",
+    )?;
+
+    for (i, value) in values.iter().enumerate() {
+        let list_index = cg.context.i32_type().const_int(i as u64, false);
+        let list_elt = llvm_compute_expr(value, cg)?;
+        let elt_ptr = unsafe {
+            cg.builder.build_gep(
+                cg.smolpp_types.dynamic_type,
+                array_ptr.into_pointer_value(),
+                &[list_index],
+                "elt_ptr",
+            )
+        }?;
+        cg.builder.build_store(elt_ptr, list_elt)?;
+    }
+
+    return Ok(val);
 }
 
 fn llvm_compute_identifier_value<'ctx>(

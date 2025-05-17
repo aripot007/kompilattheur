@@ -9,8 +9,9 @@ use crate::{
 };
 
 use super::{
-    compute_add_unchecked, compute_div_unchecked, compute_mod_unchecked, compute_mult_unchecked,
-    compute_sub_unchecked, llvm_compute_expr,
+    compare_boolean_values, compare_generic_values, compare_int_values, compare_list_values,
+    compare_none_values, compare_string_values, compute_add_unchecked, compute_div_unchecked,
+    compute_mod_unchecked, compute_mult_unchecked, compute_sub_unchecked, llvm_compute_expr,
 };
 
 pub fn llvm_compute_binop<'ctx>(
@@ -28,13 +29,7 @@ pub fn llvm_compute_binop<'ctx>(
         | BinOp::GREATER
         | BinOp::GREATEREQ
         | BinOp::EQ
-        | BinOp::NEQ => {
-            cg.errors.push(Diagnostic::unimplemented_llvm(root));
-            Err(LLVMCodegenError::Unimplemented(format!(
-                "Comparison operation {} not implemented yet",
-                op
-            )))
-        }
+        | BinOp::NEQ => return llvm_compute_comparison(e1, op, e2, cg),
 
         BinOp::MULT | BinOp::DIV | BinOp::MOD | BinOp::SUB => {
             return llvm_compute_arithmetic(e1, op, e2, cg, root)
@@ -86,5 +81,24 @@ fn llvm_compute_arithmetic<'ctx>(
         return Err(LLVMCodegenError::Unimplemented(String::from(
             "Arithmetic for dynamically typed expressions is not implemented yet",
         )));
+    }
+}
+
+fn llvm_compute_comparison<'ctx>(
+    e1: &Expression,
+    op: &BinOp,
+    e2: &Expression,
+    cg: &mut CodeGen<'ctx>,
+) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
+    let val1 = llvm_compute_expr(e1, cg)?;
+    let val2 = llvm_compute_expr(e2, cg)?;
+
+    match (e1.get_type(), e2.get_type()) {
+        (Type::Int, Type::Int) => compare_int_values(val1, val2, op.clone(), cg),
+        (Type::String, Type::String) => compare_string_values(val1, val2, op.clone(), cg),
+        (Type::None, Type::None) => compare_none_values(val1, val2, op.clone(), cg),
+        (Type::Bool, Type::Bool) => compare_boolean_values(val1, val2, op.clone(), cg),
+        (Type::List, Type::List) => compare_list_values(val1, val2, op.clone(), cg),
+        _ => compare_generic_values(val1, val2, op.clone(), cg),
     }
 }

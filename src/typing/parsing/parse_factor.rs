@@ -17,7 +17,12 @@ impl Typeable for Factor {
             FactorKind::True(_) | FactorKind::False(_) => Ok(Type::Bool),
             FactorKind::None(_) => Ok(Type::None),
             FactorKind::Identifier(id) => Ok(context.get_type_or_create(&id.element)), // Get or add to tds
-            FactorKind::List(_) => Ok(Type::List),
+            FactorKind::List(values) => {
+                for ref mut e in values {
+                    let _ = e.parse_type(context);
+                }
+                Ok(Type::List)
+            }
             FactorKind::Expr(ref mut expr) => expr.as_mut().parse_type(context),
             FactorKind::Call {
                 identifier,

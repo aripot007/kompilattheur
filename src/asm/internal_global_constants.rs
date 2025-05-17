@@ -14,6 +14,13 @@ pub enum InternalGlobalConst {
     /// String representation for the bool value False
     FalseString,
 
+    /// Opening brace for list printing
+    ListOpeningStr,
+    /// Closing brace for list printing
+    ListClosingStr,
+    /// Closing brace for list printing
+    ListSeparatorStr,
+
     //
     // Format strings
     //
@@ -51,6 +58,15 @@ impl Into<&'static str> for InternalGlobalConst {
             InternalGlobalConst::NoneString => internal_global_prefix!("none_string"),
             InternalGlobalConst::TrueString => internal_global_prefix!("true_string"),
             InternalGlobalConst::FalseString => internal_global_prefix!("false_string"),
+            InternalGlobalConst::ListOpeningStr => {
+                internal_global_prefix!("list_open_brace_string")
+            }
+            InternalGlobalConst::ListClosingStr => {
+                internal_global_prefix!("list_close_brace_string")
+            }
+            InternalGlobalConst::ListSeparatorStr => {
+                internal_global_prefix!("list_separator_string")
+            }
             InternalGlobalConst::IntFormatString => internal_global_prefix!("int_fmt_string"),
             InternalGlobalConst::IntFormatStringWithNewline => {
                 internal_global_prefix!("int_fmt_string_newline")
@@ -99,6 +115,10 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
     create_global_string(InternalGlobalConst::NoneString, "None", cg);
     create_global_string(InternalGlobalConst::TrueString, "True", cg);
     create_global_string(InternalGlobalConst::FalseString, "False", cg);
+
+    create_global_string(InternalGlobalConst::ListOpeningStr, "[", cg);
+    create_global_string(InternalGlobalConst::ListClosingStr, "]", cg);
+    create_global_string(InternalGlobalConst::ListSeparatorStr, ", ", cg);
 
     // Format strings
     create_global_string(InternalGlobalConst::IntFormatString, "%d", cg);

@@ -249,7 +249,10 @@ pub fn get_symbol(
     symbol
 }
 
-fn get_symbol_rec(node: &Rc<RefCell<Node<SymbolTable>>>, key: &usize) -> Option<SymbolTableElement> {
+fn get_symbol_rec(
+    node: &Rc<RefCell<Node<SymbolTable>>>,
+    key: &usize,
+) -> Option<SymbolTableElement> {
     if let Some(sym) = node.borrow().get_value().table.get(key) {
         return Some(sym.clone());
     } else {

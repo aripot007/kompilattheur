@@ -172,7 +172,7 @@ fn access_to_ptr<'ctx>(
         .into_struct_value();
 
     // Get the array pointer from the list struct
-    let array_ptr = cg.get_list_array_ptr(list_struct)?;
+    let array_ptr = cg.build_get_list_array_ptr(list_struct)?;
 
     // Get the index as an i32 value for GEP instruction
     let index_int_value = cg.get_variable_value(index_value)?;
@@ -183,7 +183,7 @@ fn access_to_ptr<'ctx>(
     )?;
 
     // Add bounds check
-    let list_length = cg.get_list_length(list_struct)?;
+    let list_length = cg.build_get_list_length(list_struct)?;
     let list_length_i32 =
         cg.builder
             .build_int_truncate(list_length, cg.context.i32_type(), "length_i32")?;

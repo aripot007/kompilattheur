@@ -8,3 +8,5 @@ mod factor;
 pub use factor::llvm_compute_factor;
 mod assign;
 pub use assign::llvm_from_assign;
+mod conditional;
+pub use conditional::llvm_from_conditional;

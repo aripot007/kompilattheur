@@ -1,5 +1,5 @@
-use crate::{asm::{codegen::CodeGen, llvm::{print::*, smolvar::SmolVar, LLVMCodegenError}}, ast::nodes::{AstNode, Block, Expression, Statement}, common::{diagnostic::{Diagnostic, DiagnosticGravity}, symbol_table::Symbol}, typing::{Type, Typeable}};
-use super::{llvm_compute_expr, llvm_from_assign};
+use crate::{asm::{codegen::CodeGen, llvm::{print::*, smolvar::SmolVar, LLVMCodegenError}}, ast::nodes::{AstNode, Block, Conditional, Expression, Statement}, common::{diagnostic::{Diagnostic, DiagnosticGravity}, symbol_table::Symbol}, typing::{Type, Typeable}};
+use super::{llvm_compute_expr, llvm_from_assign, llvm_from_bool_condition};
 
 pub fn llvm_from_block<'ctx>(block: &Block, cg: &mut CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
 
@@ -45,9 +45,9 @@ pub fn llvm_from_block<'ctx>(block: &Block, cg: &mut CodeGen<'ctx>) -> Result<()
         match stmt {
             Statement::Print(expr) => llvm_from_print(expr, cg)?,
             Statement::Assign(assign) => llvm_from_assign(assign, cg)?,
+            Statement::Conditional(cond) => llvm_from_conditional(cond, cg)?,
             Statement::Return(_)
             | Statement::For(_)
-            | Statement::Conditional(_)
             | Statement::Expr(_)
             | Statement::NotImplemented => {
                 cg.errors.push(Diagnostic::unimplemented_llvm(stmt));

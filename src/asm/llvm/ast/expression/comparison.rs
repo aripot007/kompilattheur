@@ -2,7 +2,7 @@ use crate::{
     asm::{
         codegen::CodeGen,
         internal_global_constants::RuntimeErrorMsg,
-        llvm::{assert_dyn_type, panic::smolpp_panic, smolvar::SmolVar, LLVMCodegenError},
+        llvm::{panic::smolpp_panic, smolvar::SmolVar, LLVMCodegenError},
     },
     ast::nodes::BinOp,
     typing::Type,

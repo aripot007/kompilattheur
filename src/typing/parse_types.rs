@@ -8,8 +8,6 @@ use crate::{
     typing::{Function, Type, Typeable, TypingContext, Weak},
 };
 
-use super::diagnostics;
-
 pub fn parse_types(root: nodes::Root) -> (nodes::Root, SymbolTableRef, TypingContext) {
     let table = init_symbol_table();
 

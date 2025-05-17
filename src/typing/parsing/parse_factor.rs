@@ -41,7 +41,7 @@ impl Typeable for Factor {
                     }
                 };
 
-                // Parse arguments types, do nothing with it yet since function typing is not done
+                // TODO: Parse arguments types, do nothing with it yet since function typing is not done
                 for arg in args {
                     match arg.parse_type(context) {
                         Ok(_) => (),

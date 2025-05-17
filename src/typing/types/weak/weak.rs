@@ -52,7 +52,7 @@ impl Weak {
     }
 
     /// Merge two weak types
-    pub fn union(&mut self, other: &Self) {
+    pub fn union(&self, other: &Self) {
         let mut weak_types = WEAK_TYPES.lock().unwrap();
         let l_types = weak_types.find_elt(self.id);
         let mut weak_types = WEAK_TYPES.lock().unwrap();
@@ -66,7 +66,7 @@ impl Weak {
     }
 
     /// Add a possible type to a weak
-    pub fn add_type(&mut self, typ: Type) {
+    pub fn add_type(&self, typ: Type) {
         match typ {
             Type::Weak(other) => return self.union(&other),
             Type::None | Type::Bool | Type::Int | Type::String | Type::List => {
@@ -81,7 +81,7 @@ impl Weak {
     }
 
     /// Intersect two weak types
-    pub fn intersection(&mut self, other: &Self) {
+    pub fn intersection(&self, other: &Self) {
         let mut weak_types = WEAK_TYPES.lock().unwrap();
         let l_types = weak_types.find_elt(self.id);
 
@@ -96,7 +96,7 @@ impl Weak {
     }
 
     /// Intersect restrict possible types for a weak
-    pub fn restrict(&mut self, others: &[Type]) {
+    pub fn restrict(&self, others: &[Type]) -> Result<Type, ()> {
         let mut weak_types = WEAK_TYPES.lock().unwrap();
         let l_types = weak_types.find_elt(self.id);
 
@@ -108,10 +108,20 @@ impl Weak {
             })
             .cloned()
             .collect();
-        let new_types = l_types.intersection(&others).cloned().collect();
+
+        let new_types: HashSet<Type> = l_types.intersection(&others).cloned().collect();
 
         let mut weak_types = WEAK_TYPES.lock().unwrap();
-        weak_types.set_elt(self.id, new_types);
+        weak_types.set_elt(self.id, new_types.clone());
+
+        match new_types.len() {
+            0 => Err(()),
+            1 => {
+                let vals: Vec<&Type> = new_types.iter().collect();
+                Ok(vals[0].clone())
+            }
+            _ => Ok(Type::Weak(Weak { id: self.id })),
+        }
     }
 
     pub fn is_compatible(&self, other: Type) -> bool {

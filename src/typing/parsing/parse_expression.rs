@@ -22,10 +22,38 @@ impl Typeable for Expression {
                     // TODO: Adapt to weak types
                     (UnOp::NEG, Ok(Type::Int)) => Ok(Type::Int),
                     (UnOp::NOT, Ok(Type::Bool)) => Ok(Type::Bool),
+                    (UnOp::NEG, Ok(Type::Weak(weak))) => {
+                        let possible = weak.get_possible();
+                        match weak.restrict(&[Type::Int]) {
+                            Ok(t) => Ok(t),
+                            Err(_) => {
+                                context.errors.push(Diagnostic::invalid_unop_weak_type(
+                                    expr.as_ref(),
+                                    UnOp::NEG,
+                                    &possible,
+                                ));
+                                Err(())
+                            }
+                        }
+                    }
+                    (UnOp::NOT, Ok(Type::Weak(weak))) => {
+                        let possible = weak.get_possible();
+                        match weak.restrict(&[Type::Bool]) {
+                            Ok(t) => Ok(t),
+                            Err(_) => {
+                                context.errors.push(Diagnostic::invalid_unop_weak_type(
+                                    expr.as_ref(),
+                                    UnOp::NOT,
+                                    &possible,
+                                ));
+                                Err(())
+                            }
+                        }
+                    }
                     _ => {
                         context.errors.push(Diagnostic::invalid_unop_type(
                             &localization,
-                            &un_op.to_string(),
+                            *un_op,
                             &expr.get_type(),
                         ));
                         Err(())

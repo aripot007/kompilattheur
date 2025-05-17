@@ -62,7 +62,7 @@ impl<'ctx> CodeGen<'ctx> {
 
     /// Create a list variable
     /// If `heap` is true, store the list data on the heap instead of the stack
-    pub fn create_list_variable(&self, capacity: IntValue<'ctx>, heap: bool) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
+    pub fn create_list_variable(&self, capacity: IntValue<'ctx>, heap: bool) -> Result<(SmolVar<'ctx>, PointerValue<'ctx>), LLVMCodegenError> {
         
         let list_ptr = match heap {
             true => self.create_list_in_heap(capacity)?,
@@ -77,9 +77,9 @@ impl<'ctx> CodeGen<'ctx> {
         };
 
         let val_type = self.smolpp_types.dynamic_type.get_field_type_at_index(1).unwrap();
-        let list_ptr = self.builder.build_ptr_to_int(list_ptr, val_type.into_int_type(), "list_ptr")?;
+        let list_ptr_int = self.builder.build_ptr_to_int(list_ptr, val_type.into_int_type(), "list_ptr")?;
 
-        return self.create_variable(Type::List, list_ptr);
+        return Ok((self.create_variable(Type::List, list_ptr_int)?, list_ptr));
     }
 
     /// Free a list variable stored in the heap

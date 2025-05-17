@@ -101,18 +101,31 @@ pub fn print_list_value<'ctx>(variable: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> R
     let closing_str = get_internal_global_const!(cg, InternalGlobalConst::ListClosingStr).as_pointer_value();
     let separator = get_internal_global_const!(cg, InternalGlobalConst::ListSeparatorStr).as_pointer_value();
 
-    let puts_func = cg.module.get_function(InternalFuctions::Puts.into()).unwrap();
+    let printf = cg.module.get_function(InternalFuctions::Printf.into()).unwrap();
 
     let ptr_type = cg.context.ptr_type(AddressSpace::default());
     let list_ptr = cg.get_variable_value(*variable)?;
     let list_ptr = cg.builder.build_int_to_ptr(list_ptr.into_int_value(), ptr_type, "list_ptr")?;
     let list = cg.builder.build_load(cg.smolpp_types.list_type, list_ptr, "list")?.into_struct_value();
 
-    cg.builder.build_call(puts_func, &[opening_str.into()], "print_opening_brace")?;
+    cg.builder.build_call(printf, &[opening_str.into()], "print_opening_brace")?;
+
+    let current_block = cg.builder.get_insert_block().expect("Builder is not in a block");
+    let loop_header = cg.context.insert_basic_block_after(current_block, "list_print_loop_header"); 
+    let loop_block = cg.context.insert_basic_block_after(loop_header, "list_print_loop");
+    let merge_block = cg.context.insert_basic_block_after(loop_block, "list_print_loop_merge");
+    let loop_end = cg.context.insert_basic_block_after(merge_block, "list_print_loop_end");
 
     let len = cg.get_list_length(list)?;
-    let array_ptr = cg.get_list_array_ptr(list)?;
+    
+    // if (len == 0) goto loop_end;
+    let empty_cdt = cg.builder.build_int_compare(IntPredicate::EQ, len, cg.context.i64_type().const_zero(), "empty_list_cdt")?;
+    cg.builder.build_conditional_branch(empty_cdt, loop_end, loop_header)?;
+    
+    cg.builder.position_at_end(loop_header);
 
+    let array_ptr = cg.get_list_array_ptr(list)?;
+    
     // int i = 0
     // loop: {
     //   print(list[i])
@@ -125,11 +138,6 @@ pub fn print_list_value<'ctx>(variable: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> R
 
     let i_ptr = cg.builder.build_alloca(cg.context.i64_type(), "list_print_loop_counter")?;
     cg.builder.build_store(i_ptr, cg.context.i64_type().const_zero())?;
-
-    let current_block = cg.builder.get_insert_block().expect("Builder is not in a block");
-    let loop_block = cg.context.insert_basic_block_after(current_block, "list_print_loop");
-    let merge_block = cg.context.insert_basic_block_after(loop_block, "list_print_loop_merge");
-    let loop_end = cg.context.insert_basic_block_after(merge_block, "list_print_loop_end");
 
     cg.builder.build_unconditional_branch(loop_block)?;
     cg.builder.position_at_end(loop_block);
@@ -160,12 +168,12 @@ pub fn print_list_value<'ctx>(variable: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> R
 
     // print(", ")
     cg.builder.position_at_end(merge_block);
-    cg.builder.build_call(puts_func, &[separator.into()], "print_separator")?;
+    cg.builder.build_call(printf, &[separator.into()], "print_separator")?;
     cg.builder.build_unconditional_branch(loop_block)?;
 
     // loop_end:
     cg.builder.position_at_end(loop_end);
-    cg.builder.build_call(puts_func, &[closing_str.into()], "print_closing_brace")?;
+    cg.builder.build_call(printf, &[closing_str.into()], "print_closing_brace")?;
 
     return Ok(loop_end);
 }

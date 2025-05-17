@@ -1,6 +1,6 @@
 
 use crate::asm::llvm::smolvar::SmolVar;
-use crate::ast::nodes::{AstNode, FactorKind};
+use crate::ast::nodes::{AstNode, Expression, FactorKind};
 use crate::common::symbol_table::{get_symbol, Symbol, SymbolTableElement};
 use crate::common::types::{FileElement, IdToken};
 use crate::{asm::codegen::CodeGen, ast::nodes::Factor, common::diagnostic::Diagnostic, typing::Type};
@@ -18,7 +18,7 @@ pub fn llvm_compute_factor<'ctx>(factor: &Factor, cg: &mut CodeGen<'ctx>) -> Res
         FactorKind::None(_) => return llvm_compute_none_value(cg),
         FactorKind::Expr(expr) => return llvm_compute_expr(expr, cg),
         FactorKind::Identifier(FileElement { element: id_token, .. }) => return llvm_compute_identifier_value(id_token, cg),
-        FactorKind::List(_) => return llvm_compute_list_value(cg),
+        FactorKind::List(values) => return llvm_compute_list_value(values, cg),
         FactorKind::Call { identifier: _, args: _, localization: _ } => (),
     }
 
@@ -54,11 +54,26 @@ fn llvm_compute_none_value<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>
     return cg.create_variable(Type::None, val);
 }
 
-fn llvm_compute_list_value<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
+fn llvm_compute_list_value<'ctx>(values: &Vec<Expression>, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
+    
+    let capa = cg.context.i64_type().const_int(values.len() as u64, false);
+    let (val, list_struct_ptr) = cg.create_list_variable(capa, false)?;
 
-    let val = cg.context.i64_type().const_zero();
+    let array_index_offset = cg.context.i64_type().const_int(2, false);
+    let array_ptr = unsafe {
+        cg.builder.build_gep(cg.smolpp_types.list_type, list_struct_ptr, &[array_index_offset], "array_ptr")
+    }?;
+    for (i, value) in values.iter().enumerate() {
 
-    return cg.create_variable(Type::List, val);
+        let list_index = cg.context.i64_type().const_int(i as u64, false);
+        let list_elt = llvm_compute_expr(value, cg)?;
+        let elt_ptr = unsafe {
+            cg.builder.build_gep(cg.smolpp_types.dynamic_type, array_ptr, &[list_index], "elt_ptr")
+        }?;
+        cg.builder.build_store(elt_ptr, list_elt)?;
+    }
+
+    return Ok(val);
 }
 
 fn llvm_compute_identifier_value<'ctx>(id_token: &IdToken, cg: &mut CodeGen<'ctx>) -> Result<SmolVar<'ctx>, LLVMCodegenError> {

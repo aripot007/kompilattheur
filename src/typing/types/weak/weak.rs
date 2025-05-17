@@ -1,9 +1,8 @@
+use crate::typing::Type;
 use std::{
     fmt::Display,
     sync::atomic::{AtomicUsize, Ordering},
 };
-
-use super::Type;
 
 static NEXT_ID: AtomicUsize = AtomicUsize::new(1);
 

@@ -128,6 +128,7 @@ pub fn compare_list_values<'ctx>(
     smolpp_panic(cg, RuntimeErrorMsg::PanicNotImplemented, &[])?;
     return cg.create_variable(Type::Bool, cg.context.bool_type().const_int(0, false));
 }
+
 /// Compare two generic values with the given operation
 /// Only EQ/NEQ are supported generically (with Bool↔Int assimilation).
 /// Other operations produce a runtime type error.

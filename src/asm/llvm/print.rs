@@ -10,11 +10,11 @@ use crate::{
 
 use super::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError};
 
-macro_rules! llvm_puts {
+macro_rules! llvm_printf {
     ($cg: expr, $value: expr, $name: literal) => {
         $cg.builder.build_call(
             $cg.module
-                .get_function(InternalFuctions::Puts.into())
+                .get_function(InternalFuctions::Printf.into())
                 .unwrap(),
             &[$value.into()],
             $name,
@@ -29,7 +29,7 @@ pub fn print_none_value<'ctx>(
 ) -> Result<(), LLVMCodegenError> {
     let none_str_ptr =
         get_internal_global_const!(cg, InternalGlobalConst::NoneString).as_pointer_value();
-    llvm_puts!(cg, none_str_ptr, "puts_none");
+    llvm_printf!(cg, none_str_ptr, "printf_none");
     return Ok(());
 }
 
@@ -46,7 +46,7 @@ pub fn print_int_value<'ctx>(
         get_internal_func!(cg, InternalFuctions::Printf),
         &[
             // Format string
-            get_internal_global_const!(cg, InternalGlobalConst::IntFormatStringWithNewline)
+            get_internal_global_const!(cg, InternalGlobalConst::IntFormatString)
                 .as_pointer_value()
                 .into(),
             value.into(), // value
@@ -72,7 +72,7 @@ pub fn print_string_value<'ctx>(
         false => value_generic.into_pointer_value(),
     };
 
-    llvm_puts!(cg, value, "puts_string");
+    llvm_printf!(cg, value, "printf_string");
 
     return Ok(());
 }
@@ -103,20 +103,20 @@ pub fn print_bool_value<'ctx>(
 
     // "Then" block : value is True
     cg.builder.position_at_end(then_block);
-    llvm_puts!(
+    llvm_printf!(
         cg,
         get_internal_global_const!(cg, InternalGlobalConst::TrueString).as_pointer_value(),
-        "puts_bool_true"
+        "printf_bool_true"
     );
     // Go back to the main execution
     cg.builder.build_unconditional_branch(merge_block)?;
 
     // "Else" block : value is False
     cg.builder.position_at_end(else_block);
-    llvm_puts!(
+    llvm_printf!(
         cg,
         get_internal_global_const!(cg, InternalGlobalConst::FalseString).as_pointer_value(),
-        "puts_bool_false"
+        "printf_bool_false"
     );
     // Go back to the main execution
     cg.builder.build_unconditional_branch(merge_block)?;

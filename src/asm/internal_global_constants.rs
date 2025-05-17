@@ -24,8 +24,6 @@ pub enum InternalGlobalConst {
     //
     // Format strings
     //
-    /// Format string for printing int with an ending newline
-    IntFormatStringWithNewline,
     /// Format string for converting int to string (eg. for concatenation)
     IntFormatString,
 }
@@ -68,9 +66,6 @@ impl Into<&'static str> for InternalGlobalConst {
                 internal_global_prefix!("list_separator_string")
             }
             InternalGlobalConst::IntFormatString => internal_global_prefix!("int_fmt_string"),
-            InternalGlobalConst::IntFormatStringWithNewline => {
-                internal_global_prefix!("int_fmt_string_newline")
-            }
         }
     }
 }
@@ -122,7 +117,6 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
 
     // Format strings
     create_global_string(InternalGlobalConst::IntFormatString, "%d", cg);
-    create_global_string(InternalGlobalConst::IntFormatStringWithNewline, "%d\n", cg);
 
     // Error messages
     create_global_string(

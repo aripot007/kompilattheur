@@ -2,7 +2,7 @@ use crate::{
     asm::{
         codegen::CodeGen,
         internal_global_constants::RuntimeErrorMsg,
-        llvm::{panic::smolpp_panic, smolvar::SmolVar, LLVMCodegenError},
+        llvm::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError},
     },
     ast::nodes::BinOp,
     typing::Type,
@@ -54,7 +54,7 @@ pub fn compare_string_values<'ctx>(
     operation: BinOp,
     cg: &CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    smolpp_panic(cg, RuntimeErrorMsg::PanicNotImplemented, &[])?;
+    smolpp_panic_with_unreachable(cg, RuntimeErrorMsg::PanicNotImplemented, &[])?;
     return cg.create_variable(Type::Bool, cg.context.bool_type().const_int(0, false));
 }
 
@@ -125,7 +125,7 @@ pub fn compare_list_values<'ctx>(
     operation: BinOp,
     cg: &CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    smolpp_panic(cg, RuntimeErrorMsg::PanicNotImplemented, &[])?;
+    smolpp_panic_with_unreachable(cg, RuntimeErrorMsg::PanicNotImplemented, &[])?;
     return cg.create_variable(Type::Bool, cg.context.bool_type().const_int(0, false));
 }
 
@@ -173,12 +173,13 @@ pub fn compare_generic_values<'ctx>(
     let assim = cg.builder.build_or(case1, case2, "assim")?;
     let dyn_eq = cg.builder.build_or(tag_eq, assim, "dyn_eq")?;
 
+    // TODO: NOTHING IS WORKING HERE AND LSP IS SAYING FINE BECAUSE OF UNREACHABLE MACRO
     let result_val = match operation {
         BinOp::EQ => dyn_eq,
         BinOp::NEQ => cg.builder.build_not(dyn_eq, "dyn_neq")?,
         _ => {
-            smolpp_panic(cg, RuntimeErrorMsg::TypeError, &[])?;
-            unreachable!()
+            smolpp_panic_with_unreachable(cg, RuntimeErrorMsg::TypeError, &[])?;
+            unreachable!();
         }
     };
 

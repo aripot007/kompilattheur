@@ -83,7 +83,7 @@ fn factor_to_dest_ptr<'ctx>(
                 .current_symbol_table
                 .clone()
                 .expect("Symbol table not initialized while generating llvm");
-            let symbol: SymbolTableElement = get_symbol(st, &fe.element.id).1.expect(
+            let symbol: SymbolTableElement = get_symbol(&st, &fe.element.id).expect(
                 format!(
                     "Symbol {} ({}) not registered",
                     fe.element.name, fe.element.id

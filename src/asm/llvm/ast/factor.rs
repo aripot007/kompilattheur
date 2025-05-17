@@ -77,7 +77,7 @@ fn llvm_compute_list_value<'ctx>(
     cg: &mut CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
     let capa = cg.context.i64_type().const_int(values.len() as u64, false);
-    let (val, list_struct_ptr) = cg.create_list_variable(capa, false)?;
+    let (val, list_struct_ptr) = cg.build_list_variable(capa, false)?;
 
     // Update len
     let len_ptr =
@@ -118,9 +118,9 @@ fn llvm_compute_identifier_value<'ctx>(
     id_token: &IdToken,
     cg: &mut CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
+    let symbol_table = cg.current_symbol_table.as_ref().unwrap();
     let symbol: SymbolTableElement =
-        get_symbol(cg.current_symbol_table.clone().unwrap(), &id_token.id)
-            .1
+        get_symbol( symbol_table, &id_token.id)
             .unwrap();
     let val_ptr_id = match symbol.symbol {
         Symbol::Variable { ptr_id, .. } => ptr_id.unwrap(),

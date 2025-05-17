@@ -16,7 +16,7 @@ pub struct TypingContext {
 impl TypingContext {
     /// Get the type associated to a symbol, or create a Variable symbol entry for it with a weak type.
     pub fn get_type_or_create(&mut self, identifier: &IdToken) -> Type {
-        if let (_, Some(elt)) = get_symbol(self.symbol_table.clone(), &identifier.id) {
+        if let Some(elt) = get_symbol(&self.symbol_table, &identifier.id) {
             return elt.symbol_type;
         }
 
@@ -40,9 +40,9 @@ impl TypingContext {
 
     /// Get a symbol type from the symbol table, or create an error
     pub fn get_symbol_type(&mut self, identifier: &IdToken) -> Option<Type> {
-        match get_symbol(self.symbol_table.clone(), &identifier.id) {
-            (_, Some(elt)) => Some(elt.symbol_type),
-            (_, None) => None,
+        match get_symbol(&self.symbol_table, &identifier.id) {
+            Some(elt) => Some(elt.symbol_type),
+            None => None,
         }
     }
 
@@ -60,7 +60,7 @@ impl TypingContext {
 
     pub fn update_function_return(&mut self, identifier: &IdToken, symbol_type: Type) {
         let symbol_table = self.symbol_table.clone();
-        let (symbol_table, old_symbol_entry) = get_symbol(symbol_table, &identifier.id); // old_symbol_entry is a clone
+        let old_symbol_entry = get_symbol(&symbol_table, &identifier.id); // old_symbol_entry is a clone
         let old_symbol_entry = old_symbol_entry.expect("Function not found");
 
         if Symbol::Function() != old_symbol_entry.symbol {

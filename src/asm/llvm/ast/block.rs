@@ -1,10 +1,10 @@
-use super::{llvm_compute_expr, llvm_from_assign, llvm_from_conditional};
+use super::{llvm_compute_expr, llvm_from_assign, llvm_from_return};
 use crate::{
     asm::{
         codegen::CodeGen,
         llvm::{print::*, smolvar::SmolVar, LLVMCodegenError},
     },
-    ast::nodes::{AstNode, Block, Conditional, Expression, Statement},
+    ast::nodes::{AstNode, Block, Expression, Statement},
     common::{
         diagnostic::{Diagnostic, DiagnosticGravity},
         symbol_table::Symbol,
@@ -65,8 +65,8 @@ pub fn llvm_from_block<'ctx>(
             Statement::Print(expr) => llvm_from_print(expr, cg)?,
             Statement::Assign(assign) => llvm_from_assign(assign, cg)?,
             Statement::Conditional(cond) => llvm_from_conditional(cond, cg)?,
-            Statement::Return(_)
-            | Statement::For(_)
+            Statement::Return(expr) => llvm_from_return(expr, cg)?,
+            Statement::For(_)
             | Statement::Expr(_)
             | Statement::NotImplemented => {
                 cg.errors.push(Diagnostic::unimplemented_llvm(stmt));

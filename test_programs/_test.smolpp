@@ -1,5 +1,6 @@
-
 def f():
     return 1
 
-print(f())
+a = f()
+
+print(a)

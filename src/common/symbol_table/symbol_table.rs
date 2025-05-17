@@ -8,7 +8,7 @@ use crate::typing::Type;
 
 pub type SymbolTableRef = Rc<RefCell<Node<SymbolTable>>>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Symbol {
     Variable {
         offset: usize,

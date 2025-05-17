@@ -1,11 +1,11 @@
 use crate::asm::llvm::smolvar::SmolVar;
 use crate::asm::llvm::LLVMCodegenError;
-use crate::ast::nodes::{AstNode, FactorKind};
+use crate::ast::nodes::Expression;
+use crate::ast::nodes::FactorKind;
 use crate::common::symbol_table::{get_symbol, Symbol, SymbolTableElement};
 use crate::common::types::{FileElement, IdToken};
-use crate::{
-    asm::codegen::CodeGen, ast::nodes::Factor, common::diagnostic::Diagnostic, typing::Type,
-};
+use crate::{asm::codegen::CodeGen, ast::nodes::Factor, typing::Type};
+use inkwell::values::{BasicMetadataValueEnum, StructValue};
 
 use super::llvm_compute_expr;
 
@@ -29,15 +29,11 @@ pub fn llvm_compute_factor<'ctx>(
         }) => return llvm_compute_identifier_value(id_token, cg),
         FactorKind::List(_) => return llvm_compute_list_value(cg),
         FactorKind::Call {
-            identifier: _,
-            args: _,
+            identifier,
+            args,
             localization: _,
-        } => (),
+        } => return llvm_compute_function_call(identifier, args, cg),
     }
-
-    cg.errors.push(Diagnostic::unimplemented_llvm(factor));
-
-    return Err(LLVMCodegenError::Unimplemented(factor.get_string_repr()));
 }
 
 fn llvm_compute_string_value<'ctx>(
@@ -105,4 +101,39 @@ fn llvm_compute_identifier_value<'ctx>(
     )?;
 
     return Ok(val.into_struct_value());
+}
+
+fn llvm_compute_function_call<'ctx>(
+    identifier: &IdToken,
+    args: &Vec<Expression>,
+    cg: &mut CodeGen<'ctx>,
+) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
+    let opt_function_value = cg
+        .module
+        .get_function(&format!("__smolpp_user_f_{}", identifier.name).as_str());
+    let function_value;
+    match opt_function_value {
+        Some(e) => function_value = e,
+        None => panic!(
+            "Error while generating LLVM try call function {} which doesn't exist.",
+            identifier.name
+        ),
+    }
+
+    let mut computed_args: Vec<BasicMetadataValueEnum<'_>> = vec![];
+    for arg in args {
+        computed_args.push(llvm_compute_expr(arg, cg)?.into());
+    }
+
+    let call_site_value = cg.builder.build_call(
+        function_value,
+        &computed_args,
+        format!("function_call_{}", identifier.name).as_str(),
+    )?;
+
+    let return_value = call_site_value.try_as_basic_value().left().unwrap();
+
+    let struct_value = StructValue::try_from(return_value).unwrap();
+
+    return Ok(struct_value);
 }

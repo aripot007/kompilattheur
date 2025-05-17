@@ -52,6 +52,44 @@ impl Diagnostic {
         )
     }
 
+    /// Invalid type for unary operation
+    pub(super) fn invalid_unop_type<T: Localizable>(
+        root: &T,
+        operator: &str,
+        expression_type: &Type,
+    ) -> Self {
+        Diagnostic::from_localizable_ref(
+            root,
+            DiagnosticGravity::Error,
+            String::from("TypeError"),
+            format!(
+                "Invalid type {} for unary operator {}",
+                format!("{}", expression_type).color(Color::Red),
+                operator.color(Color::Magenta)
+            ),
+        )
+    }
+
+    /// Not implemented expression
+    pub(super) fn not_implemented<T: Localizable>(root: &T) -> Self {
+        Diagnostic::from_localizable_ref(
+            root,
+            DiagnosticGravity::Error,
+            String::from("NotImplemented"),
+            format!("Expression not implemented"),
+        )
+    }
+
+    /// Return statement outside of a function
+    pub(super) fn return_outside_function<T: Localizable>(root: &T) -> Self {
+        Diagnostic::from_localizable_ref(
+            root,
+            DiagnosticGravity::Error,
+            String::from("ReturnError"),
+            format!("Return statement found outside of a function"),
+        )
+    }
+
     /// Unknown symbol
     pub(super) fn unknown_symbol<T: Localizable>(root: &T, name: &String) -> Self {
         Diagnostic::from_localizable_ref(

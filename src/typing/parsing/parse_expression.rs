@@ -18,15 +18,27 @@ impl Typeable for Expression {
                 try_parse_binop(localization, e1.as_mut(), *bin_op, e2.as_mut(), context)
             }
             ExpressionKind::UNOP(un_op, ref mut expr) => {
-                match (un_op, expr.as_mut().parse_type(context)) {
+                match (&un_op, expr.as_mut().parse_type(context)) {
                     // TODO: Adapt to weak types
                     (UnOp::NEG, Ok(Type::Int)) => Ok(Type::Int),
                     (UnOp::NOT, Ok(Type::Bool)) => Ok(Type::Bool),
-                    _ => Err(()),
+                    _ => {
+                        context.errors.push(Diagnostic::invalid_unop_type(
+                            &localization,
+                            &un_op.to_string(),
+                            &expr.get_type(),
+                        ));
+                        Err(())
+                    }
                 }
             }
             ExpressionKind::Factor(ref mut factor) => factor.parse_type(context),
-            ExpressionKind::NotImplemented => Err(()), // todo!()
+            ExpressionKind::NotImplemented => {
+                context
+                    .errors
+                    .push(Diagnostic::not_implemented(&localization));
+                Err(())
+            }
         };
 
         if let Ok(t) = &res {

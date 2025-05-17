@@ -17,6 +17,7 @@ pub fn parse_types(root: nodes::Root) -> (nodes::Root, SymbolTableRef, TypingCon
         symbol_table: table.clone(),
         warnings: Vec::new(),
         errors: Vec::new(),
+        func_id: None,
     };
 
     let _ = generate_from_node_root(&mut root, table.clone(), &mut context);
@@ -48,17 +49,21 @@ fn generate_from_def(
     context: &mut TypingContext,
 ) -> SymbolTableRef {
     let func_id = def.identifier.element.id;
+    context.func_id = Some(def.identifier.element.clone());
+
     let name = def.identifier.element.name.clone();
 
     let function_type = Function {
         args: Vec::new(),
-        returns: Type::Any,
+        returns: Type::Weak(Weak::new_with_possible(&[])),
     };
+
+    // Note: no need to get old type, because first time we define the function, return update in sub node
 
     let symbol_table_element = SymbolTableElement {
         symbol: Symbol::Function(),
-        name: name,
-        symbol_type: Type::Function(Box::from(function_type)), // TODO : Function typing
+        name,
+        symbol_type: Type::Function(Box::from(function_type)),
     };
     table
         .borrow_mut()
@@ -81,9 +86,10 @@ fn generate_from_def(
             .insert_symbol(param_id, param_element);
     }
 
-    let _ = generate_from_block(&mut def.block, function_table.clone(), context);
+    generate_from_block(&mut def.block, function_table.clone(), context);
 
     context.symbol_table = table.clone();
+    context.func_id = None;
     exit_scope(function_table)
 }
 
@@ -146,6 +152,21 @@ fn generate_from_block(
                     symbol_type: Type::Any,
                 };
                 loop_table.borrow_mut().insert_symbol(var_id, var_element);
+                let var_id = for_loop.var.element.id;
+                let var_name = for_loop.var.element.name.clone();
+
+                let loop_table = enter_scope(table.clone());
+                context.symbol_table = loop_table.clone();
+
+                let var_element = SymbolTableElement {
+                    symbol: Symbol::Variable {
+                        offset: 0,
+                        ptr_id: None,
+                    },
+                    name: var_name,
+                    symbol_type: Type::Any,
+                };
+                loop_table.borrow_mut().insert_symbol(var_id, var_element);
 
                 let _ = generate_from_block(&mut for_loop.block, loop_table.clone(), context);
 
@@ -171,6 +192,23 @@ fn generate_from_block(
                 context.symbol_table = if_table.clone();
 
                 let _ = generate_from_block(&mut cond.if_block, if_table.clone(), context);
+                // Parse condition expression type
+                if let Ok(t) = cond.condition.parse_type(context) {
+                    // TODO: Correct comparison with weak
+                    if t != Type::Bool {
+                        context.errors.push(Diagnostic::incompatible_type(
+                            &cond.condition,
+                            &t,
+                            &[Type::Bool],
+                        ));
+                        continue;
+                    }
+                }
+
+                let if_table = enter_scope(table.clone());
+                context.symbol_table = if_table.clone();
+
+                let _ = generate_from_block(&mut cond.if_block, if_table.clone(), context);
 
                 table = exit_scope(if_table);
                 context.symbol_table = table.clone();
@@ -179,6 +217,7 @@ fn generate_from_block(
                     let else_table = enter_scope(table.clone());
                     context.symbol_table = else_table.clone();
 
+                    let _ = generate_from_block(else_block, else_table.clone(), context);
                     let _ = generate_from_block(else_block, else_table.clone(), context);
 
                     table = exit_scope(else_table);
@@ -192,7 +231,17 @@ fn generate_from_block(
                 let _ = expr.parse_type(context);
             }
             Statement::Return(ref mut expr) => {
-                let _ = expr.parse_type(context);
+                let Ok(res) = expr.parse_type(context) else {
+                    // Handle by parse type
+                    continue;
+                };
+                let Some(id) = context.func_id.clone() else {
+                    context
+                        .errors
+                        .push(Diagnostic::return_outside_function(statement));
+                    continue;
+                };
+                context.update_function_return(&id, res);
             }
             Statement::NotImplemented => todo!(),
         }

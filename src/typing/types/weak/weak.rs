@@ -1,44 +1,54 @@
+use once_cell::sync::Lazy;
+
 use crate::typing::Type;
 use std::{
+    collections::HashSet,
     fmt::Display,
-    sync::atomic::{AtomicUsize, Ordering},
+    sync::{Arc, Mutex},
 };
 
-static NEXT_ID: AtomicUsize = AtomicUsize::new(1);
+use super::UnionFind;
 
 /// Denotes a type that is not yet known or cannot be known at compile time
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 pub struct Weak {
-    /// Each weak type has an id, and weak types of the same id denote the same type
     id: usize,
-    possible: Vec<Type>,
 }
+
+static WEAK_TYPES: Lazy<Arc<Mutex<UnionFind>>> =
+    Lazy::new(|| Arc::new(Mutex::new(UnionFind::new())));
 
 impl Weak {
     pub fn new() -> Self {
-        let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
-        return Weak {
-            id,
-            possible: vec![Type::None, Type::Bool, Type::Int, Type::String, Type::List],
-        };
+        return Self::new_with_possible(&[
+            Type::None,
+            Type::Bool,
+            Type::Int,
+            Type::String,
+            Type::List,
+        ]);
     }
 
     pub fn new_with_possible(possible_types: &[Type]) -> Self {
-        let mut w = Weak::new();
-        w.possible = Vec::from(possible_types);
-        return w;
+        let possible = HashSet::from_iter(possible_types.to_owned());
+        let id = WEAK_TYPES.lock().unwrap().add(possible);
+        return Self { id };
     }
 
     pub fn get_decalage(&self) -> usize {
-        self.possible
+        let mut types = WEAK_TYPES.lock().unwrap();
+        let possible = types.get_elt(self.id);
+        possible
             .iter()
             .map(|t| t.get_decalage())
             .max()
             .expect("Error: Weak type has no decalage computed!")
     }
 
-    pub fn get_possible(&self) -> &Vec<Type> {
-        &self.possible
+    pub fn get_possible(&self) -> Vec<Type> {
+        let mut types = WEAK_TYPES.lock().unwrap();
+        let possible = types.get_elt(self.id);
+        possible.iter().cloned().collect()
     }
 }
 
@@ -48,9 +58,11 @@ impl PartialEq for Weak {
     }
 }
 
+impl Eq for Weak {}
+
 impl Display for Weak {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let strs: Vec<String> = self.possible.iter().map(|t| t.to_string()).collect();
+        let strs: Vec<String> = self.get_possible().iter().map(|t| t.to_string()).collect();
         write!(f, "weak{}({})", self.id, strs.join(", "))
     }
 }

@@ -176,7 +176,7 @@ pub fn print_list_value<'ctx>(
         .context
         .insert_basic_block_after(merge_block, "list_print_loop_end");
 
-    let len = cg.get_list_length(list)?;
+    let len = cg.build_get_list_length(list)?;
 
     // if (len == 0) goto loop_end;
     let empty_cdt = cg.builder.build_int_compare(
@@ -190,7 +190,7 @@ pub fn print_list_value<'ctx>(
 
     cg.builder.position_at_end(loop_header);
 
-    let array_ptr = cg.get_list_array_ptr(list)?;
+    let array_ptr = cg.build_get_list_array_ptr(list)?;
 
     // int i = 0
     // loop: {

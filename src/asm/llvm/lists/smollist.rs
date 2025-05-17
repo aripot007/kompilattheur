@@ -38,16 +38,13 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     /// Create a list with the given capacity in the stack
-    pub fn create_list(
-        &self,
-        capacity: IntValue<'ctx>,
-    ) -> Result<SmolList<'ctx>, LLVMCodegenError> {
+    pub fn build_list(&self, capacity: IntValue<'ctx>) -> Result<SmolList<'ctx>, LLVMCodegenError> {
         let array_ptr = self.builder.build_array_alloca(
             self.smolpp_types.dynamic_type,
             capacity,
             "list_array",
         )?;
-        return self.create_list_struct(capacity, array_ptr);
+        return self.build_list_struct(capacity, array_ptr);
     }
 
     /// Create a list in the heap and return the pointer to it
@@ -60,7 +57,7 @@ impl<'ctx> CodeGen<'ctx> {
             capacity,
             "list_heap_array",
         )?;
-        let list_struct = self.create_list_struct(capacity, array_ptr)?;
+        let list_struct = self.build_list_struct(capacity, array_ptr)?;
 
         // Store the structure in the heap
         let list_ptr = self
@@ -71,7 +68,7 @@ impl<'ctx> CodeGen<'ctx> {
     }
 
     /// Create a list with the given capacity in the stack
-    fn create_list_struct(
+    fn build_list_struct(
         &self,
         capacity: IntValue<'ctx>,
         array_ptr: PointerValue<'ctx>,
@@ -96,7 +93,7 @@ impl<'ctx> CodeGen<'ctx> {
 
     /// Create a list variable
     /// If `heap` is true, store the list data on the heap instead of the stack
-    pub fn create_list_variable(
+    pub fn build_list_variable(
         &self,
         capacity: IntValue<'ctx>,
         heap: bool,
@@ -105,7 +102,7 @@ impl<'ctx> CodeGen<'ctx> {
             true => self.create_list_in_heap(capacity)?,
             false => {
                 // Create the list and store it on the stack
-                let list_struct = self.create_list(capacity)?;
+                let list_struct = self.build_list(capacity)?;
 
                 let list_ptr = self
                     .builder
@@ -130,15 +127,18 @@ impl<'ctx> CodeGen<'ctx> {
     /// Free a list variable stored in the heap
     /// This function MUST ONLY be used on list variables stored ON THE HEAP,
     /// ie created with `create_list_variable` with the `heap` parameter to `true`.
-    pub fn free_list_variable(&self, list: SmolVar<'ctx>) -> Result<(), LLVMCodegenError> {
+    pub fn build_free_list_variable(&self, list: SmolVar<'ctx>) -> Result<(), LLVMCodegenError> {
         let list_ptr = self.get_variable_value(list)?;
-        return self.free_list(list_ptr.into_pointer_value());
+        return self.build_free_list(list_ptr.into_pointer_value());
     }
 
     /// Free a list structure stored in the heap
     /// This function MUST ONLY be used on list structures stored ON THE HEAP,
     /// ie created with the `create_list_in_heap` function.
-    pub fn free_list(&self, list_struct_ptr: PointerValue<'ctx>) -> Result<(), LLVMCodegenError> {
+    pub fn build_free_list(
+        &self,
+        list_struct_ptr: PointerValue<'ctx>,
+    ) -> Result<(), LLVMCodegenError> {
         // Get the list struct from the heap
         let list_struct = self
             .builder
@@ -146,7 +146,7 @@ impl<'ctx> CodeGen<'ctx> {
             .into_struct_value();
 
         // Free the underlying array
-        let array_ptr = self.get_list_array_ptr(list_struct)?;
+        let array_ptr = self.build_get_list_array_ptr(list_struct)?;
         self.builder.build_free(array_ptr)?;
 
         // Free the list array
@@ -155,7 +155,7 @@ impl<'ctx> CodeGen<'ctx> {
         return Ok(());
     }
 
-    pub fn get_list_length(
+    pub fn build_get_list_length(
         &self,
         list: SmolList<'ctx>,
     ) -> Result<IntValue<'ctx>, LLVMCodegenError> {
@@ -165,7 +165,7 @@ impl<'ctx> CodeGen<'ctx> {
             .into_int_value());
     }
 
-    fn set_list_length(
+    fn build_set_list_length(
         &self,
         list: SmolList<'ctx>,
         len: IntValue<'ctx>,
@@ -176,14 +176,17 @@ impl<'ctx> CodeGen<'ctx> {
             .into_struct_value());
     }
 
-    fn get_list_capacity(&self, list: SmolList<'ctx>) -> Result<IntValue<'ctx>, LLVMCodegenError> {
+    fn build_get_list_capacity(
+        &self,
+        list: SmolList<'ctx>,
+    ) -> Result<IntValue<'ctx>, LLVMCodegenError> {
         return Ok(self
             .builder
             .build_extract_value(list, 1, "list_cap")?
             .into_int_value());
     }
 
-    fn set_list_capacity(
+    fn build_set_list_capacity(
         &self,
         list: SmolList<'ctx>,
         capacity: IntValue<'ctx>,
@@ -194,7 +197,7 @@ impl<'ctx> CodeGen<'ctx> {
             .into_struct_value());
     }
 
-    pub fn get_list_array_ptr(
+    pub fn build_get_list_array_ptr(
         &self,
         list: SmolList<'ctx>,
     ) -> Result<PointerValue<'ctx>, LLVMCodegenError> {
@@ -204,7 +207,7 @@ impl<'ctx> CodeGen<'ctx> {
             .into_pointer_value());
     }
 
-    fn set_list_array_ptr(
+    fn build_set_list_array_ptr(
         &self,
         list: SmolList<'ctx>,
         ptr: PointerValue<'ctx>,

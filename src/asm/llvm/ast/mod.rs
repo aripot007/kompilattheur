@@ -14,3 +14,5 @@ mod def_return;
 pub use def_return::llvm_from_return;
 mod conditional;
 pub use conditional::llvm_from_conditional;
+mod for_loop;
+pub use for_loop::llvm_from_for_loop;

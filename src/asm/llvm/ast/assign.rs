@@ -84,7 +84,9 @@ fn factor_to_dest_ptr<'ctx>(
 
             let ptr: PointerValue<'ctx> = match symbol.symbol {
                 Symbol::Variable { ptr_id, .. } => cg.get_pointer(ptr_id.unwrap()).unwrap().clone(),
-                Symbol::Parameter { .. } => todo!("Add pointers ids to parameters"),
+                Symbol::Parameter { ptr_id, .. } => {
+                    cg.get_pointer(ptr_id.unwrap()).unwrap().clone()
+                }
                 _ => panic!(),
             };
             return Ok(Some(ptr));

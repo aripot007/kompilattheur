@@ -17,6 +17,8 @@ pub enum Symbol {
     },
     Parameter {
         offset: usize,
+        /// Id of the pointer in the codegen context
+        ptr_id: Option<usize>,
     },
     Function(),
 }
@@ -300,11 +302,12 @@ fn set_symbols_offset_rec(root: SymbolTableRef) -> SymbolTableRef {
                     offset_var += symbol_clone.symbol_type.get_decalage();
                     updates.push((*key, symbol_clone));
                 }
-                Symbol::Parameter { offset: _ } => {
+                Symbol::Parameter { offset: _, ptr_id } => {
                     let mut symbol_clone = symbol.clone();
                     offset_param += symbol_clone.symbol_type.get_decalage();
                     symbol_clone.symbol = Symbol::Parameter {
                         offset: offset_param,
+                        ptr_id,
                     };
                     updates.push((*key, symbol_clone));
                 }
@@ -352,7 +355,10 @@ mod tests {
         symbol_table.update_symbol(
             2,
             SymbolTableElement {
-                symbol: Symbol::Parameter { offset: 8 },
+                symbol: Symbol::Parameter {
+                    offset: 8,
+                    ptr_id: None,
+                },
                 name: String::from("param1"),
                 symbol_type: Type::Any,
             },
@@ -498,7 +504,10 @@ flowchart TD
         node.borrow_mut().insert_symbol(
             3,
             SymbolTableElement {
-                symbol: Symbol::Parameter { offset: 8 },
+                symbol: Symbol::Parameter {
+                    offset: 8,
+                    ptr_id: None,
+                },
                 name: String::from("param2"),
                 symbol_type: Type::Any,
             },
@@ -559,7 +568,10 @@ flowchart TD
         node.borrow_mut().insert_symbol(
             3,
             SymbolTableElement {
-                symbol: Symbol::Parameter { offset: 8 },
+                symbol: Symbol::Parameter {
+                    offset: 8,
+                    ptr_id: None,
+                },
                 name: String::from("param1"),
                 symbol_type: Type::Any,
             },

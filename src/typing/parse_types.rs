@@ -77,7 +77,10 @@ fn generate_from_def(
         let param_id = param.identifier.element.id;
         let param_name = param.identifier.element.name.clone();
         let param_element = SymbolTableElement {
-            symbol: Symbol::Parameter { offset: 0 },
+            symbol: Symbol::Parameter {
+                offset: 0,
+                ptr_id: None,
+            },
             name: param_name,
             symbol_type: Type::Weak(Weak::new()),
         };

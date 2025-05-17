@@ -1,6 +1,9 @@
-def f():
+def f(a):
+    print(a)
+    a = 3
+    print(a)
     return 1
 
-a = f()
+b = f(2)
 
-print(a)
+print(b)

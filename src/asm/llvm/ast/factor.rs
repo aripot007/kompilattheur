@@ -124,7 +124,7 @@ fn llvm_compute_identifier_value<'ctx>(
             .unwrap();
     let val_ptr_id = match symbol.symbol {
         Symbol::Variable { ptr_id, .. } => ptr_id.unwrap(),
-        Symbol::Parameter { .. } => todo!("Add param ptr_id"),
+        Symbol::Parameter { ptr_id, .. } => ptr_id.unwrap(),
         _ => panic!(),
     };
     let val_ptr = *cg.get_pointer(val_ptr_id).unwrap();

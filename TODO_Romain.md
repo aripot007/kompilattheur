@@ -21,3 +21,8 @@ example codegen.rs line 87
 
 example build function
 print.rs init_internal_generic_print_function
+
+
+- [x] Return None add the end
+- [x] Build function
+- [x] Return

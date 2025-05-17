@@ -1,4 +1,4 @@
-use super::{llvm_compute_expr, llvm_from_assign};
+use super::{llvm_compute_expr, llvm_from_assign, llvm_from_return};
 use crate::{
     asm::{
         codegen::CodeGen,
@@ -64,8 +64,8 @@ pub fn llvm_from_block<'ctx>(
         match stmt {
             Statement::Print(expr) => llvm_from_print(expr, cg)?,
             Statement::Assign(assign) => llvm_from_assign(assign, cg)?,
-            Statement::Return(_)
-            | Statement::For(_)
+            Statement::Return(expr) => llvm_from_return(expr, cg)?,
+            Statement::For(_)
             | Statement::Conditional(_)
             | Statement::Expr(_)
             | Statement::NotImplemented => {

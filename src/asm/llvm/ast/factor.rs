@@ -1,11 +1,10 @@
 use crate::asm::llvm::smolvar::SmolVar;
 use crate::asm::llvm::LLVMCodegenError;
-use crate::ast::nodes::{AstNode, FactorKind};
+use crate::ast::nodes::Expression;
+use crate::ast::nodes::FactorKind;
 use crate::common::symbol_table::{get_symbol, Symbol, SymbolTableElement};
 use crate::common::types::{FileElement, IdToken};
-use crate::{
-    asm::codegen::CodeGen, ast::nodes::Factor, common::diagnostic::Diagnostic, typing::Type,
-};
+use crate::{asm::codegen::CodeGen, ast::nodes::Factor, typing::Type};
 
 use super::llvm_compute_expr;
 
@@ -29,15 +28,11 @@ pub fn llvm_compute_factor<'ctx>(
         }) => return llvm_compute_identifier_value(id_token, cg),
         FactorKind::List(_) => return llvm_compute_list_value(cg),
         FactorKind::Call {
-            identifier: _,
-            args: _,
-            localization: _,
-        } => (),
+            identifier: id,
+            args: args,
+            localization: localization,
+        } => return llvm_compute_function_call(id, args, localization, cg),
     }
-
-    cg.errors.push(Diagnostic::unimplemented_llvm(factor));
-
-    return Err(LLVMCodegenError::Unimplemented(factor.get_string_repr()));
 }
 
 fn llvm_compute_string_value<'ctx>(
@@ -105,4 +100,18 @@ fn llvm_compute_identifier_value<'ctx>(
     )?;
 
     return Ok(val.into_struct_value());
+}
+
+fn llvm_compute_function_call<'ctx>(
+    identifier: &IdToken,
+    args: &Vec<Expression>,
+    localization: &FileElement<bool>,
+    cg: &mut CodeGen<'ctx>,
+) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
+    // For now, return a placeholder None value
+    // In a full implementation, this would need to actually call the function
+    let val = cg.context.i64_type().const_zero();
+
+    // Return a SmolVar with None type
+    return cg.create_variable(Type::None, val);
 }

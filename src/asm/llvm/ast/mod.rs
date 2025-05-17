@@ -8,3 +8,7 @@ mod factor;
 pub use factor::llvm_compute_factor;
 mod assign;
 pub use assign::llvm_from_assign;
+mod defs;
+pub use defs::llvm_from_defs;
+mod def_return;
+pub use def_return::llvm_from_return;

@@ -1,11 +1,12 @@
 use super::llvm_from_block;
+use super::llvm_from_defs;
 use crate::{
     asm::{codegen::CodeGen, llvm::LLVMCodegenError},
     ast::nodes::Root,
 };
 
 pub fn llvm_from_root(root: &Root, cg: &mut CodeGen) -> Result<(), LLVMCodegenError> {
-    // TODO(Romain): llvm_from_defs
+    llvm_from_defs(&root.defs, cg)?;
     llvm_from_block(&root.block, cg)?;
 
     // Return 0

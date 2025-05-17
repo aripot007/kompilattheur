@@ -161,6 +161,7 @@ pub fn print_list_value<'ctx>(variable: &SmolVar<'ctx>, cg: &CodeGen<'ctx>) -> R
     // i++
     let one = cg.context.i64_type().const_int(1, false);
     let i = cg.builder.build_int_add(i, one, "increase")?;
+    cg.builder.build_store(i_ptr, i)?;
 
     // if (i >= len) goto loop_end;
     let cmp = cg.builder.build_int_compare(IntPredicate::UGE, i, len, "list_print_loop_cond")?;

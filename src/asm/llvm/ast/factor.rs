@@ -1,4 +1,6 @@
 
+use inkwell::AddressSpace;
+
 use crate::asm::llvm::smolvar::SmolVar;
 use crate::ast::nodes::{AstNode, Expression, FactorKind};
 use crate::common::symbol_table::{get_symbol, Symbol, SymbolTableElement};
@@ -59,16 +61,19 @@ fn llvm_compute_list_value<'ctx>(values: &Vec<Expression>, cg: &mut CodeGen<'ctx
     let capa = cg.context.i64_type().const_int(values.len() as u64, false);
     let (val, list_struct_ptr) = cg.create_list_variable(capa, false)?;
 
-    let array_index_offset = cg.context.i64_type().const_int(2, false);
-    let array_ptr = unsafe {
-        cg.builder.build_gep(cg.smolpp_types.list_type, list_struct_ptr, &[array_index_offset], "array_ptr")
-    }?;
+    // Update len
+    let len_ptr = cg.builder.build_struct_gep(cg.smolpp_types.list_type, list_struct_ptr, 0, "len_ptr")?;
+    cg.builder.build_store(len_ptr, capa)?;
+
+    let array_ptr_ptr = cg.builder.build_struct_gep(cg.smolpp_types.list_type, list_struct_ptr, 2, "array_ptr_ptr")?;
+    let array_ptr = cg.builder.build_load(cg.context.ptr_type(AddressSpace::default()), array_ptr_ptr, "array_ptr")?;
+
     for (i, value) in values.iter().enumerate() {
 
-        let list_index = cg.context.i64_type().const_int(i as u64, false);
+        let list_index = cg.context.i32_type().const_int(i as u64, false);
         let list_elt = llvm_compute_expr(value, cg)?;
         let elt_ptr = unsafe {
-            cg.builder.build_gep(cg.smolpp_types.dynamic_type, array_ptr, &[list_index], "elt_ptr")
+            cg.builder.build_gep(cg.smolpp_types.dynamic_type, array_ptr.into_pointer_value(), &[list_index], "elt_ptr")
         }?;
         cg.builder.build_store(elt_ptr, list_elt)?;
     }

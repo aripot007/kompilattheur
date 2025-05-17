@@ -232,6 +232,8 @@ fn access_to_ptr<'ctx>(
         true,
     );
 
+    // TODO(Baptiste): fix issue error msg not a pointer
+
     // Call panic function
     smolpp_panic_with_unreachable(cg, RuntimeErrorMsg::TypeError, &[error_msg.into()])?;
 

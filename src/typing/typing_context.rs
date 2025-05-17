@@ -1,4 +1,8 @@
-use crate::common::{diagnostic::Diagnostic, symbol_table::{get_symbol, Symbol, SymbolTableElement, SymbolTableRef}, types::IdToken};
+use crate::common::{
+    diagnostic::Diagnostic,
+    symbol_table::{get_symbol, Symbol, SymbolTableElement, SymbolTableRef},
+    types::IdToken,
+};
 
 use super::{Type, Weak};
 
@@ -18,7 +22,10 @@ impl TypingContext {
         let t = Type::Weak(Weak::new());
 
         let symbol_entry = SymbolTableElement {
-            symbol: Symbol::Variable{offset: 0, ptr_id: None},
+            symbol: Symbol::Variable {
+                offset: 0,
+                ptr_id: None,
+            },
             name: identifier.name.clone(),
             symbol_type: t.clone(),
         };
@@ -46,6 +53,8 @@ impl TypingContext {
             symbol_type: symbol_type,
         };
 
-        self.symbol_table.borrow_mut().insert_symbol(identifier.id, symbol_entry);
+        self.symbol_table
+            .borrow_mut()
+            .insert_symbol(identifier.id, symbol_entry);
     }
 }

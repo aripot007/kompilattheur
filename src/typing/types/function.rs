@@ -10,7 +10,6 @@ pub struct Function {
 
 impl Display for Function {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        
         if self.args.len() == 0 {
             Type::None.fmt(f)?;
         } else {

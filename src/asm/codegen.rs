@@ -53,7 +53,8 @@ impl<'ctx> CodeGen<'ctx> {
             info: true,
             machine_code: true,
         };
-        Target::initialize_native(&config).map_err(|s| format!("Failed to initialize native target : {}", s))?;
+        Target::initialize_native(&config)
+            .map_err(|s| format!("Failed to initialize native target : {}", s))?;
 
         let target = Target::from_triple(target_triple)
             .map_err(|e| format!("Failed to get target from triple: {}", e))?;
@@ -113,7 +114,7 @@ impl<'ctx> CodeGen<'ctx> {
         };
 
         codegen.module.set_triple(&target_triple);
-        
+
         codegen.init_smolpp_types();
         init_internal_global_consts(&codegen);
         init_internal_functions(&mut codegen)
@@ -265,7 +266,7 @@ impl<'ctx> CodeGen<'ctx> {
 
     pub fn verify(&self) -> Result<(), String> {
         // Verify the module
-        if let Err(e) =self.module.verify() {
+        if let Err(e) = self.module.verify() {
             eprintln!("Module verification failed!");
             eprintln!("{}", e.to_string());
             eprintln!("{}", self.module.print_to_string().to_string());
@@ -333,5 +334,4 @@ impl<'ctx> CodeGen<'ctx> {
     pub fn get_pointer(&self, id: usize) -> Option<&PointerValue<'ctx>> {
         return self.pointers_table.get(id);
     }
-    
 }

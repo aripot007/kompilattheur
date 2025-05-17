@@ -137,7 +137,6 @@ pub fn init_symbol_table() -> SymbolTableRef {
 /// let node = enter_scope(node);
 /// ```
 pub fn enter_scope(parent: Rc<RefCell<Node<SymbolTable>>>) -> Rc<RefCell<Node<SymbolTable>>> {
-    println!("Entering scope");
     let index = parent.borrow().get_value().last_given_index + 1;
     let last_given_index = index.clone();
     let child = Node::new(SymbolTable::new(index, last_given_index));

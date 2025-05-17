@@ -35,7 +35,7 @@ impl Into<&'static str> for InternalFuctions {
             InternalFuctions::GenericPrint => internal_function_prefix!("generic_print"),
             InternalFuctions::Puts => "puts",
             InternalFuctions::Printf => "printf",
-            InternalFuctions::Trap => "llvm.trap",
+            InternalFuctions::Trap => "llvm.debugtrap",
         }
     }
 }
@@ -62,7 +62,7 @@ pub(super) fn init_internal_functions<'ctx>(
 
     // llvm.trap
     let trap_type = cg.context.void_type().fn_type(&[], false);
-    cg.module.add_function("llvm.trap", trap_type, None);
+    cg.module.add_function("llvm.debugtrap", trap_type, None);
 
     //
     // Internal functions

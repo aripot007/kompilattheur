@@ -82,7 +82,7 @@ impl Into<&'static str> for RuntimeErrorMsg {
     }
 }
 
-fn create_global_string<'ctx, T: Into<&'static str>>(name: T, value: &str, cg: &CodeGen<'ctx>) {
+pub fn create_global_string<'ctx, T: Into<&'static str>>(name: T, value: &str, cg: &CodeGen<'ctx>) {
     let string_value = cg.context.const_string(value.as_bytes(), true);
 
     // Declare it as a global variable

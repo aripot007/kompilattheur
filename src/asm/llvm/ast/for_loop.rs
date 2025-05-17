@@ -3,7 +3,7 @@ use inkwell::AddressSpace;
 use crate::{
     asm::{
         codegen::CodeGen,
-        llvm::{smolvar::SmolVar, LLVMCodegenError},
+        llvm::{assert_type, smolvar::SmolVar, LLVMCodegenError},
     },
     ast::nodes::For,
     common::symbol_table::{get_symbol, Symbol},
@@ -59,7 +59,13 @@ pub fn llvm_from_for_loop<'ctx>(
     // Get the iterator value
     let iterator_variable: SmolVar<'ctx> = llvm_compute_expr(&for_loop.iterator, cg)?;
 
-    // TODO: Check if the iterator_value is a list
+    // Check if the iterator_value is a list
+    assert_type(
+        Type::List,
+        &iterator_variable,
+        cg,
+        None,
+    )?;
 
     let iterator_value = cg.get_variable_value(iterator_variable)?;
 

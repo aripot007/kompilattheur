@@ -1,13 +1,11 @@
-use inkwell::{basic_block::BasicBlock, values::IntValue, IntPredicate};
+use inkwell::{basic_block::BasicBlock, values::IntValue, AddressSpace, IntPredicate};
 
 use crate::{
-    asm::{
-        codegen::CodeGen, internal_global_constants::RuntimeErrorMsg, llvm::panic::smolpp_panic,
-    },
+    asm::{codegen::CodeGen, internal_global_constants::RuntimeErrorMsg},
     typing::Type,
 };
 
-use super::{smolvar::SmolVar, LLVMCodegenError};
+use super::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError};
 
 /// Generate LLVM to assert the type of a variable at runtime
 /// The runtime type must be exactly `valtype`, weak types will not match
@@ -20,11 +18,7 @@ pub fn assert_type<'ctx>(
 ) -> Result<BasicBlock<'ctx>, LLVMCodegenError> {
     let msg = match msg {
         Some(s) => s,
-        None => format!(
-            "Expected type {} ({}), got %s",
-            valtype,
-            valtype.get_bitmask()
-        ),
+        None => format!("Expected type {} ({})", valtype, valtype.get_bitmask()),
     };
 
     let type_field = cg.get_variable_type(*value)?;
@@ -109,7 +103,17 @@ fn create_assert_type_branch<'ctx>(
     cg: &CodeGen<'ctx>,
     msg: String,
 ) -> Result<BasicBlock<'ctx>, LLVMCodegenError> {
-    let msg_str = cg.context.const_string(msg.as_bytes(), true);
+    let string_value = cg.context.const_string(msg.as_str().as_bytes(), true);
+
+    // Declare it as a global variable
+    let global_var = cg.module.add_global(
+        string_value.get_type(),
+        Some(AddressSpace::default()),
+        "__assert_type_msg_".into(),
+    );
+
+    global_var.set_initializer(&string_value);
+    global_var.set_constant(true);
 
     // Create panic block and continuation block
     let ok_block = cg.context.append_basic_block(cg.current_function, "ok");
@@ -121,9 +125,11 @@ fn create_assert_type_branch<'ctx>(
 
     // "Panic" block : type is not the same
     cg.builder.position_at_end(panic_block);
-    smolpp_panic(cg, RuntimeErrorMsg::TypeError, &[msg_str.into()])?;
-    // End execution
-    cg.builder.build_unreachable()?;
+    smolpp_panic_with_unreachable(
+        cg,
+        RuntimeErrorMsg::TypeError,
+        &[global_var.as_pointer_value().into()],
+    )?;
 
     // "Then" block : type is ok
     cg.builder.position_at_end(ok_block);

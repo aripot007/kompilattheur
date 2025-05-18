@@ -99,20 +99,6 @@ fn factor_to_dest_ptr<'ctx>(
                 _ => panic!(),
             };
 
-            // TODO(Baptiste): assert type
-            /*
-            let smalvar = cg
-                .builder
-                .build_load(cg.smolpp_types.dynamic_type, ptr, "var struct")?
-                .into_struct_value();
-            assert_type(
-                Type::List,
-                &smalvar,
-                cg,
-                Some("Expected list for access".into()),
-            )?;
-            */
-
             return Ok(Some(ptr));
         }
 
@@ -142,6 +128,13 @@ fn access_to_ptr<'ctx>(
         .builder
         .build_load(cg.smolpp_types.dynamic_type, base_value, "list var")?
         .into_struct_value();
+
+    assert_type(
+        Type::List,
+        &base_value,
+        cg,
+        Some("Expected list for access".into()),
+    )?;
 
     // Evaluate the index expression
     let index_value = super::llvm_compute_expr(expr2, cg)?;
@@ -221,21 +214,12 @@ fn access_to_ptr<'ctx>(
     // Handle out of bounds error
     cg.builder.position_at_end(out_of_bounds_block);
 
-    // Create error message
-    let error_msg = cg.context.const_string(
-        format!(
-            "IndexError: index {} out of bounds for list of length {}",
-            expr2.get_string_repr(),
-            list_length_i32
-        )
-        .as_bytes(),
-        true,
-    );
-
-    // TODO(Baptiste): fix issue error msg not a pointer
-
     // Call panic function
-    smolpp_panic_with_unreachable(cg, RuntimeErrorMsg::TypeError, &[error_msg.into()])?;
+    smolpp_panic_with_unreachable(
+        cg,
+        RuntimeErrorMsg::IndexOutOfBound,
+        &[index_i32.into(), list_length_i32.into()],
+    )?;
 
     // Handle in-bounds access
     cg.builder.position_at_end(in_bounds_block);

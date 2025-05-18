@@ -42,6 +42,9 @@ pub enum RuntimeErrorMsg {
     ///
     /// Takes a string message as an argument
     TypeError,
+
+    /// index, length
+    IndexOutOfBound,
 }
 
 macro_rules! internal_global_prefix {
@@ -78,6 +81,7 @@ impl Into<&'static str> for RuntimeErrorMsg {
             }
             RuntimeErrorMsg::PanicNotImplemented => internal_global_prefix!("panic_unimplemented"),
             RuntimeErrorMsg::TypeError => internal_global_prefix!("error_type"),
+            RuntimeErrorMsg::IndexOutOfBound => internal_global_prefix!("error_out_of_bound"),
         }
     }
 }
@@ -130,4 +134,9 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         cg,
     );
     create_global_string(RuntimeErrorMsg::TypeError, "TypeError: %s\n", cg);
+    create_global_string(
+        RuntimeErrorMsg::IndexOutOfBound,
+        "IndexError: index %d out of bounds for list of length %d\n",
+        cg,
+    );
 }

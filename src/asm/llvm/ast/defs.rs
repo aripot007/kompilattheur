@@ -5,6 +5,7 @@ use crate::common::symbol_table::Symbol;
 use super::llvm_from_block;
 
 pub fn llvm_from_defs<'ctx>(defs: &Defs, cg: &mut CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
+    // TODO: init signature then code
     for def in &defs.defs {
         let name = def.identifier.element.name.clone();
         let var_type = cg.smolpp_types.dynamic_type;

@@ -3,7 +3,7 @@ use colored::{Color, Colorize};
 use super::Type;
 /// Defines all diagnostics used in the typing system
 use crate::{
-    ast::nodes::UnOp,
+    ast::nodes::{BinOp, UnOp},
     common::{
         diagnostic::{Diagnostic, DiagnosticGravity},
         localizable::Localizable,
@@ -88,6 +88,32 @@ impl Diagnostic {
             format!(
                 "Invalid type {} for unary operator {}",
                 format!("{}", types).color(Color::Red),
+                operator.to_string().color(Color::Magenta)
+            ),
+        )
+    }
+
+    /// Invalid type for binary operation
+    pub(super) fn invalid_binop_weak_type<T: Localizable>(
+        root: &T,
+        operator: BinOp,
+        w1_id: usize,
+        w1_types: &[Type],
+        w2_id: usize,
+        w2_types: &[Type],
+    ) -> Self {
+        let strs1: Vec<String> = w1_types.iter().map(|t| t.to_string()).collect();
+        let types1 = format!("weak{}({})", w1_id, strs1.join(", "));
+        let strs2: Vec<String> = w2_types.iter().map(|t| t.to_string()).collect();
+        let types2 = format!("weak{}({})", w2_id, strs2.join(", "));
+        Diagnostic::from_localizable_ref(
+            root,
+            DiagnosticGravity::Error,
+            String::from("TypeError"),
+            format!(
+                "Invalid types {} and {} for binary operator {}",
+                format!("{}", types1).color(Color::Red),
+                format!("{}", types2).color(Color::Red),
                 operator.to_string().color(Color::Magenta)
             ),
         )

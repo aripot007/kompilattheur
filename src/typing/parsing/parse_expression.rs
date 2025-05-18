@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use colored::{Color, Colorize};
 
 use crate::{
@@ -116,7 +118,7 @@ fn try_parse_binop(
         }
         BinOp::AND | BinOp::OR => Ok(Type::Bool),
         BinOp::LESS | BinOp::LESSEQ | BinOp::GREATER | BinOp::GREATEREQ => {
-            try_parse_comparison(root_localization, e1, t1, op, e2, t2, context)
+            try_parse_comparison(root_localization, t1, op, t2, context)
         }
         BinOp::MULT | BinOp::DIV | BinOp::MOD | BinOp::SUB => {
             match (&t1, &t2) {
@@ -154,6 +156,7 @@ fn try_parse_binop(
         }
         BinOp::ADD => return try_parse_add(root_localization, t1, t2, context),
         BinOp::ACCESS => {
+            // TODO(Aristide)
             if t2 == Type::Int {
                 Ok(Type::Any)
             } else {
@@ -214,26 +217,118 @@ fn try_parse_add(
 /// Parse comparison operators <, <=, > and >=
 fn try_parse_comparison(
     root_localization: LocalizationInfo,
-    e1: &Expression,
-    e1_type: Type,
+    t1: Type,
     op: BinOp,
-    e2: &Expression,
-    e2_type: Type,
+    t2: Type,
     context: &mut TypingContext,
 ) -> Result<Type, ()> {
-    if e1_type != e2_type {
-        context.errors.push(Diagnostic::from_localizable(
-            root_localization,
-            DiagnosticGravity::Error,
-            String::from("TypeError"),
-            format!(
-                "Cannot compare type {} with type {}",
-                format!("{}", e1_type).color(Color::Yellow),
-                format!("{}", e2_type).color(Color::Yellow)
-            ),
-        ));
-        return Err(());
-    } else {
-        return Ok(Type::Bool);
+    match (&t1, &t2) {
+        (Type::Any, _) | (_, Type::Any) => return Ok(Type::Bool),
+        (Type::Weak(w1), Type::Weak(w2)) => {
+            let id_1 = w1.get_id();
+            let id_2 = w2.get_id();
+
+            // Used for debug
+            let types_1: Vec<Type> = w1.get_possible();
+            let types_2: Vec<Type> = w2.get_possible();
+
+            let mut possible_1: HashSet<Type> = HashSet::from_iter(types_1.clone());
+            let mut possible_2: HashSet<Type> = HashSet::from_iter(types_2.clone());
+
+            // Remove None types as they are not allowed in comparisons
+            possible_1.remove(&Type::None);
+            possible_2.remove(&Type::None);
+
+            let arithmetic_types: HashSet<Type> = HashSet::from_iter([Type::Bool, Type::Int]);
+
+            // If both intersections are not empty, we can do arithmetic comparison between the 2 weaks
+            if arithmetic_types.intersection(&possible_1).count() > 0
+                && arithmetic_types.intersection(&possible_2).count() > 0
+            {
+                // We restrict both types without making them equal, and without deleting the arithmetic types
+                let new_possible_1: Vec<Type> = possible_1
+                    .intersection(&possible_2.union(&arithmetic_types).cloned().collect())
+                    .cloned()
+                    .collect();
+                let ok = w1.restrict(&new_possible_1).is_ok();
+
+                let new_possible_2: Vec<Type> = possible_2
+                    .intersection(&possible_1.union(&arithmetic_types).cloned().collect())
+                    .cloned()
+                    .collect();
+
+                let ok = w2.restrict(&new_possible_2).is_ok() || ok;
+
+                if ok {
+                    return Ok(Type::Bool);
+                }
+
+                context.errors.push(Diagnostic::invalid_binop_weak_type(
+                    &root_localization,
+                    op,
+                    id_1,
+                    &types_1,
+                    id_2,
+                    &types_2,
+                ));
+                return Err(());
+            } else {
+                // Else, we can only compare types that are the same, but we need to remove the None type
+                w1.intersection(w2);
+                let _ = w1.remove(Type::None); // Ignore the result as we check it after
+            }
+
+            if w1.get_possible().len() != 0 {
+                return Ok(Type::Bool);
+            } else {
+                context.errors.push(Diagnostic::invalid_binop_weak_type(
+                    &root_localization,
+                    op,
+                    id_1,
+                    &types_1,
+                    id_2,
+                    &types_2,
+                ));
+                return Err(());
+            }
+        }
+        (Type::String, t) | (t, Type::String) => {
+            if t.is_compatible(Type::String) {
+                if let Type::Weak(weak) = t {
+                    weak.restrict(&[Type::String])
+                        .expect("Restriction should not fail since weak is compatible");
+                }
+                return Ok(Type::Bool);
+            }
+        }
+        (Type::List, t) | (t, Type::List) => {
+            if t.is_compatible(Type::List) {
+                if let Type::Weak(weak) = t {
+                    weak.restrict(&[Type::List])
+                        .expect("Restriction should not fail since weak is compatible");
+                }
+                return Ok(Type::Bool);
+            }
+        }
+        (Type::Int, t) | (Type::Bool, t) | (t, Type::Int) | (t, Type::Bool) => {
+            if t.is_compatible(Type::Int) || t.is_compatible(Type::Bool) {
+                if let Type::Weak(weak) = t {
+                    weak.restrict(&[Type::Int, Type::Bool])
+                        .expect("Restriction should not fail since weak is compatible");
+                }
+            }
+        }
+        _ => (),
     }
+    context.errors.push(Diagnostic::from_localizable(
+        root_localization,
+        DiagnosticGravity::Error,
+        String::from("TypeError"),
+        format!(
+            "Cannot compare type {} with type {}",
+            format!("{}", t1).color(Color::Yellow),
+            format!("{}", t2).color(Color::Yellow)
+        ),
+    ));
+    return Err(());
 }

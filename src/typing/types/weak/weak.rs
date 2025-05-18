@@ -117,6 +117,23 @@ impl Weak {
         }
     }
 
+    /// Remove an allowed type for a weak
+    pub fn remove(&self, typ: Type) -> Result<Type, ()> {
+        let mut weak_types = WEAK_TYPES.lock().unwrap();
+        let l_types = weak_types.find_elt_mut(self.id);
+
+        l_types.remove(&typ);
+
+        match l_types.len() {
+            0 => Err(()),
+            1 => {
+                let vals: Vec<&Type> = l_types.iter().collect();
+                Ok(vals[0].clone())
+            }
+            _ => Ok(Type::Weak(Weak { id: self.id })),
+        }
+    }
+
     pub fn is_compatible(&self, other: Type) -> bool {
         if let Type::Weak(weak) = other {
             let same = *self == weak;
@@ -132,6 +149,11 @@ impl Weak {
         let mut types = WEAK_TYPES.lock().unwrap();
         let possible = types.get_elt(self.id);
         return possible.contains(&other);
+    }
+
+    /// Get this weak's id
+    pub fn get_id(&self) -> usize {
+        return WEAK_TYPES.lock().unwrap().find(self.id);
     }
 }
 

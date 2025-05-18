@@ -3,6 +3,8 @@ pub(super) use ast::*;
 mod print;
 use inkwell::builder::BuilderError;
 pub(super) use print::*;
+mod list_cmp;
+pub(super) use list_cmp::*;
 mod panic;
 use thiserror::Error;
 mod assert_type;

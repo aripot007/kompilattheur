@@ -1,11 +1,14 @@
 use super::{
     codegen::CodeGen,
-    llvm::{init_internal_generic_print_function, LLVMCodegenError},
+    llvm::{
+        init_internal_generic_print_function, init_internal_list_cmp_function, LLVMCodegenError,
+    },
 };
 
 pub enum InternalFuctions {
     Main,
     GenericPrint,
+    ListCmp,
     // Syscalls
     Trap,
     Puts,
@@ -33,6 +36,7 @@ impl Into<&'static str> for InternalFuctions {
         match self {
             InternalFuctions::Main => "main",
             InternalFuctions::GenericPrint => internal_function_prefix!("generic_print"),
+            InternalFuctions::ListCmp => internal_function_prefix!("list_cmp"),
             InternalFuctions::Puts => "puts",
             InternalFuctions::Printf => "printf",
             InternalFuctions::Trap => "llvm.debugtrap",
@@ -70,6 +74,9 @@ pub(super) fn init_internal_functions<'ctx>(
 
     // generic_print
     init_internal_generic_print_function(cg)?;
+
+    // init list_cmp function
+    init_internal_list_cmp_function(cg)?;
 
     return Ok(());
 }

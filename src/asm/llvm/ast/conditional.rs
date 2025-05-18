@@ -27,7 +27,10 @@ pub fn llvm_from_conditional<'ctx>(
         assert_type(Type::Bool, &expr_value, cg, None)?;
     }
 
-    let bool_value = cg.get_variable_value(expr_value)?.into_int_value();
+    let var_value = cg.get_variable_value(expr_value)?.into_int_value();
+    let bool_value = cg
+        .builder
+        .build_int_cast(var_value, cg.context.bool_type(), "bool_if")?;
 
     let current_function = cg.current_function;
     let then_block = cg.context.append_basic_block(current_function, "then");

@@ -92,9 +92,9 @@ pub fn init_internal_range_function<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<(), 
     cg.builder.build_store(i_ptr, next_i)?;
     cg.builder.build_unconditional_branch(loop_check)?;
 
-    // end
+    // end - return the created list
     cg.builder.position_at_end(loop_end);
-    cg.builder.build_return(None)?;
+    cg.builder.build_return(Some(&list_var))?;
 
     // restore
     cg.current_function = cg.main_function;

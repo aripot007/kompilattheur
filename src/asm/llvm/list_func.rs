@@ -33,15 +33,13 @@ pub fn init_internal_list_function<'ctx>(cg: &mut CodeGen<'ctx>) -> Result<(), L
         Some("Expected list type for list parameter".to_string()),
     )?;
 
-    // TODO: implement list()
-    // assert type before exec
-    // list(range(n)) -> [0, 1, ... n-1],
-    // list([4, 5]) -> [4, 5],
-    // list(non list) -> error
+    // list() implementation:
+    // We've already asserted it's a list type, so we just return it
+    cg.builder.build_return(Some(&param))?;
 
     // Return builder to main block
     cg.current_function = cg.main_function;
     cg.builder.position_at_end(cg.current_main_block);
 
-    return Ok(());
+    Ok(())
 }

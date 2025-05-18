@@ -53,8 +53,14 @@ fn generate_from_def(
 
     let name = def.identifier.element.name.clone();
 
+    let mut args_types = Vec::new();
+
+    for _ in &def.params {
+        args_types.push(Type::Weak(Weak::new()));
+    }
+
     let function_type = Function {
-        args: Vec::new(),
+        args: args_types.clone(),
         returns: Type::Weak(Weak::new_with_possible(&[])),
     };
 
@@ -73,7 +79,7 @@ fn generate_from_def(
     let function_table = enter_scope(table.clone());
     context.symbol_table = function_table.clone();
 
-    for param in &def.params {
+    for (i, param) in def.params.iter().enumerate() {
         let param_id = param.identifier.element.id;
         let param_name = param.identifier.element.name.clone();
         let param_element = SymbolTableElement {
@@ -82,7 +88,7 @@ fn generate_from_def(
                 ptr_id: None,
             },
             name: param_name,
-            symbol_type: Type::Weak(Weak::new()),
+            symbol_type: args_types[i].clone(),
         };
         function_table
             .borrow_mut()

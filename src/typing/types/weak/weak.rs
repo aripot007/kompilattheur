@@ -119,7 +119,15 @@ impl Weak {
 
     pub fn is_compatible(&self, other: Type) -> bool {
         if let Type::Weak(weak) = other {
-            return *self == weak;
+            let same = *self == weak;
+            if same {
+                return true;
+            }
+
+            let mut types = WEAK_TYPES.lock().unwrap();
+            let self_possible = types.get_elt(self.id).clone();
+            let other_possible = types.get_elt(self.id).clone();
+            return self_possible.intersection(&other_possible).count() > 0;
         };
         let mut types = WEAK_TYPES.lock().unwrap();
         let possible = types.get_elt(self.id);
@@ -139,7 +147,7 @@ impl Eq for Weak {}
 
 impl Display for Weak {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-let id = WEAK_TYPES.lock().unwrap().find(self.id);
+        let id = WEAK_TYPES.lock().unwrap().find(self.id);
         let strs: Vec<String> = self.get_possible().iter().map(|t| t.to_string()).collect();
         write!(f, "weak{}({})", id, strs.join(", "))
     }

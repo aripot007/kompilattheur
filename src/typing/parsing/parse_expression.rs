@@ -152,21 +152,7 @@ fn try_parse_binop(
             ));
             return Err(());
         }
-        BinOp::ADD if t1 != t2 => {
-            context.errors.push(Diagnostic::from_localizable(
-                root_localization,
-                DiagnosticGravity::Error,
-                String::from("TypeError"),
-                format!(
-                    "Incompatible types {} and {} for operand {}",
-                    format!("{}", t1).color(Color::Yellow),
-                    format!("{}", t2).color(Color::Yellow),
-                    "+".color(Color::Magenta)
-                ),
-            ));
-            return Err(());
-        }
-        BinOp::ADD => Ok(t1),
+        BinOp::ADD => return try_parse_add(root_localization, t1, t2, context),
         BinOp::ACCESS => {
             if t2 == Type::Int {
                 Ok(Type::Any)
@@ -184,6 +170,44 @@ fn try_parse_binop(
                 Err(())
             }
         }
+    }
+}
+
+/// Parse add operation
+fn try_parse_add(
+    root_localization: LocalizationInfo,
+    t1: Type,
+    t2: Type,
+    context: &mut TypingContext,
+) -> Result<Type, ()> {
+    if !t1.is_compatible(t2.clone()) {
+        context.errors.push(Diagnostic::from_localizable(
+            root_localization,
+            DiagnosticGravity::Error,
+            String::from("TypeError"),
+            format!(
+                "Incompatible types {} and {} for operand {}",
+                format!("{}", t1).color(Color::Yellow),
+                format!("{}", t2).color(Color::Yellow),
+                "+".color(Color::Magenta)
+            ),
+        ));
+        return Err(());
+    }
+
+    match (t1, t2) {
+        (Type::Weak(w1), Type::Weak(w2)) => {
+            w1.intersection(&w2);
+            return Ok(Type::Weak(w1));
+        }
+        (Type::Any, t) | (t, Type::Any) => return Ok(t),
+        (Type::Weak(weak), t) | (t, Type::Weak(weak)) => {
+            weak.restrict(&[t.clone()])
+                .expect("Weak restriction should not fail if its compatible");
+            return Ok(t);
+        }
+        (t1, t2) if t1 == t2 => return Ok(t1),
+        _ => unreachable!(),
     }
 }
 

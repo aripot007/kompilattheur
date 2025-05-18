@@ -1,17 +1,19 @@
 use crate::{
     asm::{
         codegen::CodeGen,
-        internal_functions::InternalFuctions,
         get_internal_func,
+        internal_functions::InternalFuctions,
         internal_global_constants::RuntimeErrorMsg,
         llvm::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError},
-        InternalFuctions,
     },
     ast::nodes::BinOp,
-    typing::{Function, Type},
+    typing::Type,
 };
 use inkwell::AddressSpace;
-use inkwell::{values::{FunctionValue, IntValue}, IntPredicate};
+use inkwell::{
+    values::{FunctionValue, IntValue},
+    IntPredicate,
+};
 
 /// Compare two Integer with the given operation
 pub fn compare_int_values<'ctx>(
@@ -48,7 +50,9 @@ pub fn compare_int_values<'ctx>(
             )))
         }
     };
-    let res = cg.builder.build_int_cast(res, cg.context.i64_type(), "int_cast")?;
+    let res = cg
+        .builder
+        .build_int_cast(res, cg.context.i64_type(), "int_cast")?;
     return cg.create_variable(Type::Bool, res);
 }
 
@@ -121,7 +125,9 @@ pub fn compare_boolean_values<'ctx>(
             )))
         }
     };
-    let res = cg.builder.build_int_cast(res, cg.context.i64_type(), "bool_cast")?;
+    let res = cg
+        .builder
+        .build_int_cast(res, cg.context.i64_type(), "bool_cast")?;
     return cg.create_variable(Type::Bool, res);
 }
 
@@ -256,48 +262,36 @@ pub fn compare_generic_values<'ctx>(
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
     // Call the generic compare function at runtime
     let call_site_value = match operation {
-        BinOp::EQ => {
-            cg.builder.build_call(
-        get_internal_func!(cg, InternalFuctions::GenericCompareEQ),
-        &[value1.into(), value2.into()],
-        "generic_compareEQ_call",
-        )?
-        }
-        BinOp::NEQ => {
-            cg.builder.build_call(
-        get_internal_func!(cg, InternalFuctions::GenericCompareNEQ),
-        &[value1.into(), value2.into()],
-        "generic_compareNEQ_call",
-        )?
-        }
-        BinOp::LESS => {
-            cg.builder.build_call(
-        get_internal_func!(cg, InternalFuctions::GenericCompareLESS),
-        &[value1.into(), value2.into()],
-        "generic_compareLESS_call",
-        )?
-        }
-        BinOp::GREATER => {
-            cg.builder.build_call(
-        get_internal_func!(cg, InternalFuctions::GenericCompareGREATER),
-        &[value1.into(), value2.into()],
-        "generic_compareGREATER_call",
-        )?
-        }
-        BinOp::LESSEQ => {
-            cg.builder.build_call(
-        get_internal_func!(cg, InternalFuctions::GenericCompareLESSEQ),
-        &[value1.into(), value2.into()],
-        "generic_compareLESSEQ_call",
-        )?
-        }
-        BinOp::GREATEREQ => {
-            cg.builder.build_call(
-        get_internal_func!(cg, InternalFuctions::GenericCompareGREATEREQ),
-        &[value1.into(), value2.into()],
-        "generic_compareGREATEREQ_call",
-        )?
-        }
+        BinOp::EQ => cg.builder.build_call(
+            get_internal_func!(cg, InternalFuctions::GenericCompareEQ),
+            &[value1.into(), value2.into()],
+            "generic_compareEQ_call",
+        )?,
+        BinOp::NEQ => cg.builder.build_call(
+            get_internal_func!(cg, InternalFuctions::GenericCompareNEQ),
+            &[value1.into(), value2.into()],
+            "generic_compareNEQ_call",
+        )?,
+        BinOp::LESS => cg.builder.build_call(
+            get_internal_func!(cg, InternalFuctions::GenericCompareLESS),
+            &[value1.into(), value2.into()],
+            "generic_compareLESS_call",
+        )?,
+        BinOp::GREATER => cg.builder.build_call(
+            get_internal_func!(cg, InternalFuctions::GenericCompareGREATER),
+            &[value1.into(), value2.into()],
+            "generic_compareGREATER_call",
+        )?,
+        BinOp::LESSEQ => cg.builder.build_call(
+            get_internal_func!(cg, InternalFuctions::GenericCompareLESSEQ),
+            &[value1.into(), value2.into()],
+            "generic_compareLESSEQ_call",
+        )?,
+        BinOp::GREATEREQ => cg.builder.build_call(
+            get_internal_func!(cg, InternalFuctions::GenericCompareGREATEREQ),
+            &[value1.into(), value2.into()],
+            "generic_compareGREATEREQ_call",
+        )?,
         _ => {
             return Err(LLVMCodegenError::InvalidOperation(format!(
                 "Invalide operation : {:?}",
@@ -334,18 +328,21 @@ pub fn init_internal_compare_generic_function<'ctx>(
             cg.module
                 .add_function(InternalFuctions::GenericCompareLESS.into(), func_type, None)
         }
-        BinOp::GREATER => {
-            cg.module
-                .add_function(InternalFuctions::GenericCompareGREATER.into(), func_type, None)
-        }
-        BinOp::LESSEQ => {
-            cg.module
-                .add_function(InternalFuctions::GenericCompareLESSEQ.into(), func_type, None)
-        }
-        BinOp::GREATEREQ => {
-            cg.module
-                .add_function(InternalFuctions::GenericCompareGREATEREQ.into(), func_type, None)
-        }
+        BinOp::GREATER => cg.module.add_function(
+            InternalFuctions::GenericCompareGREATER.into(),
+            func_type,
+            None,
+        ),
+        BinOp::LESSEQ => cg.module.add_function(
+            InternalFuctions::GenericCompareLESSEQ.into(),
+            func_type,
+            None,
+        ),
+        BinOp::GREATEREQ => cg.module.add_function(
+            InternalFuctions::GenericCompareGREATEREQ.into(),
+            func_type,
+            None,
+        ),
         _ => {
             return Err(LLVMCodegenError::InvalidOperation(format!(
                 "Invalide generation for this operation : {:?}",
@@ -355,15 +352,23 @@ pub fn init_internal_compare_generic_function<'ctx>(
     };
 
     // Build the function
-    let entry = cg.context.append_basic_block(function, "generic_compare_function_entry");
+    let entry = cg
+        .context
+        .append_basic_block(function, "generic_compare_function_entry");
 
     // Switch builder to the function block
     cg.builder.position_at_end(entry);
     cg.current_function = function;
 
     // Get function parameter value
-    let value1 = function.get_nth_param(0 as u32).unwrap().into_struct_value();
-    let value2 = function.get_nth_param(1 as u32).unwrap().into_struct_value();
+    let value1 = function
+        .get_nth_param(0 as u32)
+        .unwrap()
+        .into_struct_value();
+    let value2 = function
+        .get_nth_param(1 as u32)
+        .unwrap()
+        .into_struct_value();
 
     // Load runtime type tags
     let t1 = cg.get_variable_type(value1)?;
@@ -479,7 +484,7 @@ fn build_switch_compare_generic_same_type<'ctx>(
 
     cg.builder.position_at_end(case_none);
     // Call the compare function for None only for EQ/NEQ
-    
+
     match operation {
         BinOp::EQ | BinOp::NEQ => {
             let result = compare_none_values(value1, value2, operation, cg)?;
@@ -493,7 +498,6 @@ fn build_switch_compare_generic_same_type<'ctx>(
             )?;
         }
     }
-    
 
     cg.builder.position_at_end(case_bool);
     let result = compare_boolean_values(value1, value2, operation, cg)?;

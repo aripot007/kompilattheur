@@ -2,8 +2,9 @@ use crate::ast::nodes::BinOp;
 
 use super::{
     codegen::CodeGen,
-    llvm::{init_internal_compare_generic_function, 
-        init_internal_generic_print_function, init_internal_list_cmp_function, LLVMCodegenError,
+    llvm::{
+        init_internal_compare_generic_function, init_internal_generic_print_function,
+        init_internal_list_cmp_function, LLVMCodegenError,
     },
 };
 
@@ -50,10 +51,18 @@ impl Into<&'static str> for InternalFuctions {
             InternalFuctions::Trap => "llvm.debugtrap",
             InternalFuctions::GenericCompareEQ => internal_function_prefix!("generic_compareEQ"),
             InternalFuctions::GenericCompareNEQ => internal_function_prefix!("generic_compareNEQ"),
-            InternalFuctions::GenericCompareLESS => internal_function_prefix!("generic_compareLESS"),
-            InternalFuctions::GenericCompareLESSEQ => internal_function_prefix!("generic_compareLESSEQ"),
-            InternalFuctions::GenericCompareGREATER => internal_function_prefix!("generic_compareGREATER"),
-            InternalFuctions::GenericCompareGREATEREQ => internal_function_prefix!("generic_compareGREATEREQ"),
+            InternalFuctions::GenericCompareLESS => {
+                internal_function_prefix!("generic_compareLESS")
+            }
+            InternalFuctions::GenericCompareLESSEQ => {
+                internal_function_prefix!("generic_compareLESSEQ")
+            }
+            InternalFuctions::GenericCompareGREATER => {
+                internal_function_prefix!("generic_compareGREATER")
+            }
+            InternalFuctions::GenericCompareGREATEREQ => {
+                internal_function_prefix!("generic_compareGREATEREQ")
+            }
         }
     }
 }

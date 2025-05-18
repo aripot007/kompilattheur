@@ -4,6 +4,7 @@ mod root;
 pub use root::llvm_from_root;
 mod expression;
 pub use expression::llvm_compute_expr;
+pub use expression::init_internal_compare_generic_function;
 mod factor;
 pub use factor::llvm_compute_factor;
 mod assign;

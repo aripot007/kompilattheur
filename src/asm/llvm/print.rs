@@ -364,7 +364,7 @@ pub fn init_internal_generic_print_function<'ctx>(
         &[type_field.into()],
     )?;
 
-    // Return builder to main block
+    // Return builder to main block because it's init function
     cg.current_function = cg.main_function;
     cg.builder.position_at_end(cg.current_main_block);
 

@@ -8,4 +8,4 @@ mod arithmetic;
 pub(self) use arithmetic::*;
 
 mod comparison;
-pub(self) use comparison::*;
+pub use comparison::*;

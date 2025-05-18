@@ -54,13 +54,10 @@ impl Weak {
     /// Merge two weak types
     pub fn union(&self, other: &Self) {
         let mut weak_types = WEAK_TYPES.lock().unwrap();
-        let l_types = weak_types.find_elt(self.id);
-        let mut weak_types = WEAK_TYPES.lock().unwrap();
-        let r_types = weak_types.find_elt(other.id);
+        let l_types = weak_types.find_elt(self.id).clone();
+        let r_types = weak_types.find_elt(other.id).clone();
 
-        let new_types = l_types.union(r_types).cloned().collect();
-
-        let mut weak_types = WEAK_TYPES.lock().unwrap();
+        let new_types = l_types.union(&r_types).cloned().collect();
         weak_types.union(self.id, other.id);
         weak_types.set_elt(self.id, new_types);
     }
@@ -83,14 +80,11 @@ impl Weak {
     /// Intersect two weak types
     pub fn intersection(&self, other: &Self) {
         let mut weak_types = WEAK_TYPES.lock().unwrap();
-        let l_types = weak_types.find_elt(self.id);
+        let l_types = weak_types.find_elt(self.id).clone();
+        let r_types = weak_types.find_elt(other.id).clone();
 
-        let mut weak_types = WEAK_TYPES.lock().unwrap();
-        let r_types = weak_types.find_elt(other.id);
+        let new_types = l_types.intersection(&r_types).cloned().collect();
 
-        let new_types = l_types.intersection(r_types).cloned().collect();
-
-        let mut weak_types = WEAK_TYPES.lock().unwrap();
         weak_types.union(self.id, other.id);
         weak_types.set_elt(self.id, new_types);
     }
@@ -98,7 +92,7 @@ impl Weak {
     /// Intersect restrict possible types for a weak
     pub fn restrict(&self, others: &[Type]) -> Result<Type, ()> {
         let mut weak_types = WEAK_TYPES.lock().unwrap();
-        let l_types = weak_types.find_elt(self.id);
+        let l_types = weak_types.find_elt(self.id).clone();
 
         let others: HashSet<Type> = others
             .iter()
@@ -111,7 +105,6 @@ impl Weak {
 
         let new_types: HashSet<Type> = l_types.intersection(&others).cloned().collect();
 
-        let mut weak_types = WEAK_TYPES.lock().unwrap();
         weak_types.set_elt(self.id, new_types.clone());
 
         match new_types.len() {

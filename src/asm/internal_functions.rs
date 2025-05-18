@@ -1,11 +1,19 @@
+use crate::ast::nodes::BinOp;
+
 use super::{
     codegen::CodeGen,
-    llvm::{init_internal_generic_print_function, LLVMCodegenError},
+    llvm::{init_internal_compare_generic_function, init_internal_generic_print_function, LLVMCodegenError},
 };
 
 pub enum InternalFuctions {
     Main,
     GenericPrint,
+    GenericCompareEQ,
+    GenericCompareNEQ,
+    GenericCompareLESS,
+    GenericCompareLESSEQ,
+    GenericCompareGREATER,
+    GenericCompareGREATEREQ,
     // Syscalls
     Trap,
     Puts,
@@ -36,6 +44,12 @@ impl Into<&'static str> for InternalFuctions {
             InternalFuctions::Puts => "puts",
             InternalFuctions::Printf => "printf",
             InternalFuctions::Trap => "llvm.debugtrap",
+            InternalFuctions::GenericCompareEQ => internal_function_prefix!("generic_compareEQ"),
+            InternalFuctions::GenericCompareNEQ => internal_function_prefix!("generic_compareNEQ"),
+            InternalFuctions::GenericCompareLESS => internal_function_prefix!("generic_compareLESS"),
+            InternalFuctions::GenericCompareLESSEQ => internal_function_prefix!("generic_compareLESSEQ"),
+            InternalFuctions::GenericCompareGREATER => internal_function_prefix!("generic_compareGREATER"),
+            InternalFuctions::GenericCompareGREATEREQ => internal_function_prefix!("generic_compareGREATEREQ"),
         }
     }
 }
@@ -70,6 +84,14 @@ pub(super) fn init_internal_functions<'ctx>(
 
     // generic_print
     init_internal_generic_print_function(cg)?;
+
+    // generic_compare
+    init_internal_compare_generic_function(cg, BinOp::EQ)?;
+    init_internal_compare_generic_function(cg, BinOp::NEQ)?;
+    init_internal_compare_generic_function(cg, BinOp::LESS)?;
+    init_internal_compare_generic_function(cg, BinOp::LESSEQ)?;
+    init_internal_compare_generic_function(cg, BinOp::GREATER)?;
+    init_internal_compare_generic_function(cg, BinOp::GREATEREQ)?;
 
     return Ok(());
 }

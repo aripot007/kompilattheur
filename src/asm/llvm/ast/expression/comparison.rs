@@ -1,13 +1,15 @@
 use crate::{
     asm::{
         codegen::CodeGen,
+        get_internal_func,
         internal_global_constants::RuntimeErrorMsg,
         llvm::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError},
+        InternalFuctions,
     },
     ast::nodes::BinOp,
-    typing::Type,
+    typing::{Function, Type},
 };
-use inkwell::IntPredicate;
+use inkwell::{values::{FunctionValue, IntValue}, IntPredicate};
 /// Compare two Integer with the given operation
 pub fn compare_int_values<'ctx>(
     value1: SmolVar<'ctx>,
@@ -132,56 +134,282 @@ pub fn compare_list_values<'ctx>(
 /// Compare two generic values with the given operation
 /// Only EQ/NEQ are supported generically (with Bool↔Int assimilation).
 /// Other operations produce a runtime type error.
+///
+/// EQ/NEQ ils sont apart, n'importe quel type, si type pareil EQ classique si type différent False pour EQ et True pour NEQ
+/// List et String, si value1 est string on assert que value2 est string puis classique compare
+/// si value1 est list on assert que value2 est list puis classique compare
+/// Si tu as un bool ou un int tu assert que l'autre est un int ou un bool et tu fais la classique compare
 pub fn compare_generic_values<'ctx>(
     value1: SmolVar<'ctx>,
     value2: SmolVar<'ctx>,
     operation: BinOp,
     cg: &CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
+    // Call the generic compare function at runtime
+    let call_site_value = match operation {
+        BinOp::EQ => {
+            cg.builder.build_call(
+        get_internal_func!(cg, InternalFuctions::GenericCompareEQ),
+        &[value1.into(), value2.into()],
+        "generic_compareEQ_call",
+        )?
+        }
+        BinOp::NEQ => {
+            cg.builder.build_call(
+        get_internal_func!(cg, InternalFuctions::GenericCompareNEQ),
+        &[value1.into(), value2.into()],
+        "generic_compareNEQ_call",
+        )?
+        }
+        BinOp::LESS => {
+            cg.builder.build_call(
+        get_internal_func!(cg, InternalFuctions::GenericCompareLESS),
+        &[value1.into(), value2.into()],
+        "generic_compareLESS_call",
+        )?
+        }
+        BinOp::GREATER => {
+            cg.builder.build_call(
+        get_internal_func!(cg, InternalFuctions::GenericCompareGREATER),
+        &[value1.into(), value2.into()],
+        "generic_compareGREATER_call",
+        )?
+        }
+        BinOp::LESSEQ => {
+            cg.builder.build_call(
+        get_internal_func!(cg, InternalFuctions::GenericCompareLESSEQ),
+        &[value1.into(), value2.into()],
+        "generic_compareLESSEQ_call",
+        )?
+        }
+        BinOp::GREATEREQ => {
+            cg.builder.build_call(
+        get_internal_func!(cg, InternalFuctions::GenericCompareGREATEREQ),
+        &[value1.into(), value2.into()],
+        "generic_compareGREATEREQ_call",
+        )?
+        }
+        _ => {
+            return Err(LLVMCodegenError::InvalidOperation(format!(
+                "Invalide operation : {:?}",
+                operation
+            )))
+        }
+    };
+
+    let return_value = call_site_value.try_as_basic_value().left().unwrap();
+
+    cg.create_variable(Type::Bool, return_value)
+}
+
+pub fn init_internal_compare_generic_function<'ctx>(
+    cg: &mut CodeGen<'ctx>,
+    operation: BinOp,
+) -> Result<(), LLVMCodegenError> {
+    // Create the function
+    let var_type = cg.smolpp_types.dynamic_type;
+
+    // Register the function in the module
+    let func_type = var_type.fn_type(&vec![var_type.into(); 2], false);
+
+    let function = match operation {
+        BinOp::EQ => {
+            cg.module
+                .add_function(InternalFuctions::GenericCompareEQ.into(), func_type, None)
+        }
+        BinOp::NEQ => {
+            cg.module
+                .add_function(InternalFuctions::GenericCompareNEQ.into(), func_type, None)
+        }
+        BinOp::LESS => {
+            cg.module
+                .add_function(InternalFuctions::GenericCompareLESS.into(), func_type, None)
+        }
+        BinOp::GREATER => {
+            cg.module
+                .add_function(InternalFuctions::GenericCompareGREATER.into(), func_type, None)
+        }
+        BinOp::LESSEQ => {
+            cg.module
+                .add_function(InternalFuctions::GenericCompareLESSEQ.into(), func_type, None)
+        }
+        BinOp::GREATEREQ => {
+            cg.module
+                .add_function(InternalFuctions::GenericCompareGREATEREQ.into(), func_type, None)
+        }
+        _ => {
+            return Err(LLVMCodegenError::InvalidOperation(format!(
+                "Invalide generation for this operation : {:?}",
+                operation
+            )))
+        }
+    };
+
+    // Build the function
+    let entry = cg.context.append_basic_block(function, "generic_compare_function_entry");
+
+    // Switch builder to the function block
+    cg.builder.position_at_end(entry);
+    cg.current_function = function;
+
+    // Get function parameter value
+    let value1 = function.get_nth_param(0 as u32).unwrap().into_struct_value();
+    let value2 = function.get_nth_param(1 as u32).unwrap().into_struct_value();
+
     // Load runtime type tags
     let t1 = cg.get_variable_type(value1)?;
     let t2 = cg.get_variable_type(value2)?;
 
-    // Prepare tags
-    let bool_tag = cg
-        .context
-        .i8_type()
-        .const_int(Type::Bool.get_bitmask() as u64, false);
-    let int_tag = cg
-        .context
-        .i8_type()
-        .const_int(Type::Int.get_bitmask() as u64, false);
+    // Check dynamique à l'execution Si c'est le même type, on fait la compare classique
+    let same_type = cg
+        .builder
+        .build_int_compare(IntPredicate::EQ, t1, t2, "dyn_eq")?;
 
-    // Compare tags and assimilation cases
-    let tag_eq = cg
-        .builder
-        .build_int_compare(IntPredicate::EQ, t1, t2, "tag_eq")?;
-    let is_b1 = cg
-        .builder
-        .build_int_compare(IntPredicate::EQ, t1, bool_tag, "is_b1")?;
-    let is_i2 = cg
-        .builder
-        .build_int_compare(IntPredicate::EQ, t2, int_tag, "is_i2")?;
-    let case1 = cg.builder.build_and(is_b1, is_i2, "b_i1")?;
-    let is_i1 = cg
-        .builder
-        .build_int_compare(IntPredicate::EQ, t1, int_tag, "is_i1")?;
-    let is_b2 = cg
-        .builder
-        .build_int_compare(IntPredicate::EQ, t2, bool_tag, "is_b2")?;
-    let case2 = cg.builder.build_and(is_i1, is_b2, "b_i2")?;
-    let assim = cg.builder.build_or(case1, case2, "assim")?;
-    let dyn_eq = cg.builder.build_or(tag_eq, assim, "dyn_eq")?;
+    // Branch if the types are equal
+    let parent_block = cg.builder.get_insert_block().unwrap();
+    let then_block = cg
+        .context
+        .insert_basic_block_after(parent_block, "generic_compare_same_type");
+    let else_block = cg
+        .context
+        .insert_basic_block_after(then_block, "generic_compare_different_type");
 
-    // TODO: NOTHING IS WORKING HERE AND LSP IS SAYING FINE BECAUSE OF UNREACHABLE MACRO
-    let result_val = match operation {
-        BinOp::EQ => dyn_eq,
-        BinOp::NEQ => cg.builder.build_not(dyn_eq, "dyn_neq")?,
-        _ => {
-            smolpp_panic_with_unreachable(cg, RuntimeErrorMsg::TypeError, &[])?;
-            unreachable!();
+    cg.builder
+        .build_conditional_branch(same_type, then_block, else_block)?;
+
+    // Case Same type
+    cg.builder.position_at_end(then_block);
+
+    build_switch_compare_generic_same_type(cg, function, value1, value2, operation, t1)?;
+
+    // Case Different type
+    cg.builder.position_at_end(else_block);
+
+    match operation {
+        BinOp::EQ => {
+            let res = cg.create_variable(Type::Bool, cg.context.bool_type().const_int(0, false))?;
+            cg.builder.build_return(Some(&res))?;
         }
-    };
+        BinOp::NEQ => {
+            let res = cg.create_variable(Type::Bool, cg.context.bool_type().const_int(1, false))?;
+            cg.builder.build_return(Some(&res))?;
+        }
+        _ => {
+            smolpp_panic_with_unreachable(
+                cg,
+                RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric,
+                &[t1.into()],
+            )?;
+        }
+    }
 
-    cg.create_variable(Type::Bool, result_val)
+    // Return builder to main block because it's init function
+    cg.current_function = cg.main_function;
+    cg.builder.position_at_end(cg.current_main_block);
+    return Ok(());
+}
+
+fn build_switch_compare_generic_same_type<'ctx>(
+    cg: &CodeGen<'ctx>,
+    function: FunctionValue<'ctx>,
+    value1: SmolVar<'ctx>,
+    value2: SmolVar<'ctx>,
+    operation: BinOp,
+    t1: IntValue<'ctx>,
+) -> Result<(), LLVMCodegenError> {
+    // Contruire un switch case dynamique en fonction du type de value1
+    // Create a switch based on the type field
+
+    let case_none = cg
+        .context
+        .append_basic_block(function, "generic_compare_case_none");
+    let case_bool = cg
+        .context
+        .append_basic_block(function, "generic_compare_case_bool");
+    let case_int = cg
+        .context
+        .append_basic_block(function, "generic_compare_case_int");
+    let case_string = cg
+        .context
+        .append_basic_block(function, "generic_compare_case_string");
+    let case_list = cg
+        .context
+        .append_basic_block(function, "generic_compare_case_list");
+    let default_block = cg
+        .context
+        .append_basic_block(function, "generic_compare_default");
+
+    let i8_type = cg.context.i8_type();
+
+    cg.builder.build_switch(
+        t1,
+        default_block,
+        &[
+            (
+                i8_type.const_int(Type::None.get_bitmask().into(), false),
+                case_none,
+            ),
+            (
+                i8_type.const_int(Type::Bool.get_bitmask().into(), false),
+                case_bool,
+            ),
+            (
+                i8_type.const_int(Type::Int.get_bitmask().into(), false),
+                case_int,
+            ),
+            (
+                i8_type.const_int(Type::String.get_bitmask().into(), false),
+                case_string,
+            ),
+            (
+                i8_type.const_int(Type::List.get_bitmask().into(), false),
+                case_list,
+            ),
+        ],
+    )?;
+
+    cg.builder.position_at_end(case_none);
+    // Call the compare function for None only for EQ/NEQ
+    
+    match operation {
+        BinOp::EQ | BinOp::NEQ => {
+            let result = compare_none_values(value1, value2, operation, cg)?;
+            cg.builder.build_return(Some(&result))?;
+        }
+        _ => {
+            smolpp_panic_with_unreachable(
+                cg,
+                RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric,
+                &[t1.into()],
+            )?;
+        }
+    }
+    
+
+    cg.builder.position_at_end(case_bool);
+    let result = compare_boolean_values(value1, value2, operation, cg)?;
+    cg.builder.build_return(Some(&result))?;
+
+    cg.builder.position_at_end(case_int);
+    let result = compare_int_values(value1, value2, operation, cg)?;
+    cg.builder.build_return(Some(&result))?;
+
+    cg.builder.position_at_end(case_string);
+    let result = compare_string_values(value1, value2, operation, cg)?;
+    cg.builder.build_return(Some(&result))?;
+
+    cg.builder.position_at_end(case_list);
+    let result = compare_list_values(value1, value2, operation, cg)?;
+    cg.builder.build_return(Some(&result))?;
+
+    // Default case, print error message
+    cg.builder.position_at_end(default_block);
+
+    smolpp_panic_with_unreachable(
+        cg,
+        RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric,
+        &[t1.into()],
+    )?;
+
+    return Ok(());
 }

@@ -98,7 +98,7 @@ fn llvm_compute_comparison<'ctx>(
     e2: &Expression,
     cg: &mut CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    let val1 = llvm_compute_expr(e1, cg)?;
+    let val1: inkwell::values::StructValue<'_> = llvm_compute_expr(e1, cg)?;
     let val2 = llvm_compute_expr(e2, cg)?;
 
     match (e1.get_type(), e2.get_type()) {

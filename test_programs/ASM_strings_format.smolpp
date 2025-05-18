@@ -1,0 +1,6 @@
+a = ["Hello, world!\n","This is a test.\\(see \\)", "SMOLPP is \"great\"!", "Let's format strings.\n• bullet 1\n• bullet 2"]
+
+print("This should be formatted as a string with escape sequences:\n\"Success!\"\\(all good)\nDone.\\n(printed literally)\n\n")
+
+print("This should not be formatted as a string:")
+print(a)

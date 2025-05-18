@@ -132,7 +132,7 @@ pub fn print_list_value<'ctx>(
     variable: &SmolVar<'ctx>,
     cg: &CodeGen<'ctx>,
 ) -> Result<BasicBlock<'ctx>, LLVMCodegenError> {
-    // TODO : Escape strings
+    // TODO(Luca): Escape strings
 
     let opening_str =
         get_internal_global_const!(cg, InternalGlobalConst::ListOpeningStr).as_pointer_value();

@@ -115,6 +115,7 @@ pub fn access_to_ptr<'ctx>(
         .build_load(cg.smolpp_types.dynamic_type, base_value, "list var")?
         .into_struct_value();
 
+    // TODO: optimize if not Weak
     assert_type(
         Type::List,
         &base_value,

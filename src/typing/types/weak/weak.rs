@@ -139,8 +139,9 @@ impl Eq for Weak {}
 
 impl Display for Weak {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+let id = WEAK_TYPES.lock().unwrap().find(self.id);
         let strs: Vec<String> = self.get_possible().iter().map(|t| t.to_string()).collect();
-        write!(f, "weak{}({})", self.id, strs.join(", "))
+        write!(f, "weak{}({})", id, strs.join(", "))
     }
 }
 

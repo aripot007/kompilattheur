@@ -1,8 +1,12 @@
 mod ast;
 pub(super) use ast::*;
+mod list_func;
 mod print;
+mod range;
 use inkwell::builder::BuilderError;
+pub(super) use list_func::*;
 pub(super) use print::*;
+pub(super) use range::*;
 mod panic;
 use thiserror::Error;
 mod assert_type;

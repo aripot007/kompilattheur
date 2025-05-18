@@ -1,6 +1,9 @@
 use super::{
     codegen::CodeGen,
-    llvm::{init_internal_generic_print_function, LLVMCodegenError},
+    llvm::{
+        init_internal_generic_print_function, init_internal_list_function,
+        init_internal_range_function, LLVMCodegenError,
+    },
 };
 
 pub enum InternalFuctions {
@@ -10,6 +13,9 @@ pub enum InternalFuctions {
     Trap,
     Puts,
     Printf,
+    // Builtins
+    Range,
+    List,
 }
 
 /// Get an internal function registered in the CodeGen.
@@ -36,6 +42,8 @@ impl Into<&'static str> for InternalFuctions {
             InternalFuctions::Puts => "puts",
             InternalFuctions::Printf => "printf",
             InternalFuctions::Trap => "llvm.debugtrap",
+            InternalFuctions::Range => "range",
+            InternalFuctions::List => "list",
         }
     }
 }
@@ -70,6 +78,12 @@ pub(super) fn init_internal_functions<'ctx>(
 
     // generic_print
     init_internal_generic_print_function(cg)?;
+
+    // range
+    init_internal_range_function(cg)?;
+
+    // list
+    init_internal_list_function(cg)?;
 
     return Ok(());
 }

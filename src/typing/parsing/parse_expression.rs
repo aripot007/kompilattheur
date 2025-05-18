@@ -36,20 +36,6 @@ impl Typeable for Expression {
                             }
                         }
                     }
-                    (UnOp::NOT, Ok(Type::Weak(weak))) => {
-                        let possible = weak.get_possible();
-                        match weak.restrict(&[Type::Bool]) {
-                            Ok(t) => Ok(t),
-                            Err(_) => {
-                                context.errors.push(Diagnostic::invalid_unop_weak_type(
-                                    expr.as_ref(),
-                                    UnOp::NOT,
-                                    &possible,
-                                ));
-                                Err(())
-                            }
-                        }
-                    }
                     _ => {
                         context.errors.push(Diagnostic::invalid_unop_type(
                             &localization,

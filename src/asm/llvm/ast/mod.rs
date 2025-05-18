@@ -16,3 +16,5 @@ mod conditional;
 pub use conditional::llvm_from_conditional;
 mod for_loop;
 pub use for_loop::llvm_from_for_loop;
+mod access;
+pub use access::{access_to_ptr, compute_destination_ptr, MemoryPtr};

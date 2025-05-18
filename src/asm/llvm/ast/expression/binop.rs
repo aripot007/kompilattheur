@@ -1,7 +1,7 @@
 use crate::{
     asm::{
         codegen::CodeGen,
-        llvm::{smolvar::SmolVar, LLVMCodegenError},
+        llvm::{access_to_ptr, smolvar::SmolVar, LLVMCodegenError},
     },
     ast::nodes::{BinOp, Expression},
     common::diagnostic::Diagnostic,
@@ -13,6 +13,8 @@ use super::{
     compare_none_values, compare_string_values, compute_add_unchecked, compute_div_unchecked,
     compute_mod_unchecked, compute_mult_unchecked, compute_sub_unchecked, llvm_compute_expr,
 };
+
+use super::super::access::MemoryPtr;
 
 pub fn llvm_compute_binop<'ctx>(
     e1: &Expression,
@@ -48,10 +50,16 @@ pub fn llvm_compute_binop<'ctx>(
         }
 
         BinOp::ACCESS => {
-            cg.errors.push(Diagnostic::unimplemented_llvm(root));
-            Err(LLVMCodegenError::Unimplemented(String::from(
-                "ACCESS operation not implemented yet",
-            )))
+            let ptr = access_to_ptr(e1, e2, cg)?;
+            let ptr = match ptr {
+                MemoryPtr::Storable(e) => e,
+                MemoryPtr::ReadOnly(e) => e,
+            };
+            let smolvar = cg
+                .builder
+                .build_load(cg.smolpp_types.dynamic_type, ptr, "smolvar")?
+                .into_struct_value();
+            Ok(smolvar)
         }
     }
 }

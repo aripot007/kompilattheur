@@ -45,6 +45,7 @@ pub fn compare_int_values<'ctx>(
             )))
         }
     };
+    let res = cg.builder.build_int_cast(res, cg.context.i64_type(), "int_cast")?;
     return cg.create_variable(Type::Bool, res);
 }
 
@@ -56,8 +57,9 @@ pub fn compare_string_values<'ctx>(
     operation: BinOp,
     cg: &CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    smolpp_panic_with_unreachable(cg, RuntimeErrorMsg::PanicNotImplemented, &[])?;
-    return cg.create_variable(Type::Bool, cg.context.bool_type().const_int(0, false));
+    // TODO : Implement string compare
+    // smolpp_panic_with_unreachable(cg, RuntimeErrorMsg::PanicNotImplemented, &[])?;
+    return cg.create_variable(Type::Bool, cg.context.i64_type().const_int(0, false));
 }
 
 /// Compare two None with the given operation
@@ -68,8 +70,8 @@ pub fn compare_none_values<'ctx>(
     cg: &CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
     let res = match operation {
-        BinOp::EQ => cg.create_variable(Type::Bool, cg.context.bool_type().const_int(1, false)),
-        BinOp::NEQ => cg.create_variable(Type::Bool, cg.context.bool_type().const_int(0, false)),
+        BinOp::EQ => cg.create_variable(Type::Bool, cg.context.i64_type().const_int(1, false)),
+        BinOp::NEQ => cg.create_variable(Type::Bool, cg.context.i64_type().const_int(0, false)),
         _ => {
             return Err(LLVMCodegenError::InvalidOperation(format!(
                 "Invalid between two None: {:?}",
@@ -116,6 +118,7 @@ pub fn compare_boolean_values<'ctx>(
             )))
         }
     };
+    let res = cg.builder.build_int_cast(res, cg.context.i64_type(), "bool_cast")?;
     return cg.create_variable(Type::Bool, res);
 }
 
@@ -127,7 +130,8 @@ pub fn compare_list_values<'ctx>(
     operation: BinOp,
     cg: &CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    smolpp_panic_with_unreachable(cg, RuntimeErrorMsg::PanicNotImplemented, &[])?;
+    // TODO : Implement list compare
+    // smolpp_panic_with_unreachable(cg, RuntimeErrorMsg::PanicNotImplemented, &[])?;
     return cg.create_variable(Type::Bool, cg.context.bool_type().const_int(0, false));
 }
 
@@ -199,7 +203,7 @@ pub fn compare_generic_values<'ctx>(
 
     let return_value = call_site_value.try_as_basic_value().left().unwrap();
 
-    cg.create_variable(Type::Bool, return_value)
+    Ok(return_value.into_struct_value())
 }
 
 pub fn init_internal_compare_generic_function<'ctx>(
@@ -287,11 +291,11 @@ pub fn init_internal_compare_generic_function<'ctx>(
 
     match operation {
         BinOp::EQ => {
-            let res = cg.create_variable(Type::Bool, cg.context.bool_type().const_int(0, false))?;
+            let res = cg.create_variable(Type::Bool, cg.context.i64_type().const_int(0, false))?;
             cg.builder.build_return(Some(&res))?;
         }
         BinOp::NEQ => {
-            let res = cg.create_variable(Type::Bool, cg.context.bool_type().const_int(1, false))?;
+            let res = cg.create_variable(Type::Bool, cg.context.i64_type().const_int(1, false))?;
             cg.builder.build_return(Some(&res))?;
         }
         _ => {

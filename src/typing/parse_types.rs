@@ -123,52 +123,57 @@ fn generate_from_block(
                 };
 
                 // If the destination is a single identifier, check or set the type with the value
-                if let ExpressionKind::Factor(Factor {
-                    factor_type: _,
-                    kind: FactorKind::Identifier(id),
-                }) = &assign.destination.kind
-                {
-                    // Clone all the data we need before any borrowing
-                    let id_element = id.element.clone();
+                if let ExpressionKind::Factor(ref mut factor) = assign.destination.kind {
+                    if let FactorKind::Identifier(id) = &factor.kind {
+                        // Clone all the data we need before any borrowing
+                        let id_element = id.element.clone();
 
-                    if let Some(dest_type) = context.get_symbol_type(&id_element) {
-                        if !dest_type.is_compatible(value_type.clone()) {
-                            context.errors.push(Diagnostic::from_localizable_ref(
-                                &assign.value,
-                                DiagnosticGravity::Error,
-                                "TypeError".into(),
-                                format!(
-                                    "Incompatible destination type {} for value of type {}",
-                                    dest_type.to_string().color(Color::BrightRed),
-                                    value_type.to_string().color(Color::BrightRed)
-                                ),
-                            ));
-                        } else {
-                            // Restrict weak types if necessary
-                            match (dest_type, value_type) {
-                                (Type::Weak(w1), Type::Weak(w2)) => w1.intersection(&w2),
-                                (Type::Weak(w), t) | (t, Type::Weak(w)) => {
-                                    if t != Type::Any {
-                                        w.restrict(&[t]).expect(
-                                            "Restriction should not fail since compatibility was checked",
-                                        );
+                        if let Some(dest_type) = context.get_symbol_type(&id_element) {
+                            if !dest_type.is_compatible(value_type.clone()) {
+                                context.errors.push(Diagnostic::from_localizable_ref(
+                                    &assign.value,
+                                    DiagnosticGravity::Error,
+                                    "TypeError".into(),
+                                    format!(
+                                        "Incompatible destination type {} for value of type {}",
+                                        dest_type.to_string().color(Color::BrightRed),
+                                        value_type.to_string().color(Color::BrightRed)
+                                    ),
+                                ));
+                            } else {
+                                // Restrict weak types if necessary
+                                match (dest_type, value_type.clone()) {
+                                    (Type::Weak(w1), Type::Weak(w2)) => w1.intersection(&w2),
+                                    (Type::Weak(w), t) | (t, Type::Weak(w)) => {
+                                        if t != Type::Any {
+                                            w.restrict(&[t]).expect(
+                                                "Restriction should not fail since compatibility was checked",
+                                            );
+                                        }
                                     }
+                                    _ => (),
                                 }
-                                _ => (),
                             }
+                        } else {
+                            // Symbol does not exist, insert it
+                            context.add_symbol(
+                                &id_element,
+                                Symbol::Variable {
+                                    offset: 0,
+                                    ptr_id: None,
+                                },
+                                value_type.clone(),
+                            );
                         }
-                    } else {
-                        // Symbol does not exist, insert it
-                        context.add_symbol(
-                            &id_element,
-                            Symbol::Variable {
-                                offset: 0,
-                                ptr_id: None,
-                            },
-                            value_type,
-                        );
+
+                        // Update factor type and skip destination parsing
+                        factor.factor_type = Some(value_type);
+                        continue;
                     }
                 }
+
+                // Parse destination
+                let _ = assign.destination.parse_type(context);
             }
             Statement::For(ref mut for_loop) => {
                 let var_id = for_loop.var.element.id;

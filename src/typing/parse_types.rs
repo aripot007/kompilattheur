@@ -1,6 +1,6 @@
 use colored::{Color, Colorize};
 
-use crate::ast::nodes::{ExpressionKind, Factor, FactorKind};
+use crate::ast::nodes::{ExpressionKind, FactorKind};
 use crate::common::diagnostic::{Diagnostic, DiagnosticGravity};
 use crate::common::symbol_table::{
     enter_scope, exit_scope, init_symbol_table, Symbol, SymbolTableElement, SymbolTableRef,

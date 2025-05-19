@@ -1,3 +1,5 @@
+use std::iter::{self, zip};
+
 use crate::{
     ast::nodes::{Factor, FactorKind},
     common::{
@@ -39,21 +41,68 @@ impl Typeable for Factor {
             } => {
                 let func_type_res = context.get_symbol_type(identifier);
 
-                let mut err = match func_type_res {
-                    Some(_) => false,
-                    None => {
-                        context
-                            .errors
-                            .push(Diagnostic::unknown_symbol(&localization, &identifier.name));
-                        true
+                // Unknown function, we still type the parameters without checking compatibility
+                if func_type_res.is_none() {
+                    context
+                        .errors
+                        .push(Diagnostic::unknown_symbol(&localization, &identifier.name));
+
+                    for arg in args {
+                        let _ = arg.parse_type(context);
                     }
+                    return Err(());
+                }
+
+                // Function exists, we check parameters
+                let mut err = false;
+
+                let func_type = match &func_type_res {
+                    Some(Type::Function(f)) => f,
+                    _ => panic!("Function type is not a function : {:?}", func_type_res),
                 };
 
-                // TODO: Parse arguments types, do nothing with it yet since function typing is not done
-                for arg in args {
-                    match arg.parse_type(context) {
-                        Ok(_) => (),
-                        Err(_) => err = true,
+                if func_type.args.len() != args.len() {
+                    context.errors.push(Diagnostic::invalid_arg_count(
+                        &localization,
+                        func_type.args.len(),
+                        args.len(),
+                    ));
+                }
+
+                let expected_args = func_type.args.iter().map(Some).chain(iter::repeat(None));
+
+                // Parse arguments types
+                for (expected_opt, arg) in zip(expected_args, args) {
+                    let arg_type = match arg.parse_type(context) {
+                        Ok(t) => t,
+                        Err(_) => {
+                            err = true;
+                            continue;
+                        }
+                    };
+
+                    if let Some(expected) = expected_opt {
+                        let allowed_types = match expected.clone() {
+                            Type::Weak(weak) => weak.get_possible(),
+                            t => vec![t],
+                        };
+
+                        if !arg_type.is_compatible(expected.clone()) {
+                            context.errors.push(Diagnostic::incompatible_type(
+                                arg,
+                                &arg_type,
+                                &allowed_types,
+                            ));
+                            err = true;
+                            continue;
+                        }
+
+                        // Merge arg if its a weak
+                        if let Type::Weak(weak) = arg_type {
+                            weak.restrict(&allowed_types).expect(
+                                "Restriction should not fail because compatibility was checked",
+                            );
+                        }
                     }
                 }
 
@@ -73,19 +122,8 @@ impl Typeable for Factor {
         return res;
     }
 
-    fn is_typed(&self) -> bool {
-        self.factor_type.is_some()
-    }
-
     fn get_type(&self) -> &Type {
         self.factor_type.as_ref().unwrap()
-    }
-
-    fn get_type_opt(&self) -> Option<&Type> {
-        match &self.factor_type {
-            Some(t) => Some(t),
-            None => None,
-        }
     }
 
     fn set_type(&mut self, t: Type) {

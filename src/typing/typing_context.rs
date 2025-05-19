@@ -4,7 +4,7 @@ use crate::common::{
     types::IdToken,
 };
 
-use super::{Type, Weak};
+use super::Type;
 
 pub struct TypingContext {
     pub symbol_table: SymbolTableRef,
@@ -14,30 +14,6 @@ pub struct TypingContext {
 }
 
 impl TypingContext {
-    /// Get the type associated to a symbol, or create a Variable symbol entry for it with a weak type.
-    pub fn get_type_or_create(&mut self, identifier: &IdToken) -> Type {
-        if let Some(elt) = get_symbol(&self.symbol_table, &identifier.id) {
-            return elt.symbol_type;
-        }
-
-        let t = Type::Weak(Weak::new());
-
-        let symbol_entry = SymbolTableElement {
-            symbol: Symbol::Variable {
-                offset: 0,
-                ptr_id: None,
-            },
-            name: identifier.name.clone(),
-            symbol_type: t.clone(),
-        };
-
-        self.symbol_table
-            .borrow_mut()
-            .insert_symbol(identifier.id, symbol_entry);
-
-        return t;
-    }
-
     /// Get a symbol type from the symbol table, or create an error
     pub fn get_symbol_type(&mut self, identifier: &IdToken) -> Option<Type> {
         match get_symbol(&self.symbol_table, &identifier.id) {

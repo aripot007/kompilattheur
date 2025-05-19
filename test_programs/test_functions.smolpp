@@ -1,0 +1,27 @@
+
+def foo(a, b):
+    return a
+
+def bar(arg):
+    return arg
+
+def poo(a, b, c):
+    d = a - b
+    if c < d:
+        return False
+    else:
+        return True
+
+a = foo(3,4)
+
+# This should fail
+# b = foo(1)
+# c = foo(1,2,3)
+
+d = bar(foo(1,2)) + 127
+
+poo(1,2,3)
+poo(1,2,True)
+poo(1,[12],3)
+poo(True,1,3)
+poo(1,2,[12])

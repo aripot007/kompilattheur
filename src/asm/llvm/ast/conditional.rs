@@ -1,6 +1,8 @@
 use crate::asm::{
     codegen::CodeGen,
+    get_internal_func,
     llvm::{assert_type, llvm_from_block, smolvar::SmolVar, LLVMCodegenError},
+    InternalFuctions,
 };
 use crate::ast::nodes::Conditional;
 use crate::typing::Type;
@@ -23,22 +25,37 @@ pub fn llvm_from_conditional<'ctx>(
 ) -> Result<(), LLVMCodegenError> {
     let expr_value: SmolVar<'ctx> = llvm_compute_expr(&cond.condition, cg)?;
 
-    if cond.condition.expr_type != Some(Type::Bool) {
-        assert_type(Type::Bool, &expr_value, cg, None)?;
-    }
-
-    let var_value = cg.get_variable_value(expr_value)?.into_int_value();
-    let bool_value = cg
-        .builder
-        .build_int_cast(var_value, cg.context.bool_type(), "bool_if")?;
-
     let current_function = cg.current_function;
     let then_block = cg.context.append_basic_block(current_function, "then");
     let else_block = cg.context.append_basic_block(current_function, "else");
     let merge_block = cg.context.append_basic_block(current_function, "merge");
 
-    cg.builder
-        .build_conditional_branch(bool_value, then_block, else_block)?;
+    if cond.condition.expr_type != Some(Type::Bool) {
+        //assert_type(Type::Bool, &expr_value, cg, None)?;
+        // Cast e1_value to bool using the bool_cast_internal_function
+        let call_boolean_llvm_value = cg.builder.build_call(
+            get_internal_func!(cg, InternalFuctions::BoolCast),
+            &[expr_value.into()],
+            "not_bool_cast_call",
+        )?;
+
+        let boolean_llvm_value = call_boolean_llvm_value
+            .try_as_basic_value()
+            .left()
+            .unwrap()
+            .into_int_value();
+        
+        cg.builder
+            .build_conditional_branch(boolean_llvm_value, then_block, else_block)?;
+    } else {
+        let var_value = cg.get_variable_value(expr_value)?.into_int_value();
+        let bool_value = cg
+            .builder
+            .build_int_cast(var_value, cg.context.bool_type(), "bool_if")?;
+
+        cg.builder
+            .build_conditional_branch(bool_value, then_block, else_block)?;
+    }
 
     cg.builder.position_at_end(then_block);
     llvm_from_block(&cond.if_block, cg)?;

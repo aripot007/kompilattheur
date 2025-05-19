@@ -3,6 +3,11 @@ println(a[0] < a[1])
 println(1 and 1)
 println([1] and [52])
 println([0] or a[1])
-# print(len([0]))
-# print("\n")
+# println(len([0]))
 println(not 1)
+if [1,2]:
+    println(1)
+if []:
+    println(2)
+else:
+    println(3)

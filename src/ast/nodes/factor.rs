@@ -269,7 +269,10 @@ impl Localizable for &Factor {
                 fe.get_start_line()
             }
             FactorKind::Identifier(fe) => fe.get_start_line(),
-            FactorKind::List(expressions) => expressions.first().unwrap().get_start_line(),
+            FactorKind::List(expressions) => match expressions.first() {
+                Some(first) => first.get_start_line(),
+                None => 1,
+            },
             FactorKind::Expr(expression) => expression.get_start_line(),
             FactorKind::Call {
                 identifier: _,
@@ -287,7 +290,10 @@ impl Localizable for &Factor {
                 fe.get_end_line()
             }
             FactorKind::Identifier(fe) => fe.get_end_line(),
-            FactorKind::List(expressions) => expressions.last().unwrap().get_end_line(),
+            FactorKind::List(expressions) => match expressions.last() {
+                Some(first) => first.get_end_line(),
+                None => 1,
+            },
             FactorKind::Expr(expression) => expression.get_end_line(),
             FactorKind::Call {
                 identifier: _,
@@ -305,7 +311,10 @@ impl Localizable for &Factor {
                 fe.get_start_char()
             }
             FactorKind::Identifier(fe) => fe.get_start_char(),
-            FactorKind::List(expressions) => expressions.first().unwrap().get_start_char(),
+            FactorKind::List(expressions) => match expressions.first() {
+                Some(first) => first.get_start_char(),
+                None => 1,
+            },
             FactorKind::Expr(expression) => expression.get_start_char(),
             FactorKind::Call {
                 identifier: _,
@@ -323,7 +332,10 @@ impl Localizable for &Factor {
                 fe.get_end_char()
             }
             FactorKind::Identifier(fe) => fe.get_end_char(),
-            FactorKind::List(expressions) => expressions.last().unwrap().get_end_char(),
+            FactorKind::List(expressions) => match expressions.last() {
+                Some(first) => first.get_end_char(),
+                None => 1,
+            },
             FactorKind::Expr(expression) => expression.get_end_char(),
             FactorKind::Call {
                 identifier: _,

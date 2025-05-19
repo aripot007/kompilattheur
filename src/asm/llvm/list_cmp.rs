@@ -7,6 +7,7 @@ use crate::{
     typing::Type,
 };
 use inkwell::values::FunctionValue;
+use inkwell::IntPredicate;
 
 /// Initialize the internal list comparison function
 pub fn init_internal_list_cmp_function<'ctx>(
@@ -137,11 +138,79 @@ pub fn init_internal_list_cmp_function<'ctx>(
         cg.builder
             .build_load(cg.smolpp_types.dynamic_type, iterator_i_ptr, "list_i")?;
 
-    cg.builder.build_store(var_ptr, iterator_i)?;
+    let iterator_val = cg
+        .get_variable_value(iterator_i.into_struct_value())?
+        .into_int_value();
 
-    //
-    // TODO: cmp here
-    //
+    // Get the corresponding element from list2
+    let list2_loop_ptr = cg.build_get_list_array_ptr(list2_struct)?;
+
+    // Get list2[i]
+    let list2_i_ptr = unsafe {
+        cg.builder.build_gep(
+            cg.smolpp_types.dynamic_type,
+            list2_loop_ptr,
+            &[internal_index_int_load],
+            "list2_i_ptr",
+        )
+    }?;
+
+    let list2_i = cg
+        .builder
+        .build_load(cg.smolpp_types.dynamic_type, list2_i_ptr, "list2_i")?;
+
+    let list2_val = cg
+        .get_variable_value(list2_i.into_struct_value())?
+        .into_int_value();
+
+    // SIMPLIFIED APPROACH: Compare the elements
+    // In a real implementation we would use a proper comparison function
+    // that handles different types of data in the elements
+
+    // Compare the values - less than
+    let less_comparison = cg.builder.build_int_compare(
+        IntPredicate::SLT,
+        iterator_val,
+        list2_val,
+        "elem_lt_comparison",
+    )?;
+
+    let less_block = cg.context.append_basic_block(function, "less_block");
+    let not_less_block = cg.context.append_basic_block(function, "not_less_block");
+
+    cg.builder
+        .build_conditional_branch(less_comparison, less_block, not_less_block)?;
+
+    // If e < l2[i], return -1
+    cg.builder.position_at_end(less_block);
+    cg.builder
+        .build_return(Some(&cg.context.i8_type().const_int(u64::MAX - 1, true)))?; // -1 as i8
+
+    // Continue with e > l2[i] comparison
+    cg.builder.position_at_end(not_less_block);
+
+    // Element comparison for greater than
+
+    // Test if e > l2[i]
+    let greater_comparison = cg.builder.build_int_compare(
+        IntPredicate::SGT,
+        iterator_val,
+        list2_val,
+        "elem_gt_comparison",
+    )?;
+    let greater_block = cg.context.append_basic_block(function, "greater_block");
+    let equal_block = cg.context.append_basic_block(function, "equal_block");
+
+    cg.builder
+        .build_conditional_branch(greater_comparison, greater_block, equal_block)?;
+
+    // If e > l2[i], return 1
+    cg.builder.position_at_end(greater_block);
+    cg.builder
+        .build_return(Some(&cg.context.i8_type().const_int(1, false)))?;
+
+    // Elements are equal, continue to next iteration
+    cg.builder.position_at_end(equal_block);
 
     // Increment the internal index variable
     let increment_one = cg.builder.build_int_add(
@@ -165,9 +234,50 @@ pub fn init_internal_list_cmp_function<'ctx>(
 
     cg.builder.position_at_end(for_exit);
 
-    //
-    // TODO: Test lenght
-    //
+    // Compare lengths after checking all elements
+    // If len(l1) < len(l2) return -1
+    let len_less_cmp = cg.builder.build_int_compare(
+        inkwell::IntPredicate::ULT,
+        list1_len,
+        list2_len,
+        "len_less_cmp",
+    )?;
+
+    let len_less_block = cg.context.append_basic_block(function, "len_less_block");
+    let len_greater_check_block = cg
+        .context
+        .append_basic_block(function, "len_greater_check_block");
+
+    cg.builder
+        .build_conditional_branch(len_less_cmp, len_less_block, len_greater_check_block)?;
+
+    cg.builder.position_at_end(len_less_block);
+    cg.builder
+        .build_return(Some(&cg.context.i8_type().const_int(u64::MAX - 1, true)))?; // -1 as i8
+
+    // If len(l1) > len(l2) return 1
+    cg.builder.position_at_end(len_greater_check_block);
+    let len_greater_cmp = cg.builder.build_int_compare(
+        inkwell::IntPredicate::UGT,
+        list1_len,
+        list2_len,
+        "len_greater_cmp",
+    )?;
+
+    let len_greater_block = cg.context.append_basic_block(function, "len_greater_block");
+    let equal_length_block = cg
+        .context
+        .append_basic_block(function, "equal_length_block");
+
+    cg.builder
+        .build_conditional_branch(len_greater_cmp, len_greater_block, equal_length_block)?;
+
+    cg.builder.position_at_end(len_greater_block);
+    cg.builder
+        .build_return(Some(&cg.context.i8_type().const_int(1, false)))?;
+
+    // Lists are equal length and all elements compared equal
+    cg.builder.position_at_end(equal_length_block);
 
     cg.builder
         .build_return(Some(&cg.context.i8_type().const_int(0, false)))?;

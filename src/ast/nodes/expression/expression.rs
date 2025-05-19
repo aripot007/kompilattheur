@@ -1,5 +1,6 @@
 use crate::{
     analysis_table::NonTerminal,
+    ast::nodes::Ast,
     common::{
         localizable::Localizable,
         types::{FileElement, Node, Token, Tree},
@@ -43,6 +44,15 @@ impl AstNode for Expression {
             ExpressionKind::UNOP(un_op, _) => format!("Expression::UnOp({})", (*un_op).to_string()),
             ExpressionKind::Factor(_) => String::from("Expression::Factor"),
             ExpressionKind::NotImplemented => String::from("Expression::NotImplemented"),
+        }
+    }
+}
+
+impl From<Ast> for Expression {
+    fn from(value: Ast) -> Self {
+        match value {
+            Ast::Expression(s) => s,
+            _ => panic!("Cannot convert {} to Expression", value),
         }
     }
 }

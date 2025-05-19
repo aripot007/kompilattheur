@@ -8,7 +8,7 @@ use crate::{
     parser::Lexem,
 };
 
-use super::{list_into_tree, AstNode, Expression};
+use super::{list_into_tree, Ast, AstNode, Expression};
 
 pub struct Factor {
     pub factor_type: Option<Type>,
@@ -48,6 +48,15 @@ impl AstNode for Factor {
                 localization: _,
             } => "Factor::Call",
         })
+    }
+}
+
+impl From<Ast> for Factor {
+    fn from(value: Ast) -> Self {
+        match value {
+            Ast::Factor(s) => s,
+            _ => panic!("Cannot convert {} to Factor", value),
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-use super::AstNode;
+use super::{Ast, AstNode};
 use crate::{
     common::{
         localizable::Localizable,
@@ -18,6 +18,15 @@ pub struct Assign {
 impl AstNode for Assign {
     fn get_string_repr(&self) -> String {
         String::from("Assign")
+    }
+}
+
+impl From<Ast> for Assign {
+    fn from(value: Ast) -> Self {
+        match value {
+            Ast::Assign(s) => s,
+            _ => panic!("Cannot convert {} to Assign", value),
+        }
     }
 }
 

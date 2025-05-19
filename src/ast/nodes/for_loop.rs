@@ -1,4 +1,4 @@
-use super::{AstNode, Block, Expression};
+use super::{Ast, AstNode, Block, Expression};
 use crate::{
     common::{
         localizable::Localizable,
@@ -17,6 +17,15 @@ pub struct For {
 impl AstNode for For {
     fn get_string_repr(&self) -> String {
         String::from("For")
+    }
+}
+
+impl From<Ast> for For {
+    fn from(value: Ast) -> Self {
+        match value {
+            Ast::For(s) => s,
+            _ => panic!("Cannot convert {} to For", value),
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-use super::AstNode;
+use super::{Ast, AstNode};
 use crate::{
     common::{
         localizable::Localizable,
@@ -14,6 +14,15 @@ pub struct Param {
 impl AstNode for Param {
     fn get_string_repr(&self) -> String {
         String::from("Param")
+    }
+}
+
+impl From<Ast> for Param {
+    fn from(value: Ast) -> Self {
+        match value {
+            Ast::Param(s) => s,
+            _ => panic!("Cannot convert {} to Param", value),
+        }
     }
 }
 

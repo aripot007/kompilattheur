@@ -110,8 +110,8 @@ impl Typeable for Factor {
                     return Err(());
                 }
 
-                self.factor_type = Some(func_type.returns.clone());
-                return Ok(func_type.returns.clone());
+                // self.factor_type = Some(func_type.returns.clone());
+                Ok(func_type.returns.clone())
             }
         };
         if let Ok(t) = &res {

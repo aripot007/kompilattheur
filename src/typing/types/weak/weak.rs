@@ -13,6 +13,7 @@ use super::UnionFind;
 #[derive(Debug, Clone, Hash)]
 pub struct Weak {
     id: usize,
+    locked: bool,
 }
 
 static WEAK_TYPES: Lazy<Arc<Mutex<UnionFind>>> =
@@ -32,7 +33,7 @@ impl Weak {
     pub fn new_with_possible(possible_types: &[Type]) -> Self {
         let possible = HashSet::from_iter(possible_types.to_owned());
         let id = WEAK_TYPES.lock().unwrap().add(possible);
-        return Self { id };
+        return Self { id, locked: false };
     }
 
     pub fn get_decalage(&self) -> usize {
@@ -53,6 +54,9 @@ impl Weak {
 
     /// Merge two weak types
     pub fn union(&self, other: &Self) {
+        if self.locked || other.locked {
+            return;
+        }
         let mut weak_types = WEAK_TYPES.lock().unwrap();
         let l_types = weak_types.find_elt(self.id).clone();
         let r_types = weak_types.find_elt(other.id).clone();
@@ -64,6 +68,9 @@ impl Weak {
 
     /// Add a possible type to a weak
     pub fn add_type(&self, typ: Type) {
+        if self.locked {
+            return;
+        }
         match typ {
             Type::Weak(other) => return self.union(&other),
             Type::None | Type::Bool | Type::Int | Type::String | Type::List => {
@@ -79,6 +86,9 @@ impl Weak {
 
     /// Intersect two weak types
     pub fn intersection(&self, other: &Self) {
+        if self.locked || other.locked {
+            return;
+        }
         let mut weak_types = WEAK_TYPES.lock().unwrap();
         let l_types = weak_types.find_elt(self.id).clone();
         let r_types = weak_types.find_elt(other.id).clone();
@@ -91,6 +101,9 @@ impl Weak {
 
     /// Intersect restrict possible types for a weak
     pub fn restrict(&self, others: &[Type]) -> Result<Type, ()> {
+        if self.locked {
+            return Ok(Type::Weak(self.clone()));
+        }
         let mut weak_types = WEAK_TYPES.lock().unwrap();
         let l_types = weak_types.find_elt(self.id).clone();
 
@@ -116,12 +129,15 @@ impl Weak {
                 let vals: Vec<&Type> = new_types.iter().collect();
                 Ok(vals[0].clone())
             }
-            _ => Ok(Type::Weak(Weak { id: self.id })),
+            _ => Ok(Type::Weak(self.clone())),
         }
     }
 
     /// Remove an allowed type for a weak
     pub fn remove(&self, typ: Type) -> Result<Type, ()> {
+        if self.locked {
+            return Ok(Type::Weak(self.clone()));
+        }
         let mut weak_types = WEAK_TYPES.lock().unwrap();
         let l_types = weak_types.find_elt_mut(self.id);
 
@@ -133,7 +149,7 @@ impl Weak {
                 let vals: Vec<&Type> = l_types.iter().collect();
                 Ok(vals[0].clone())
             }
-            _ => Ok(Type::Weak(Weak { id: self.id })),
+            _ => Ok(Type::Weak(self.clone())),
         }
     }
 
@@ -159,6 +175,14 @@ impl Weak {
     /// Get this weak's id
     pub fn get_id(&self) -> usize {
         return WEAK_TYPES.lock().unwrap().find(self.id);
+    }
+
+    /// Returns a locked version of ths weak, that cannot be updated
+    pub fn locked(&self) -> Self {
+        Weak {
+            id: self.id,
+            locked: true,
+        }
     }
 }
 

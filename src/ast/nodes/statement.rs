@@ -12,7 +12,7 @@ use crate::{
     parser::Lexem,
 };
 
-use super::{Assign, AstNode, Conditional, Expression, For};
+use super::{Assign, Ast, AstNode, Conditional, Expression, For};
 
 pub enum Statement {
     Print(Expression),
@@ -37,6 +37,15 @@ impl AstNode for Statement {
             Statement::Expr(_) => "Statement::Expr",
             Statement::NotImplemented => "Statement::NotImplemented",
         })
+    }
+}
+
+impl From<Ast> for Statement {
+    fn from(value: Ast) -> Self {
+        match value {
+            Ast::Statement(s) => s,
+            _ => panic!("Cannot convert {} to Statement", value),
+        }
     }
 }
 

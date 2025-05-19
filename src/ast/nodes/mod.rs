@@ -1,4 +1,6 @@
 mod factor;
+use std::fmt::Display;
+
 pub use factor::{Factor, FactorKind};
 mod defs;
 pub use defs::Defs;
@@ -111,7 +113,9 @@ pub(super) use list_into_tree;
 /// doit pouvoir être convertit en arbre de String représentant chaque noeud, pour
 /// faciliter l'affichage.
 #[allow(dead_code)]
-pub trait AstNode: From<Tree<FileElement<Lexem>>> + Into<Tree<String>> + Localizable {
+pub trait AstNode:
+    From<Tree<FileElement<Lexem>>> + Into<Tree<String>> + Localizable + From<Ast>
+{
     fn get_string_repr(&self) -> String;
 }
 
@@ -128,4 +132,23 @@ pub enum Ast {
     Param(Param),
     Root(Root),
     Statement(Statement),
+}
+
+impl Display for Ast {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Ast::Expression(e) => e.get_string_repr(),
+            Ast::Assign(e) => e.get_string_repr(),
+            Ast::Block(e) => e.get_string_repr(),
+            Ast::Conditional(e) => e.get_string_repr(),
+            Ast::Def(e) => e.get_string_repr(),
+            Ast::Defs(e) => e.get_string_repr(),
+            Ast::Factor(e) => e.get_string_repr(),
+            Ast::For(e) => e.get_string_repr(),
+            Ast::Param(e) => e.get_string_repr(),
+            Ast::Root(e) => e.get_string_repr(),
+            Ast::Statement(e) => e.get_string_repr(),
+        };
+        write!(f, "{}", s)
+    }
 }

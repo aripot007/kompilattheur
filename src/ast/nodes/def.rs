@@ -1,4 +1,4 @@
-use super::{AstNode, Block, Param};
+use super::{Ast, AstNode, Block, Param};
 use crate::ast::nodes::{Expression, ExpressionKind};
 use crate::typing::Type;
 use crate::{
@@ -25,6 +25,15 @@ pub struct Def {
 impl AstNode for Def {
     fn get_string_repr(&self) -> String {
         String::from("Def")
+    }
+}
+
+impl From<Ast> for Def {
+    fn from(value: Ast) -> Self {
+        match value {
+            Ast::Def(s) => s,
+            _ => panic!("Cannot convert {} to Def", value),
+        }
     }
 }
 

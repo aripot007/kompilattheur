@@ -1,14 +1,17 @@
 use colored::{Color, Colorize};
 
-use crate::ast::nodes::{ExpressionKind, FactorKind};
+use crate::ast::nodes::{Ast, ExpressionKind, FactorKind};
 use crate::common::diagnostic::{Diagnostic, DiagnosticGravity};
 use crate::common::symbol_table::{
-    enter_scope, exit_scope, init_symbol_table, Symbol, SymbolTableElement, SymbolTableRef,
+    enter_scope, exit_scope, get_symbol, init_symbol_table, Symbol, SymbolTableElement,
+    SymbolTableRef,
 };
 use crate::{
     ast::nodes::{self, Statement},
     typing::{Function, Type, Typeable, TypingContext, Weak},
 };
+
+use super::resolve_weaks;
 
 pub fn parse_types(root: nodes::Root) -> (nodes::Root, SymbolTableRef, TypingContext) {
     let table = init_symbol_table();
@@ -23,6 +26,11 @@ pub fn parse_types(root: nodes::Root) -> (nodes::Root, SymbolTableRef, TypingCon
     };
 
     let _ = generate_from_node_root(&mut root, table.clone(), &mut context);
+
+    let root = match resolve_weaks(Ast::Root(root), &table) {
+        Ast::Root(root) => root,
+        _ => panic!("Resolve weaks should return root"),
+    };
 
     return (root, table, context);
 }
@@ -70,9 +78,11 @@ fn generate_sign_def(
         args_types.push(Type::Weak(Weak::new()));
     }
 
+    let return_type_weak = Weak::new_with_possible(&[]);
+
     let function_type = Function {
         args: args_types.clone(),
-        returns: Type::Weak(Weak::new_with_possible(&[])),
+        returns: Type::Weak(return_type_weak.clone()),
     };
 
     // Note: no need to get old type, because first time we define the function, return update in sub node
@@ -125,7 +135,24 @@ fn generate_from_def(
 
     context.symbol_table = table.clone();
     context.func_id = None;
-    exit_scope(function_table)
+    exit_scope(function_table);
+
+    // Lock function return type
+    let mut symbol_table_element = get_symbol(&table, &func_id).unwrap();
+    symbol_table_element.symbol_type = match symbol_table_element.symbol_type {
+        Type::Function(func_type) => {
+            let new_func_type = Function {
+                args: func_type.args,
+                returns: Type::Weak(return_type_weak.locked()),
+            };
+            Type::Function(Box::from(new_func_type))
+        }
+        _ => panic!(),
+    };
+    table
+        .borrow_mut()
+        .insert_symbol(func_id, symbol_table_element);
+    table
 }
 
 fn generate_from_block(

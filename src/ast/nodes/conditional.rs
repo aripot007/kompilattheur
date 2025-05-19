@@ -1,4 +1,4 @@
-use super::{AstNode, Block, Expression};
+use super::{Ast, AstNode, Block, Expression};
 use crate::{
     common::{
         localizable::Localizable,
@@ -20,6 +20,15 @@ impl AstNode for Conditional {
             Some(_) => "Conditional::IfElse",
             None => "Conditional::If",
         })
+    }
+}
+
+impl From<Ast> for Conditional {
+    fn from(value: Ast) -> Self {
+        match value {
+            Ast::Conditional(s) => s,
+            _ => panic!("Cannot convert {} to Conditional", value),
+        }
     }
 }
 

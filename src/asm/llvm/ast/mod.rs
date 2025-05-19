@@ -3,8 +3,9 @@ pub use block::llvm_from_block;
 mod root;
 pub use root::llvm_from_root;
 mod expression;
-pub use expression::init_internal_compare_generic_function;
-pub use expression::llvm_compute_expr;
+pub use expression::{
+    compare_generic_values, init_internal_compare_generic_function, llvm_compute_expr,
+};
 mod factor;
 pub use factor::llvm_compute_factor;
 mod assign;

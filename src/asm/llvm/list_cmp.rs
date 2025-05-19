@@ -2,8 +2,9 @@ use crate::{
     asm::{
         codegen::CodeGen,
         internal_functions::{internal_function_prefix, InternalFuctions},
-        llvm::LLVMCodegenError,
+        llvm::{compare_generic_values, LLVMCodegenError},
     },
+    ast::nodes::BinOp,
     typing::Type,
 };
 use inkwell::{basic_block::BasicBlock, values::FunctionValue, IntPredicate};
@@ -145,10 +146,6 @@ pub fn init_internal_list_cmp_function<'ctx>(
         cg.builder
             .build_load(cg.smolpp_types.dynamic_type, iterator_i_ptr, "list_i")?;
 
-    let iterator_val = cg
-        .get_variable_value(iterator_i.into_struct_value())?
-        .into_int_value();
-
     // Get the corresponding element from list2
     let list2_loop_ptr = cg.build_get_list_array_ptr(list2_struct)?;
 
@@ -166,19 +163,21 @@ pub fn init_internal_list_cmp_function<'ctx>(
         .builder
         .build_load(cg.smolpp_types.dynamic_type, list2_i_ptr, "list2_i")?;
 
-    let list2_val = cg
-        .get_variable_value(list2_i.into_struct_value())?
-        .into_int_value();
+    // Use compare_values to compare the elements
+    // Compare for less than
+    let less_result = compare_generic_values(
+        iterator_i.into_struct_value(),
+        list2_i.into_struct_value(),
+        BinOp::LESS,
+        cg,
+    )?;
 
-    // SIMPLIFIED APPROACH: Compare the elements
-    // In a real implementation we would use a proper comparison function
-    // that handles different types of data in the elements
+    let less_value = cg.get_variable_value(less_result)?.into_int_value();
 
-    // Compare the values - less than
     let less_comparison = cg.builder.build_int_compare(
-        IntPredicate::SLT,
-        iterator_val,
-        list2_val,
+        IntPredicate::NE,
+        less_value,
+        cg.context.i64_type().const_zero(),
         "elem_lt_comparison",
     )?;
 
@@ -196,15 +195,23 @@ pub fn init_internal_list_cmp_function<'ctx>(
     // Continue with e > l2[i] comparison
     cg.builder.position_at_end(not_less_block);
 
-    // Element comparison for greater than
+    // Compare for greater than
+    let greater_result = compare_generic_values(
+        iterator_i.into_struct_value(),
+        list2_i.into_struct_value(),
+        BinOp::GREATER,
+        cg,
+    )?;
 
-    // Test if e > l2[i]
+    let greater_value = cg.get_variable_value(greater_result)?.into_int_value();
+
     let greater_comparison = cg.builder.build_int_compare(
-        IntPredicate::SGT,
-        iterator_val,
-        list2_val,
+        IntPredicate::NE,
+        greater_value,
+        cg.context.i64_type().const_zero(),
         "elem_gt_comparison",
     )?;
+
     let greater_block = cg.context.append_basic_block(function, "greater_block");
     let equal_block = cg.context.append_basic_block(function, "equal_block");
 

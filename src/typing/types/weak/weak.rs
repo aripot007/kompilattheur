@@ -135,21 +135,22 @@ impl Weak {
     }
 
     pub fn is_compatible(&self, other: Type) -> bool {
-        if let Type::Weak(weak) = other {
+        if let Type::Weak(weak) = other.clone() {
             let same = *self == weak;
-            return same;
             if same {
                 return true;
             }
 
             let mut types = WEAK_TYPES.lock().unwrap();
             let self_possible = types.get_elt(self.id).clone();
-            let other_possible = types.get_elt(self.id).clone();
-            return self_possible.intersection(&other_possible).count() > 0;
+            let other_possible = types.get_elt(weak.id).clone();
+            let intersection_count = self_possible.intersection(&other_possible).count();
+            return intersection_count > 0;
         };
         let mut types = WEAK_TYPES.lock().unwrap();
         let possible = types.get_elt(self.id);
-        return possible.contains(&other);
+        let compatible = possible.contains(&other);
+        return compatible;
     }
 
     /// Get this weak's id

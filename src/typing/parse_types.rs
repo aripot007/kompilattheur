@@ -117,15 +117,8 @@ fn generate_from_block(
             Statement::Assign(ref mut assign) => {
                 let value_type: Type = match assign.value.parse_type(context) {
                     Ok(t) => t,
-                    Err(()) => {
-                        context.errors.push(Diagnostic::from_localizable_ref(
-                            &assign.value,
-                            DiagnosticGravity::Error,
-                            "AssignationTypingError".into(),
-                            format!("Could not parse assignation value type"),
-                        ));
-                        continue;
-                    } // No use in typing the destination if the value cannot be typed
+                    Err(()) => continue, // No use in typing the destination if the value cannot be typed
+                                         // No need to throw error either, it was already thrown when parsing the type
                 };
 
                 let dest_type = match assign.destination.parse_type(context) {

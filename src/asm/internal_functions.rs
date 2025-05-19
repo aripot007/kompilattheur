@@ -3,9 +3,10 @@ use crate::ast::nodes::BinOp;
 use super::{
     codegen::CodeGen,
     llvm::{
-        init_internal_bool_cast_function, init_internal_compare_generic_function,
-        init_internal_generic_print_function, init_internal_list_cmp_function, init_len_function,
-        pre_init_internal_list_cmp_function, user_function_prefix, LLVMCodegenError,
+        init_internal_add_generic_function, init_internal_bool_cast_function,
+        init_internal_compare_generic_function, init_internal_generic_print_function,
+        init_internal_list_cmp_function, init_len_function, pre_init_internal_list_cmp_function,
+        user_function_prefix, LLVMCodegenError,
     },
 };
 
@@ -20,6 +21,7 @@ pub enum InternalFuctions {
     GenericCompareGREATEREQ,
     ListCmp,
     BoolCast,
+    GenericAdd,
     // Syscalls
     Trap,
     Puts,
@@ -68,6 +70,7 @@ impl Into<&'static str> for InternalFuctions {
                 internal_function_prefix!("generic_compareGREATEREQ")
             }
             InternalFuctions::BoolCast => internal_function_prefix!("bool_cast"),
+            InternalFuctions::GenericAdd => internal_function_prefix!("generic_add"),
             InternalFuctions::Len => user_function_prefix!("len"),
         }
     }
@@ -121,6 +124,8 @@ pub(super) fn init_internal_functions<'ctx>(
     init_len_function(cg)?;
     // This function is using len should be initialized after the len function
     init_internal_bool_cast_function(cg)?;
+
+    init_internal_add_generic_function(cg)?;
 
     return Ok(());
 }

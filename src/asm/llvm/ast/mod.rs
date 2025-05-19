@@ -6,7 +6,8 @@ mod expression;
 pub use expression::init_internal_bool_cast_function;
 pub use expression::init_len_function;
 pub use expression::{
-    compare_generic_values, init_internal_compare_generic_function, llvm_compute_expr,
+    compare_generic_values, init_internal_add_generic_function,
+    init_internal_compare_generic_function, llvm_compute_expr,
 };
 mod factor;
 pub use factor::llvm_compute_factor;

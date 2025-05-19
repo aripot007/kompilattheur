@@ -44,6 +44,9 @@ pub enum RuntimeErrorMsg {
     /// Used when a type error is encountered during generic comparison
     PanicInvalidInternalTypeCompareGeneric,
 
+    /// Used when try to add two different type
+    PanicInvalidInternalTypeAddGeneric,
+
     /// Used when the type of a variable is not what was expected
     ///
     /// Takes a string message as an argument
@@ -91,6 +94,9 @@ impl Into<&'static str> for RuntimeErrorMsg {
             RuntimeErrorMsg::IndexOutOfBound => internal_global_prefix!("error_out_of_bound"),
             RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric => {
                 internal_global_prefix!("panic_invalid_type_compare_generic")
+            }
+            RuntimeErrorMsg::PanicInvalidInternalTypeAddGeneric => {
+                internal_global_prefix!("panic_invalid_type_add_generic")
             }
         }
     }
@@ -154,6 +160,12 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
     create_global_string(
         RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric,
         "PANIC: Invalid internal type value for generic comparison\n",
+        cg,
+    );
+
+    create_global_string(
+        RuntimeErrorMsg::PanicInvalidInternalTypeAddGeneric,
+        "PANIC: Invalid internal type value for generic add\n",
         cg,
     );
 }

@@ -8,6 +8,8 @@ use crate::{asm::codegen::CodeGen, ast::nodes::Factor, typing::Type};
 use inkwell::values::{BasicMetadataValueEnum, StructValue};
 use inkwell::AddressSpace;
 
+use super::defs::user_function_prefix;
+use super::defs::user_function_prefix_format;
 use super::llvm_compute_expr;
 
 pub fn llvm_compute_factor<'ctx>(
@@ -143,7 +145,7 @@ fn llvm_compute_function_call<'ctx>(
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
     let opt_function_value = cg
         .module
-        .get_function(&format!("__smolpp_user_f_{}", identifier.name).as_str());
+        .get_function(&user_function_prefix_format!(identifier.name));
     let function_value;
     match opt_function_value {
         Some(e) => function_value = e,

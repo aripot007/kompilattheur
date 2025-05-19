@@ -16,7 +16,7 @@ use inkwell::{
 };
 
 /// Compare two Integer with the given operation
-pub fn compare_int_values<'ctx>(
+pub fn compare_int_bool_values<'ctx>(
     value1: SmolVar<'ctx>,
     value2: SmolVar<'ctx>,
     operation: BinOp,
@@ -43,12 +43,7 @@ pub fn compare_int_values<'ctx>(
         BinOp::GREATEREQ => cg
             .builder
             .build_int_compare(IntPredicate::SGE, val1, val2, "gte")?,
-        _ => {
-            return Err(LLVMCodegenError::InvalidOperation(format!(
-                "Invalid between two ints: {:?}",
-                operation
-            )))
-        }
+        _ => panic!("Invalid operation between two Int: {:?}", operation),
     };
     let res = cg
         .builder
@@ -87,48 +82,6 @@ pub fn compare_none_values<'ctx>(
         }
     };
     return res;
-}
-
-/// Compare two Boolean with the given operation
-pub fn compare_boolean_values<'ctx>(
-    value1: SmolVar<'ctx>,
-    value2: SmolVar<'ctx>,
-    operation: BinOp,
-    cg: &CodeGen<'ctx>,
-) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    let val1 = cg.get_variable_value(value1)?.into_int_value();
-    let val2 = cg.get_variable_value(value2)?.into_int_value();
-    let res = match operation {
-        BinOp::EQ => cg
-            .builder
-            .build_int_compare(IntPredicate::EQ, val1, val2, "bool_eq")?,
-        BinOp::NEQ => cg
-            .builder
-            .build_int_compare(IntPredicate::NE, val1, val2, "bool_neq")?,
-        BinOp::LESS => cg
-            .builder
-            .build_int_compare(IntPredicate::ULT, val1, val2, "bool_lt")?,
-        BinOp::GREATER => cg
-            .builder
-            .build_int_compare(IntPredicate::UGT, val1, val2, "bool_gt")?,
-        BinOp::LESSEQ => cg
-            .builder
-            .build_int_compare(IntPredicate::ULE, val1, val2, "bool_lte")?,
-        BinOp::GREATEREQ => {
-            cg.builder
-                .build_int_compare(IntPredicate::UGE, val1, val2, "bool_gte")?
-        }
-        _ => {
-            return Err(LLVMCodegenError::InvalidOperation(format!(
-                "Invalide between booleans : {:?}",
-                operation
-            )))
-        }
-    };
-    let res = cg
-        .builder
-        .build_int_cast(res, cg.context.i64_type(), "bool_cast")?;
-    return cg.create_variable(Type::Bool, res);
 }
 
 /// Compare two List with the given operation
@@ -387,6 +340,12 @@ pub fn init_internal_compare_generic_function<'ctx>(
     let else_block = cg
         .context
         .insert_basic_block_after(then_block, "generic_compare_different_type");
+    let then_bool_or_int_block = cg
+        .context
+        .insert_basic_block_after(parent_block, "generic_compare_same_type");
+    let else_bool_or_int_block = cg
+        .context
+        .insert_basic_block_after(then_block, "generic_compare_different_type");
 
     cg.builder
         .build_conditional_branch(same_type, then_block, else_block)?;
@@ -398,6 +357,43 @@ pub fn init_internal_compare_generic_function<'ctx>(
 
     // Case Different type
     cg.builder.position_at_end(else_block);
+
+    // Create the comparaison calcul
+
+    let i8_type = cg.context.i8_type();
+    let bool_type = i8_type.const_int(Type::Bool.get_bitmask().into(), false);
+    let int_type = i8_type.const_int(Type::Int.get_bitmask().into(), false);
+    let mask = cg.builder.build_or(bool_type, int_type, "mask")?;
+    let left_type = cg.builder.build_and(t1, mask, "left_type")?;
+    let left_cond = cg.builder.build_int_compare(
+        IntPredicate::NE,
+        left_type,
+        i8_type.const_zero(),
+        "left_cond",
+    )?;
+
+    let right_type = cg.builder.build_and(t2, mask, "right_type")?;
+    let right_cond = cg.builder.build_int_compare(
+        IntPredicate::NE,
+        right_type,
+        i8_type.const_zero(),
+        "right_cond",
+    )?;
+
+    let final_cond = cg.builder.build_and(left_cond, right_cond, "final_cond")?;
+
+    // Si le type est Bool ou Int, alors on fait compare int
+    cg.builder.build_conditional_branch(
+        final_cond,
+        then_bool_or_int_block,
+        else_bool_or_int_block,
+    )?;
+
+    cg.builder.position_at_end(then_bool_or_int_block);
+    let result = compare_int_bool_values(value1, value2, operation, cg)?;
+    cg.builder.build_return(Some(&result))?;
+
+    cg.builder.position_at_end(else_bool_or_int_block);
 
     match operation {
         BinOp::EQ => {
@@ -437,10 +433,7 @@ fn build_switch_compare_generic_same_type<'ctx>(
     let case_none = cg
         .context
         .append_basic_block(function, "generic_compare_case_none");
-    let case_bool = cg
-        .context
-        .append_basic_block(function, "generic_compare_case_bool");
-    let case_int = cg
+    let case_int_bool = cg
         .context
         .append_basic_block(function, "generic_compare_case_int");
     let case_string = cg
@@ -465,11 +458,11 @@ fn build_switch_compare_generic_same_type<'ctx>(
             ),
             (
                 i8_type.const_int(Type::Bool.get_bitmask().into(), false),
-                case_bool,
+                case_int_bool,
             ),
             (
                 i8_type.const_int(Type::Int.get_bitmask().into(), false),
-                case_int,
+                case_int_bool,
             ),
             (
                 i8_type.const_int(Type::String.get_bitmask().into(), false),
@@ -499,12 +492,8 @@ fn build_switch_compare_generic_same_type<'ctx>(
         }
     }
 
-    cg.builder.position_at_end(case_bool);
-    let result = compare_boolean_values(value1, value2, operation, cg)?;
-    cg.builder.build_return(Some(&result))?;
-
-    cg.builder.position_at_end(case_int);
-    let result = compare_int_values(value1, value2, operation, cg)?;
+    cg.builder.position_at_end(case_int_bool);
+    let result = compare_int_bool_values(value1, value2, operation, cg)?;
     cg.builder.build_return(Some(&result))?;
 
     cg.builder.position_at_end(case_string);

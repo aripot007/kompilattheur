@@ -4,6 +4,20 @@ use crate::common::symbol_table::Symbol;
 
 use super::llvm_from_block;
 
+macro_rules! user_function_prefix {
+    ($name: expr) => {
+        concat!("__smolpp_user_f_", $name)
+    };
+}
+pub(crate) use user_function_prefix;
+
+macro_rules! user_function_prefix_format {
+    ($name: expr) => {
+        format!(user_function_prefix!("{}"), $name).as_str()
+    };
+}
+pub(crate) use user_function_prefix_format;
+
 pub fn llvm_from_defs<'ctx>(defs: &Defs, cg: &mut CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
     // TODO: init signature then code
     for def in &defs.defs {
@@ -12,11 +26,9 @@ pub fn llvm_from_defs<'ctx>(defs: &Defs, cg: &mut CodeGen<'ctx>) -> Result<(), L
 
         // Register the function in the module
         let func_type = var_type.fn_type(&vec![var_type.into(); def.params.len()], false);
-        let function = cg.module.add_function(
-            format!("__smolpp_user_f_{}", name).as_str(),
-            func_type,
-            None,
-        );
+        let function = cg
+            .module
+            .add_function(user_function_prefix_format!(name), func_type, None);
 
         // Build the function
         let entry = cg.context.append_basic_block(function, "function_entry");

@@ -44,7 +44,7 @@ pub fn llvm_from_conditional<'ctx>(
             .left()
             .unwrap()
             .into_int_value();
-        
+
         cg.builder
             .build_conditional_branch(boolean_llvm_value, then_block, else_block)?;
     } else {

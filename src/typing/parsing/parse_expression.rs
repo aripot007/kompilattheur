@@ -115,7 +115,7 @@ fn try_parse_binop(
             }
             return Ok(Type::Bool);
         }
-        BinOp::AND | BinOp::OR => Ok(Type::Bool),
+        BinOp::AND | BinOp::OR => Ok(Type::Any), // AND and OR operators accept any type, for now we return Any to avoid complicated type parsing
         BinOp::LESS | BinOp::LESSEQ | BinOp::GREATER | BinOp::GREATEREQ => {
             try_parse_comparison(root_localization, t1, op, t2, context)
         }

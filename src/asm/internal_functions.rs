@@ -99,7 +99,7 @@ pub(super) fn init_internal_functions<'ctx>(
     init_internal_generic_print_function(cg)?;
 
     // pre init because used in generic function
-    let (entry, function) = pre_init_internal_list_cmp_function(cg);
+    let (entry_list_cmp, function_list_cmp) = pre_init_internal_list_cmp_function(cg);
 
     // generic_compare
     init_internal_compare_generic_function(cg, BinOp::EQ)?;
@@ -110,7 +110,7 @@ pub(super) fn init_internal_functions<'ctx>(
     init_internal_compare_generic_function(cg, BinOp::GREATEREQ)?;
 
     // list_cmp function
-    init_internal_list_cmp_function(entry, function, cg)?;
+    init_internal_list_cmp_function(entry_list_cmp, function_list_cmp, cg)?;
 
     return Ok(());
 }

@@ -105,10 +105,13 @@ impl Weak {
 
         let new_types: HashSet<Type> = l_types.intersection(&others).cloned().collect();
 
+        if new_types.len() == 0 {
+            return Err(());
+        }
+
         weak_types.set_elt(self.id, new_types.clone());
 
         match new_types.len() {
-            0 => Err(()),
             1 => {
                 let vals: Vec<&Type> = new_types.iter().collect();
                 Ok(vals[0].clone())

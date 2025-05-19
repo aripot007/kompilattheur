@@ -24,6 +24,7 @@
 # WHAT WE DON'T ACCEPT BUT WE SHOULD ACCEPT IS access to a single expression: this case -> E[E][E]...[E]\n
 "<simple_stmt>"   : "return" "<expr>"
                   | "print""(""<expr>"")"
+                  | "println""(""<expr>"")"
                   | "<ident>" "<simple_state_ident>"
                   | "<expr_no_ident_no_access>" "<expr_no_ident_no_access2>";
 

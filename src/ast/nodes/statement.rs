@@ -16,6 +16,7 @@ use super::{Assign, AstNode, Conditional, Expression, For};
 
 pub enum Statement {
     Print(Expression),
+    Println(Expression),
     Return(Expression),
     For(For),
     Conditional(Conditional),
@@ -28,6 +29,7 @@ impl AstNode for Statement {
     fn get_string_repr(&self) -> String {
         String::from(match self {
             Statement::Print(_) => "Statement::Print",
+            Statement::Println(_) => "Statement::Println",
             Statement::Return(_) => "Statement::Return",
             Statement::For(_) => "Statement::For",
             Statement::Conditional(_) => "Statement::Conditional",
@@ -76,6 +78,9 @@ fn parse_simple(root: Tree<FileElement<Lexem>>) -> Statement {
     match left_child_elem {
         Lexem::Terminal(Token::Print) => {
             Statement::Print(Expression::from(root.borrow().get_children()[2].clone()))
+        }
+        Lexem::Terminal(Token::Println) => {
+            Statement::Println(Expression::from(root.borrow().get_children()[2].clone()))
         }
         Lexem::Terminal(Token::Return) => {
             Statement::Return(Expression::from(root.borrow().get_children()[1].clone()))
@@ -318,6 +323,11 @@ impl Into<Tree<String>> for Statement {
                 r.borrow_mut().add_child(&r, expr.into());
                 return r;
             }
+            Statement::Println(expr) => {
+                let r = Node::new(String::from("PRINTLN"));
+                r.borrow_mut().add_child(&r, expr.into());
+                return r;
+            }
             Statement::Return(expr) => {
                 let r = Node::new(String::from("RETURN"));
                 r.borrow_mut().add_child(&r, expr.into());
@@ -336,6 +346,7 @@ impl Localizable for Statement {
         match self {
             Statement::NotImplemented => 0,
             Statement::Print(expr) => expr.get_len(),
+            Statement::Println(expr) => expr.get_len(),
             Statement::Return(expr) => expr.get_len(),
             Statement::For(for_loop) => for_loop.get_len(),
             Statement::Conditional(cdt) => cdt.get_len(),
@@ -348,6 +359,7 @@ impl Localizable for Statement {
         match self {
             Statement::NotImplemented => 0,
             Statement::Print(expr) => expr.get_start_line(),
+            Statement::Println(expr) => expr.get_start_line(),
             Statement::Return(expr) => expr.get_start_line(),
             Statement::For(for_loop) => for_loop.get_start_line(),
             Statement::Conditional(cdt) => cdt.get_start_line(),
@@ -360,6 +372,7 @@ impl Localizable for Statement {
         match self {
             Statement::NotImplemented => 0,
             Statement::Print(expr) => expr.get_end_line(),
+            Statement::Println(expr) => expr.get_end_line(),
             Statement::Return(expr) => expr.get_end_line(),
             Statement::For(for_loop) => for_loop.get_end_line(),
             Statement::Conditional(cdt) => cdt.get_end_line(),
@@ -372,6 +385,7 @@ impl Localizable for Statement {
         match self {
             Statement::NotImplemented => 0,
             Statement::Print(expr) => expr.get_start_char(),
+            Statement::Println(expr) => expr.get_start_char(),
             Statement::Return(expr) => expr.get_start_char(),
             Statement::For(for_loop) => for_loop.get_start_char(),
             Statement::Conditional(cdt) => cdt.get_start_char(),
@@ -384,6 +398,7 @@ impl Localizable for Statement {
         match self {
             Statement::NotImplemented => 0,
             Statement::Print(expr) => expr.get_end_char(),
+            Statement::Println(expr) => expr.get_end_char(),
             Statement::Return(expr) => expr.get_end_char(),
             Statement::For(for_loop) => for_loop.get_end_char(),
             Statement::Conditional(cdt) => cdt.get_end_char(),

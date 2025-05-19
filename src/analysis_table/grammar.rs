@@ -171,6 +171,7 @@ impl Grammar {
             "def" => terminal!("def", Token::Def),
             "return" => terminal!("return", Token::Return),
             "print" => terminal!("print", Token::Print),
+            "println" => terminal!("println", Token::Println),
 
             // Le lexem est un non terminal
             name => ParsedLexem {

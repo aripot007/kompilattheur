@@ -79,6 +79,7 @@ fn init_token_table() -> TokenTable {
     table.reserve_word("def", Token::Def);
     table.reserve_word("return", Token::Return);
     table.reserve_word("print", Token::Print);
+    table.reserve_word("println", Token::Println);
 
     return table;
 }

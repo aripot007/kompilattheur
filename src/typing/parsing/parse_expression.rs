@@ -155,7 +155,6 @@ fn try_parse_binop(
         }
         BinOp::ADD => return try_parse_add(root_localization, t1, t2, context),
         BinOp::ACCESS => {
-            // TODO(Aristide)
             if t2.is_compatible(Type::Int) {
                 if let Type::Weak(weak) = t2.clone() {
                     weak.restrict(&[Type::Int])
@@ -163,8 +162,8 @@ fn try_parse_binop(
                 }
                 return Ok(Type::Any);
             }
-            context.errors.push(Diagnostic::from_localizable(
-                root_localization,
+            context.errors.push(Diagnostic::from_localizable_ref(
+                e2,
                 DiagnosticGravity::Error,
                 String::from("TypeError"),
                 format!(

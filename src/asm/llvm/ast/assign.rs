@@ -5,8 +5,8 @@ use crate::{
         codegen::CodeGen,
         internal_global_constants::RuntimeErrorMsg,
         llvm::{
-            assert_assignation_type, assert_type, lists, panic::smolpp_panic_with_unreachable,
-            smolvar::SmolVar, LLVMCodegenError,
+            assert_assignation_type, panic::smolpp_panic_with_unreachable, smolvar::SmolVar,
+            LLVMCodegenError,
         },
     },
     ast::nodes::{Assign, AstNode, BinOp, Expression, ExpressionKind, Factor, FactorKind},

@@ -122,19 +122,8 @@ impl Typeable for Factor {
         return res;
     }
 
-    fn is_typed(&self) -> bool {
-        self.factor_type.is_some()
-    }
-
     fn get_type(&self) -> &Type {
         self.factor_type.as_ref().unwrap()
-    }
-
-    fn get_type_opt(&self) -> Option<&Type> {
-        match &self.factor_type {
-            Some(t) => Some(t),
-            None => None,
-        }
     }
 
     fn set_type(&mut self, t: Type) {

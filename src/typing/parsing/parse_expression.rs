@@ -62,19 +62,8 @@ impl Typeable for Expression {
         return res;
     }
 
-    fn is_typed(&self) -> bool {
-        self.expr_type.is_some()
-    }
-
     fn get_type(&self) -> &Type {
         self.expr_type.as_ref().unwrap()
-    }
-
-    fn get_type_opt(&self) -> Option<&Type> {
-        match &self.expr_type {
-            Some(t) => Some(t),
-            None => None,
-        }
     }
 
     fn set_type(&mut self, t: Type) {

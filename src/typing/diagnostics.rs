@@ -32,6 +32,20 @@ impl Diagnostic {
     }
 
     /// Incompatible type for an expression
+    pub(super) fn invalid_arg_count<T: Localizable>(root: &T, expected: usize, got: usize) -> Self {
+        Diagnostic::from_localizable_ref(
+            root,
+            DiagnosticGravity::Error,
+            String::from("InvalidArgumentCount"),
+            format!(
+                "This functions takes {} arguments, but {} were provided",
+                expected.to_string().color(Color::Yellow),
+                got.to_string().color(Color::Red)
+            ),
+        )
+    }
+
+    /// Incompatible type for an expression
     pub(super) fn incompatible_type<T: Localizable>(
         root: &T,
         t1: &Type,
@@ -49,8 +63,8 @@ impl Diagnostic {
             String::from("TypeError"),
             format!(
                 "Expected type {}, but got {}",
+                expected_string.color(Color::Yellow),
                 format!("{}", t1).color(Color::Red),
-                expected_string.color(Color::Yellow)
             ),
         )
     }

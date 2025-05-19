@@ -22,7 +22,7 @@ impl Typeable for Expression {
             ExpressionKind::UNOP(un_op, ref mut expr) => {
                 match (&un_op, expr.as_mut().parse_type(context)) {
                     (UnOp::NEG, Ok(Type::Int)) => Ok(Type::Int),
-                    (UnOp::NOT, Ok(Type::Bool)) => Ok(Type::Bool),
+                    (UnOp::NOT, Ok(_)) => Ok(Type::Bool),
                     (UnOp::NEG, Ok(Type::Weak(weak))) => {
                         let possible = weak.get_possible();
                         match weak.restrict(&[Type::Int]) {

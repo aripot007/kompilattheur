@@ -156,21 +156,24 @@ fn try_parse_binop(
         BinOp::ADD => return try_parse_add(root_localization, t1, t2, context),
         BinOp::ACCESS => {
             // TODO(Aristide)
-            if t2 == Type::Int {
-                Ok(Type::Any)
-            } else {
-                context.errors.push(Diagnostic::from_localizable(
-                    root_localization,
-                    DiagnosticGravity::Error,
-                    String::from("TypeError"),
-                    format!(
-                        "Invalid type {} for list index, must be an {}",
-                        format!("{}", t2).color(Color::BrightRed),
-                        "Int".color(Color::Yellow),
-                    ),
-                ));
-                Err(())
+            if t2.is_compatible(Type::Int) {
+                if let Type::Weak(weak) = t2.clone() {
+                    weak.restrict(&[Type::Int])
+                        .expect("Restriction should not fail because compatibility was checked");
+                }
+                return Ok(Type::Any);
             }
+            context.errors.push(Diagnostic::from_localizable(
+                root_localization,
+                DiagnosticGravity::Error,
+                String::from("TypeError"),
+                format!(
+                    "Invalid type {} for list index, must be an {}",
+                    format!("{}", t2).color(Color::BrightRed),
+                    "Int".color(Color::Yellow),
+                ),
+            ));
+            Err(())
         }
     }
 }

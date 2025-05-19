@@ -1,4 +1,4 @@
-use super::{AstNode, Block, Defs};
+use super::{Ast, AstNode, Block, Defs};
 use crate::{
     common::{
         localizable::Localizable,
@@ -16,6 +16,15 @@ pub struct Root {
 impl AstNode for Root {
     fn get_string_repr(&self) -> String {
         String::from("Root")
+    }
+}
+
+impl From<Ast> for Root {
+    fn from(value: Ast) -> Self {
+        match value {
+            Ast::Root(s) => s,
+            _ => panic!("Cannot convert {} to Root", value),
+        }
     }
 }
 

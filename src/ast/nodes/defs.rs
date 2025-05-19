@@ -1,4 +1,4 @@
-use super::{list_into_tree, parse_list, AstNode, Def};
+use super::{list_into_tree, parse_list, Ast, AstNode, Def};
 use crate::{
     common::{
         localizable::Localizable,
@@ -15,6 +15,15 @@ pub struct Defs {
 impl AstNode for Defs {
     fn get_string_repr(&self) -> String {
         String::from("Defs")
+    }
+}
+
+impl From<Ast> for Defs {
+    fn from(value: Ast) -> Self {
+        match value {
+            Ast::Defs(s) => s,
+            _ => panic!("Cannot convert {} to Defs", value),
+        }
     }
 }
 

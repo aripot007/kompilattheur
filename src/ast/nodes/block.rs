@@ -8,7 +8,7 @@ use crate::{
     parser::Lexem,
 };
 
-use super::{parse_list, AstNode, Statement};
+use super::{parse_list, Ast, AstNode, Statement};
 
 pub struct Block {
     pub statements: Vec<Statement>,
@@ -19,6 +19,15 @@ pub struct Block {
 impl AstNode for Block {
     fn get_string_repr(&self) -> String {
         String::from("Block")
+    }
+}
+
+impl From<Ast> for Block {
+    fn from(value: Ast) -> Self {
+        match value {
+            Ast::Block(s) => s,
+            _ => panic!("Cannot convert {} to Block", value),
+        }
     }
 }
 

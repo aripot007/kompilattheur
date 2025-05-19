@@ -1,6 +1,6 @@
 use colored::{Color, Colorize};
 
-use crate::ast::nodes::{ExpressionKind, FactorKind};
+use crate::ast::nodes::{Ast, ExpressionKind, FactorKind};
 use crate::common::diagnostic::{Diagnostic, DiagnosticGravity};
 use crate::common::symbol_table::{
     enter_scope, exit_scope, get_symbol, init_symbol_table, Symbol, SymbolTableElement,
@@ -10,6 +10,8 @@ use crate::{
     ast::nodes::{self, Statement},
     typing::{Function, Type, Typeable, TypingContext, Weak},
 };
+
+use super::resolve_weaks;
 
 pub fn parse_types(root: nodes::Root) -> (nodes::Root, SymbolTableRef, TypingContext) {
     let table = init_symbol_table();
@@ -24,6 +26,11 @@ pub fn parse_types(root: nodes::Root) -> (nodes::Root, SymbolTableRef, TypingCon
     };
 
     let _ = generate_from_node_root(&mut root, table.clone(), &mut context);
+
+    let root = match resolve_weaks(Ast::Root(root), &table) {
+        Ast::Root(root) => root,
+        _ => panic!("Resolve weaks should return root"),
+    };
 
     return (root, table, context);
 }

@@ -87,10 +87,7 @@ impl Typeable for Factor {
                             t => vec![t],
                         };
 
-                        println!("Comparing arg {} to allowed {:?}", arg_type, allowed_types);
-
                         if !arg_type.is_compatible(expected.clone()) {
-                            println!("Types are incompatible");
                             context.errors.push(Diagnostic::incompatible_type(
                                 arg,
                                 &arg_type,

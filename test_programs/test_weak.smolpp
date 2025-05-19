@@ -14,8 +14,13 @@ def poo(a):
     else:
         return True
 
-foo()
+def pof(a,b,c):
+    d = a + 12
+    e = b + c
+    return d - 25
+
+foo(12)
 li = [1,2,3]
 
 print(li[bar(False)])
-print(li[poo(3)])
+# print(li[poo(3)])

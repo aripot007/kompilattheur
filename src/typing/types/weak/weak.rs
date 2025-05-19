@@ -57,7 +57,6 @@ impl Weak {
         if self.locked || other.locked {
             return;
         }
-        println!("weak{}(={}): union({})", self.id, self.to_string(), other);
         let mut weak_types = WEAK_TYPES.lock().unwrap();
         let l_types = weak_types.find_elt(self.id).clone();
         let r_types = weak_types.find_elt(other.id).clone();
@@ -72,7 +71,6 @@ impl Weak {
         if self.locked {
             return;
         }
-        println!("weak{}(={}): add_type({})", self.id, self.to_string(), typ);
         match typ {
             Type::Weak(other) => return self.union(&other),
             Type::None | Type::Bool | Type::Int | Type::String | Type::List => {
@@ -91,12 +89,6 @@ impl Weak {
         if self.locked || other.locked {
             return;
         }
-        println!(
-            "weak{}(={}): intersection({})",
-            self.id,
-            self.to_string(),
-            other
-        );
         let mut weak_types = WEAK_TYPES.lock().unwrap();
         let l_types = weak_types.find_elt(self.id).clone();
         let r_types = weak_types.find_elt(other.id).clone();
@@ -112,12 +104,6 @@ impl Weak {
         if self.locked {
             return Ok(Type::Weak(self.clone()));
         }
-        println!(
-            "weak{}(={}): restrict({:?})",
-            self.id,
-            self.to_string(),
-            others
-        );
         let mut weak_types = WEAK_TYPES.lock().unwrap();
         let l_types = weak_types.find_elt(self.id).clone();
 
@@ -152,7 +138,6 @@ impl Weak {
         if self.locked {
             return Ok(Type::Weak(self.clone()));
         }
-        println!("weak{}(={}): remove({})", self.id, self.to_string(), typ);
         let mut weak_types = WEAK_TYPES.lock().unwrap();
         let l_types = weak_types.find_elt_mut(self.id);
 

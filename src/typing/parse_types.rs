@@ -127,6 +127,7 @@ fn generate_from_def(
     function_table: SymbolTableRef,
     context: &mut TypingContext,
 ) -> SymbolTableRef {
+    let func_id = def.identifier.element.id;
     context.func_id = Some(def.identifier.element.clone());
 
     context.symbol_table = function_table.clone();
@@ -141,9 +142,13 @@ fn generate_from_def(
     let mut symbol_table_element = get_symbol(&table, &func_id).unwrap();
     symbol_table_element.symbol_type = match symbol_table_element.symbol_type {
         Type::Function(func_type) => {
+            let return_type = match func_type.returns {
+                Type::Weak(weak) => Type::Weak(weak.locked()),
+                t => t,
+            };
             let new_func_type = Function {
                 args: func_type.args,
-                returns: Type::Weak(return_type_weak.locked()),
+                returns: return_type,
             };
             Type::Function(Box::from(new_func_type))
         }
@@ -152,6 +157,7 @@ fn generate_from_def(
     table
         .borrow_mut()
         .insert_symbol(func_id, symbol_table_element);
+
     table
 }
 

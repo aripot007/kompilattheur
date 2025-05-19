@@ -38,7 +38,7 @@ impl Type {
                 .iter()
                 .map(Type::get_bitmask)
                 .reduce(u8::bitor)
-                .unwrap_or(0b00011111), // TODO(Aristide): remove because should be infered
+                .unwrap(), // TODO(Aristide): remove because should be infered
             Type::NTuple(_) | Type::Function(_) => {
                 panic!("Cannot get discriminant for type {}", self)
             }

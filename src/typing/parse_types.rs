@@ -34,9 +34,18 @@ fn generate_from_node_root(
 ) -> SymbolTableRef {
     let mut table = table;
 
-    // Process all function definitions
+    // Signature function
+    let mut function_tables: Vec<SymbolTableRef> = Vec::new();
     for mut def in &mut root.defs.defs {
-        table = generate_from_def(&mut def, table, context);
+        let (new_table, function_table) = generate_sign_def(&mut def, table, context);
+        table = new_table;
+        function_tables.push(function_table);
+    }
+
+    // Process all function definitions
+    for (i, mut def) in &mut root.defs.defs.iter_mut().enumerate() {
+        let function_table = function_tables[i].clone();
+        table = generate_from_def(&mut def, table, function_table, context);
     }
 
     // Process the main block
@@ -45,11 +54,11 @@ fn generate_from_node_root(
     table
 }
 
-fn generate_from_def(
+fn generate_sign_def(
     def: &mut nodes::Def,
     table: SymbolTableRef,
     context: &mut TypingContext,
-) -> SymbolTableRef {
+) -> (SymbolTableRef, SymbolTableRef) {
     let func_id = def.identifier.element.id;
     context.func_id = Some(def.identifier.element.clone());
 
@@ -96,6 +105,21 @@ fn generate_from_def(
             .borrow_mut()
             .insert_symbol(param_id, param_element);
     }
+
+    context.symbol_table = table.clone();
+    context.func_id = None;
+    (exit_scope(function_table.clone()), function_table)
+}
+
+fn generate_from_def(
+    def: &mut nodes::Def,
+    table: SymbolTableRef,
+    function_table: SymbolTableRef,
+    context: &mut TypingContext,
+) -> SymbolTableRef {
+    context.func_id = Some(def.identifier.element.clone());
+
+    context.symbol_table = function_table.clone();
 
     generate_from_block(&mut def.block, function_table.clone(), context);
 

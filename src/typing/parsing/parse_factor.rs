@@ -110,10 +110,8 @@ impl Typeable for Factor {
                     return Err(());
                 }
 
-                return match func_type_res {
-                    Some(Type::Function(func_type)) => Ok((*func_type).returns),
-                    _ => Err(()),
-                };
+                self.factor_type = Some(func_type.returns.clone());
+                return Ok(func_type.returns.clone());
             }
         };
         if let Ok(t) = &res {

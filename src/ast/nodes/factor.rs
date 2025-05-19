@@ -200,7 +200,13 @@ impl Into<Tree<String>> for &Factor {
                 args,
                 localization: _,
             } => {
-                let root = Node::new(String::from("CALL"));
+                // Add typing information if available
+                let s = match &self.factor_type {
+                    Some(t) => format!("CALL\n({})", t),
+                    _ => String::from("CALL"),
+                };
+
+                let root = Node::new(s);
 
                 root.borrow_mut()
                     .add_child(&root, Node::new(format!("Identifier {}", identifier.name)));

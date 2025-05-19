@@ -31,7 +31,7 @@ pub fn llvm_compute_and_or<'ctx>(
     let call_boolean_llvm_value = cg.builder.build_call(
         get_internal_func!(cg, InternalFuctions::BoolCast),
         &[value1.into()],
-        "bool_cast_call",
+        "and_or_bool_cast_call",
     )?;
 
     let boolean_llvm_value = call_boolean_llvm_value
@@ -175,11 +175,7 @@ pub fn init_internal_bool_cast_function(cg: &mut CodeGen) -> Result<(), LLVMCode
         "len_call",
     )?;
 
-    let return_var = call_len_value
-        .try_as_basic_value()
-        .left()
-        .unwrap()
-        .into_struct_value();
+    let return_var = call_len_value.try_as_basic_value().left().unwrap().into_struct_value();
 
     let return_var_value = cg.get_variable_value(return_var)?.into_int_value();
     let result = cg.builder.build_int_compare(
@@ -235,9 +231,9 @@ pub fn init_len_function(cg: &mut CodeGen) -> Result<(), LLVMCodegenError> {
     // Get the length of the list or string
     let ptr_type = cg.context.ptr_type(AddressSpace::default());
 
-    let var1_ptr = cg
-        .builder
-        .build_int_to_ptr(var1_value, ptr_type, "list_ptr")?;
+    let var1_ptr =
+        cg.builder
+            .build_int_to_ptr(var1_value, ptr_type, "list_ptr")?;
 
     // Load the SmolList
     let var1_list = cg
@@ -249,6 +245,7 @@ pub fn init_len_function(cg: &mut CodeGen) -> Result<(), LLVMCodegenError> {
 
     let return_value = cg.create_variable(Type::Int, interator_value_len)?;
     cg.builder.build_return(Some(&return_value))?;
+
 
     // Return builder to main block because it's init function
     cg.current_function = cg.main_function;

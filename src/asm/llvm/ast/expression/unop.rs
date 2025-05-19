@@ -1,7 +1,6 @@
 use crate::{
     asm::{
-        codegen::CodeGen,
-        llvm::{assert_type, smolvar::SmolVar, LLVMCodegenError},
+        codegen::CodeGen, get_internal_func, llvm::{assert_type, smolvar::SmolVar, LLVMCodegenError}, InternalFuctions
     },
     ast::nodes::{Expression, UnOp},
     typing::Type,
@@ -29,8 +28,24 @@ fn llvm_compute_not<'ctx>(
     val: SmolVar<'ctx>,
     cg: &mut CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    assert_type(Type::Bool, &val, cg, None)?;
-    return llvm_compute_not_unchecked(val, cg);
+    // Cast e1_value to bool using the bool_cast_internal_function
+    let call_boolean_llvm_value = cg.builder.build_call(
+        get_internal_func!(cg, InternalFuctions::BoolCast),
+        &[val.into()],
+        "not_bool_cast_call",
+    )?;
+
+    let boolean_llvm_value = call_boolean_llvm_value
+        .try_as_basic_value()
+        .left()
+        .unwrap()
+        .into_int_value();
+
+    let not_boolean_llvm_value = cg.builder.build_not(boolean_llvm_value, "not not")?;
+
+    let result = cg.builder.build_int_cast(not_boolean_llvm_value, cg.context.i64_type(), "not cast")?;
+
+    cg.create_variable(Type::Bool, result)
 }
 
 /// Compute the NOT operation for a given variable, without type checking

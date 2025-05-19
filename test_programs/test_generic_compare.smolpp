@@ -1,4 +1,4 @@
-a = [0, True]
+a = [1, True]
 print(a[0] < a[1])
 print("\n")
 print(1 and 1)
@@ -6,4 +6,8 @@ print("\n")
 print([1] and [52])
 print("\n")
 print([0] or a[1])
+print("\n")
+# print(len([0]))
+# print("\n")
+print(not a[0])
 print("\n")

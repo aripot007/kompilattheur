@@ -9,5 +9,5 @@ pub(self) use arithmetic::*;
 
 mod comparison;
 pub use comparison::*;
-mod and_or_not;
-pub use and_or_not::*;
+mod and_or;
+pub use and_or::*;

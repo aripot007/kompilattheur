@@ -209,35 +209,8 @@ fn generate_from_block(
             }
             Statement::Conditional(ref mut cond) => {
                 // Parse condition expression type
-                if let Ok(t) = cond.condition.parse_type(context) {
-                    // TODO: Correct comparison with weak
-                    if t != Type::Bool {
-                        context.errors.push(Diagnostic::incompatible_type(
-                            &cond.condition,
-                            &t,
-                            &[Type::Bool],
-                        ));
-                        continue;
-                    }
-                } else {
-                }
-
-                let if_table = enter_scope(table.clone());
-                context.symbol_table = if_table.clone();
-
-                let _ = generate_from_block(&mut cond.if_block, if_table.clone(), context);
-                // Parse condition expression type
-                if let Ok(t) = cond.condition.parse_type(context) {
-                    // TODO: Correct comparison with weak
-                    if t != Type::Bool {
-                        context.errors.push(Diagnostic::incompatible_type(
-                            &cond.condition,
-                            &t,
-                            &[Type::Bool],
-                        ));
-                        continue;
-                    }
-                }
+                // Ignore errors because they were already emitted during parsing
+                let _ = cond.condition.parse_type(context);
 
                 let if_table = enter_scope(table.clone());
                 context.symbol_table = if_table.clone();

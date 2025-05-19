@@ -1,0 +1,8 @@
+
+def foo():
+    if True:
+        return 0
+    else:
+        return True
+
+a = foo() < 1

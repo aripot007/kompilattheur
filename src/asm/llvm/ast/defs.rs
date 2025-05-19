@@ -2,6 +2,8 @@ use crate::asm::{codegen::CodeGen, llvm::LLVMCodegenError};
 use crate::ast::nodes::Defs;
 use crate::common::symbol_table::Symbol;
 
+use inkwell::{basic_block::BasicBlock, values::FunctionValue};
+
 use super::llvm_from_block;
 
 macro_rules! user_function_prefix {
@@ -19,7 +21,7 @@ macro_rules! user_function_prefix_format {
 pub(crate) use user_function_prefix_format;
 
 pub fn llvm_from_defs<'ctx>(defs: &Defs, cg: &mut CodeGen<'ctx>) -> Result<(), LLVMCodegenError> {
-    // TODO: init signature then code
+    let mut blocks: Vec<(BasicBlock<'ctx>, FunctionValue<'ctx>)> = Vec::new();
     for def in &defs.defs {
         let name = def.identifier.element.name.clone();
         let var_type = cg.smolpp_types.dynamic_type;
@@ -32,6 +34,12 @@ pub fn llvm_from_defs<'ctx>(defs: &Defs, cg: &mut CodeGen<'ctx>) -> Result<(), L
 
         // Build the function
         let entry = cg.context.append_basic_block(function, "function_entry");
+
+        blocks.push((entry, function));
+    }
+    for (i, def) in defs.defs.iter().enumerate() {
+        let function = blocks[i].1;
+        let entry = blocks[i].0;
 
         // Switch builder to the function block
         cg.builder.position_at_end(entry);

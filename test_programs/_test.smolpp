@@ -1,9 +1,8 @@
-def f(a):
-    print(a)
-    a = 3
-    print(a)
-    return 1
+def a():
+    if i == 0:
+        return None
+    i = i-1
+    a()
 
-b = f(2)
-
-print(b)
+i = 10
+a()

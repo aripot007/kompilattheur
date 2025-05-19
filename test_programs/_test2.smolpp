@@ -1,3 +1,7 @@
+def a():
+    b()
 
-if [1,[1,"a"],True]>[1,[1,"a"],False]:
-    print(1)
+def b():
+    a()
+
+a()

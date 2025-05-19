@@ -26,6 +26,9 @@ pub enum InternalGlobalConst {
     //
     /// Format string for converting int to string (eg. for concatenation)
     IntFormatString,
+
+    // \n string
+    LineReturn,
 }
 
 /// Internal global string constants used for runtime error printing
@@ -72,6 +75,7 @@ impl Into<&'static str> for InternalGlobalConst {
                 internal_global_prefix!("list_separator_string")
             }
             InternalGlobalConst::IntFormatString => internal_global_prefix!("int_fmt_string"),
+            InternalGlobalConst::LineReturn => internal_global_prefix!("line_return"),
         }
     }
 }
@@ -127,6 +131,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
 
     // Format strings
     create_global_string(InternalGlobalConst::IntFormatString, "%d", cg);
+    create_global_string(InternalGlobalConst::LineReturn, "\n", cg);
 
     // Error messages
     create_global_string(

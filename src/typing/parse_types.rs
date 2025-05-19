@@ -241,6 +241,9 @@ fn generate_from_block(
             Statement::Print(ref mut expr) => {
                 let _ = expr.parse_type(context);
             }
+            Statement::Println(ref mut expr) => {
+                let _ = expr.parse_type(context);
+            }
             Statement::Return(ref mut expr) => {
                 let Ok(res) = expr.parse_type(context) else {
                     // Handle by parse type

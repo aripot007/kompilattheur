@@ -65,6 +65,7 @@ pub enum Token {
     Else,
     Return,
     Print,
+    Println,
 }
 
 impl Display for Token {
@@ -143,6 +144,7 @@ impl Token {
             Token::Else => String::from("else"),
             Token::Return => String::from("return"),
             Token::Print => String::from("print"),
+            Token::Println => String::from("println"),
             Token::Comma => String::from(","),
             Token::Sep => String::from(":"),
             Token::OpenParenthesis => String::from("("),

@@ -5,7 +5,10 @@ use super::{
 use crate::{
     asm::{
         codegen::CodeGen,
+        get_internal_func, get_internal_global_const,
+        internal_global_constants::InternalGlobalConst,
         llvm::{print::*, smolvar::SmolVar, LLVMCodegenError},
+        InternalFuctions,
     },
     ast::nodes::{AstNode, Block, Expression, Statement},
     common::{
@@ -66,6 +69,18 @@ pub fn llvm_from_block<'ctx>(
     for stmt in &block.statements {
         match stmt {
             Statement::Print(expr) => llvm_from_print(expr, cg)?,
+            Statement::Println(expr) => {
+                llvm_from_print(expr, cg)?;
+                cg.builder.build_call(
+                    get_internal_func!(cg, InternalFuctions::Printf),
+                    &[
+                        get_internal_global_const!(cg, InternalGlobalConst::LineReturn)
+                            .as_pointer_value()
+                            .into(),
+                    ],
+                    "line_return",
+                )?;
+            }
             Statement::Assign(assign) => llvm_from_assign(assign, cg)?,
             Statement::Conditional(cond) => llvm_from_conditional(cond, cg)?,
             Statement::For(for_loop) => llvm_from_for_loop(for_loop, cg)?,

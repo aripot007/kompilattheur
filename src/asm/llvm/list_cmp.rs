@@ -165,6 +165,10 @@ pub fn init_internal_list_cmp_function<'ctx>(
 
     cg.builder.position_at_end(for_exit);
 
+    //
+    // TODO: Test lenght
+    //
+
     cg.builder
         .build_return(Some(&cg.context.i8_type().const_int(0, false)))?;
 

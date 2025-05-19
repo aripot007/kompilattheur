@@ -306,6 +306,7 @@ fn try_parse_comparison(
                     weak.restrict(&[Type::Int, Type::Bool])
                         .expect("Restriction should not fail since weak is compatible");
                 }
+                return Ok(Type::Bool);
             }
         }
         _ => (),

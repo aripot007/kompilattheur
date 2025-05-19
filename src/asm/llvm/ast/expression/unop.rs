@@ -1,6 +1,9 @@
 use crate::{
     asm::{
-        codegen::CodeGen, get_internal_func, llvm::{assert_type, smolvar::SmolVar, LLVMCodegenError}, InternalFuctions
+        codegen::CodeGen,
+        get_internal_func,
+        llvm::{assert_type, smolvar::SmolVar, LLVMCodegenError},
+        InternalFuctions,
     },
     ast::nodes::{Expression, UnOp},
     typing::Type,
@@ -43,7 +46,9 @@ fn llvm_compute_not<'ctx>(
 
     let not_boolean_llvm_value = cg.builder.build_not(boolean_llvm_value, "not not")?;
 
-    let result = cg.builder.build_int_cast(not_boolean_llvm_value, cg.context.i64_type(), "not cast")?;
+    let result =
+        cg.builder
+            .build_int_cast(not_boolean_llvm_value, cg.context.i64_type(), "not cast")?;
 
     cg.create_variable(Type::Bool, result)
 }

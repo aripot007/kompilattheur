@@ -51,22 +51,19 @@ impl Weak {
         possible.iter().cloned().collect()
     }
 
-    /// Merge two weak types and return the resulting weak type
-    pub fn union(&mut self, other: &Self) {
+    /// Merge two weak types
+    pub fn union(&self, other: &Self) {
         let mut weak_types = WEAK_TYPES.lock().unwrap();
+        let l_types = weak_types.find_elt(self.id).clone();
+        let r_types = weak_types.find_elt(other.id).clone();
 
+        let new_types = l_types.union(&r_types).cloned().collect();
         weak_types.union(self.id, other.id);
-        let l_types = weak_types.find_elt(self.id);
-
-        let mut weak_types = WEAK_TYPES.lock().unwrap();
-        let r_types = weak_types.find_elt(other.id);
-
-        let new_types = l_types.union(r_types).cloned().collect();
         weak_types.set_elt(self.id, new_types);
     }
 
-    /// Merge two weak types and return the resulting weak type
-    pub fn add_type(&mut self, typ: Type) {
+    /// Add a possible type to a weak
+    pub fn add_type(&self, typ: Type) {
         match typ {
             Type::Weak(other) => return self.union(&other),
             Type::None | Type::Bool | Type::Int | Type::String | Type::List => {
@@ -79,11 +76,97 @@ impl Weak {
             }
         };
     }
+
+    /// Intersect two weak types
+    pub fn intersection(&self, other: &Self) {
+        let mut weak_types = WEAK_TYPES.lock().unwrap();
+        let l_types = weak_types.find_elt(self.id).clone();
+        let r_types = weak_types.find_elt(other.id).clone();
+
+        let new_types = l_types.intersection(&r_types).cloned().collect();
+
+        weak_types.union(self.id, other.id);
+        weak_types.set_elt(self.id, new_types);
+    }
+
+    /// Intersect restrict possible types for a weak
+    pub fn restrict(&self, others: &[Type]) -> Result<Type, ()> {
+        let mut weak_types = WEAK_TYPES.lock().unwrap();
+        let l_types = weak_types.find_elt(self.id).clone();
+
+        let others: HashSet<Type> = others
+            .iter()
+            .filter(|t| match t {
+                Type::Bool | Type::Int | Type::List | Type::String | Type::None => true,
+                _ => panic!("Cannot restrict weak with type {}", t),
+            })
+            .cloned()
+            .collect();
+
+        let new_types: HashSet<Type> = l_types.intersection(&others).cloned().collect();
+
+        if new_types.len() == 0 {
+            return Err(());
+        }
+
+        weak_types.set_elt(self.id, new_types.clone());
+
+        match new_types.len() {
+            1 => {
+                let vals: Vec<&Type> = new_types.iter().collect();
+                Ok(vals[0].clone())
+            }
+            _ => Ok(Type::Weak(Weak { id: self.id })),
+        }
+    }
+
+    /// Remove an allowed type for a weak
+    pub fn remove(&self, typ: Type) -> Result<Type, ()> {
+        let mut weak_types = WEAK_TYPES.lock().unwrap();
+        let l_types = weak_types.find_elt_mut(self.id);
+
+        l_types.remove(&typ);
+
+        match l_types.len() {
+            0 => Err(()),
+            1 => {
+                let vals: Vec<&Type> = l_types.iter().collect();
+                Ok(vals[0].clone())
+            }
+            _ => Ok(Type::Weak(Weak { id: self.id })),
+        }
+    }
+
+    pub fn is_compatible(&self, other: Type) -> bool {
+        if let Type::Weak(weak) = other.clone() {
+            let same = *self == weak;
+            if same {
+                return true;
+            }
+
+            let mut types = WEAK_TYPES.lock().unwrap();
+            let self_possible = types.get_elt(self.id).clone();
+            let other_possible = types.get_elt(weak.id).clone();
+            let intersection_count = self_possible.intersection(&other_possible).count();
+            return intersection_count > 0;
+        };
+        let mut types = WEAK_TYPES.lock().unwrap();
+        let possible = types.get_elt(self.id);
+        let compatible = possible.contains(&other);
+        return compatible;
+    }
+
+    /// Get this weak's id
+    pub fn get_id(&self) -> usize {
+        return WEAK_TYPES.lock().unwrap().find(self.id);
+    }
 }
 
 impl PartialEq for Weak {
     fn eq(&self, other: &Self) -> bool {
-        self.id == other.id
+        let self_id = WEAK_TYPES.lock().unwrap().find(self.id);
+        let other_id = WEAK_TYPES.lock().unwrap().find(other.id);
+        return self_id == other_id;
     }
 }
 
@@ -91,8 +174,9 @@ impl Eq for Weak {}
 
 impl Display for Weak {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let id = WEAK_TYPES.lock().unwrap().find(self.id);
         let strs: Vec<String> = self.get_possible().iter().map(|t| t.to_string()).collect();
-        write!(f, "weak{}({})", self.id, strs.join(", "))
+        write!(f, "weak{}({})", id, strs.join(", "))
     }
 }
 

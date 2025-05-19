@@ -26,7 +26,7 @@ impl UnionFind {
     }
 
     /// Find an element by id
-    fn find(&mut self, id: usize) -> usize {
+    pub fn find(&mut self, id: usize) -> usize {
         if let Some(parent_id) = self.parents[id] {
             let real_parent = self.find(parent_id);
             self.parents[id] = Some(real_parent);

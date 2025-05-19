@@ -16,7 +16,15 @@ impl Typeable for Factor {
             FactorKind::String(_) => Ok(Type::String),
             FactorKind::True(_) | FactorKind::False(_) => Ok(Type::Bool),
             FactorKind::None(_) => Ok(Type::None),
-            FactorKind::Identifier(id) => Ok(context.get_type_or_create(&id.element)), // Get or add to tds
+            FactorKind::Identifier(id) => match context.get_symbol_type(&id.element.clone()) {
+                Some(t) => Ok(t),
+                None => {
+                    context
+                        .errors
+                        .push(Diagnostic::unknown_symbol(&localization, &id.element.name));
+                    return Err(());
+                }
+            },
             FactorKind::List(values) => {
                 for ref mut e in values {
                     let _ = e.parse_type(context);
@@ -41,7 +49,7 @@ impl Typeable for Factor {
                     }
                 };
 
-                // Parse arguments types, do nothing with it yet since function typing is not done
+                // TODO: Parse arguments types, do nothing with it yet since function typing is not done
                 for arg in args {
                     match arg.parse_type(context) {
                         Ok(_) => (),

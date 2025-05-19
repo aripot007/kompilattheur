@@ -3,6 +3,9 @@ name = "kompilattheur"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+debug-typing = []
+
 [dependencies]
 clap = { version = "4.5.33", features = ["derive"] }
 indoc = "2"

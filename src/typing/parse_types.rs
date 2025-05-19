@@ -1,14 +1,14 @@
-use crate::ast::nodes::{ExpressionKind, FactorKind};
+use colored::{Color, Colorize};
+
+use crate::ast::nodes::{ExpressionKind, Factor, FactorKind};
 use crate::common::diagnostic::{Diagnostic, DiagnosticGravity};
 use crate::common::symbol_table::{
     enter_scope, exit_scope, init_symbol_table, Symbol, SymbolTableElement, SymbolTableRef,
 };
 use crate::{
-    ast::nodes::{self, Factor, Statement},
+    ast::nodes::{self, Statement},
     typing::{Function, Type, Typeable, TypingContext, Weak},
 };
-
-use super::diagnostics;
 
 pub fn parse_types(root: nodes::Root) -> (nodes::Root, SymbolTableRef, TypingContext) {
     let table = init_symbol_table();
@@ -55,8 +55,14 @@ fn generate_from_def(
 
     let name = def.identifier.element.name.clone();
 
+    let mut args_types = Vec::new();
+
+    for _ in &def.params {
+        args_types.push(Type::Weak(Weak::new()));
+    }
+
     let function_type = Function {
-        args: Vec::new(),
+        args: args_types.clone(),
         returns: Type::Weak(Weak::new_with_possible(&[])),
     };
 
@@ -75,7 +81,7 @@ fn generate_from_def(
     let function_table = enter_scope(table.clone());
     context.symbol_table = function_table.clone();
 
-    for param in &def.params {
+    for (i, param) in def.params.iter().enumerate() {
         let param_id = param.identifier.element.id;
         let param_name = param.identifier.element.name.clone();
         let param_element = SymbolTableElement {
@@ -84,7 +90,7 @@ fn generate_from_def(
                 ptr_id: None,
             },
             name: param_name,
-            symbol_type: Type::Weak(Weak::new()),
+            symbol_type: args_types[i].clone(),
         };
         function_table
             .borrow_mut()
@@ -112,35 +118,43 @@ fn generate_from_block(
             Statement::Assign(ref mut assign) => {
                 let value_type: Type = match assign.value.parse_type(context) {
                     Ok(t) => t,
-                    Err(()) => {
-                        context.errors.push(Diagnostic::from_localizable_ref(
-                            &assign.value,
-                            DiagnosticGravity::Error,
-                            "AssignationTypingError".into(),
-                            format!("Could not parse destination type"),
-                        ));
-                        continue;
-                    } // No use in typing the value if the destination cannot be typed
-                };
-
-                let dest_val = match assign.destination.parse_type(context) {
-                    Ok(t) => t,
-                    Err(()) => continue,
+                    Err(()) => continue, // No use in typing the destination if the value cannot be typed
+                                         // No need to throw error either, it was already thrown when parsing the type
                 };
 
                 // If the destination is a single identifier, check or set the type with the value
-                if let ExpressionKind::Factor(Factor {
-                    factor_type: _,
-                    kind: FactorKind::Identifier(id),
-                }) = &assign.destination.kind
-                {
-                    // Clone all the data we need before any borrowing
-                    let id_element = id.element.clone();
+                if let ExpressionKind::Factor(ref mut factor) = assign.destination.kind {
+                    if let FactorKind::Identifier(id) = &factor.kind {
+                        // Clone all the data we need before any borrowing
+                        let id_element = id.element.clone();
 
-                    // TODO : check if types are compatible
-                    match context.get_symbol_type(&id_element) {
-                        Some(_) => (),
-                        None => {
+                        if let Some(dest_type) = context.get_symbol_type(&id_element) {
+                            if !dest_type.is_compatible(value_type.clone()) {
+                                context.errors.push(Diagnostic::from_localizable_ref(
+                                    &assign.value,
+                                    DiagnosticGravity::Error,
+                                    "TypeError".into(),
+                                    format!(
+                                        "Incompatible destination type {} for value of type {}",
+                                        dest_type.to_string().color(Color::BrightRed),
+                                        value_type.to_string().color(Color::BrightRed)
+                                    ),
+                                ));
+                            } else {
+                                // Restrict weak types if necessary
+                                match (dest_type, value_type.clone()) {
+                                    (Type::Weak(w1), Type::Weak(w2)) => w1.intersection(&w2),
+                                    (Type::Weak(w), t) | (t, Type::Weak(w)) => {
+                                        if t != Type::Any {
+                                            w.restrict(&[t]).expect(
+                                                "Restriction should not fail since compatibility was checked",
+                                            );
+                                        }
+                                    }
+                                    _ => (),
+                                }
+                            }
+                        } else {
                             // Symbol does not exist, insert it
                             context.add_symbol(
                                 &id_element,
@@ -148,11 +162,18 @@ fn generate_from_block(
                                     offset: 0,
                                     ptr_id: None,
                                 },
-                                value_type,
+                                value_type.clone(),
                             );
                         }
+
+                        // Update factor type and skip destination parsing
+                        factor.factor_type = Some(value_type);
+                        continue;
                     }
                 }
+
+                // Parse destination
+                let _ = assign.destination.parse_type(context);
             }
             Statement::For(ref mut for_loop) => {
                 let var_id = for_loop.var.element.id;
@@ -193,35 +214,8 @@ fn generate_from_block(
             }
             Statement::Conditional(ref mut cond) => {
                 // Parse condition expression type
-                if let Ok(t) = cond.condition.parse_type(context) {
-                    // TODO: Correct comparison with weak
-                    if t != Type::Bool {
-                        context.errors.push(Diagnostic::incompatible_type(
-                            &cond.condition,
-                            &t,
-                            &[Type::Bool],
-                        ));
-                        continue;
-                    }
-                } else {
-                }
-
-                let if_table = enter_scope(table.clone());
-                context.symbol_table = if_table.clone();
-
-                let _ = generate_from_block(&mut cond.if_block, if_table.clone(), context);
-                // Parse condition expression type
-                if let Ok(t) = cond.condition.parse_type(context) {
-                    // TODO: Correct comparison with weak
-                    if t != Type::Bool {
-                        context.errors.push(Diagnostic::incompatible_type(
-                            &cond.condition,
-                            &t,
-                            &[Type::Bool],
-                        ));
-                        continue;
-                    }
-                }
+                // Ignore errors because they were already emitted during parsing
+                let _ = cond.condition.parse_type(context);
 
                 let if_table = enter_scope(table.clone());
                 context.symbol_table = if_table.clone();

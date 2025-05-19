@@ -1,0 +1,21 @@
+
+def foo(a):
+    return a
+
+def bar(a):
+    if a:
+        return 0
+    else:
+        return False
+
+def poo(a):
+    if a:
+        return False
+    else:
+        return True
+
+foo()
+li = [1,2,3]
+
+print(li[bar(False)])
+print(li[poo(3)])

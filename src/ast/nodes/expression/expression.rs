@@ -174,6 +174,7 @@ impl Into<Tree<String>> for &Expression {
                     .add_child(&root, (*expression).as_ref().into());
                 return root;
             }
+            #[cfg(feature = "debug-typing")]
             ExpressionKind::Factor(f) => {
                 let mut root = f.into();
 
@@ -186,6 +187,8 @@ impl Into<Tree<String>> for &Expression {
 
                 root
             }
+            #[cfg(not(feature = "debug-typing"))]
+            ExpressionKind::Factor(f) => f.into(),
             ExpressionKind::NotImplemented => Node::new(String::from("EXPR (NI)")),
         }
     }

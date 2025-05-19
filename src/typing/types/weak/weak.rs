@@ -137,6 +137,7 @@ impl Weak {
     pub fn is_compatible(&self, other: Type) -> bool {
         if let Type::Weak(weak) = other {
             let same = *self == weak;
+            return same;
             if same {
                 return true;
             }

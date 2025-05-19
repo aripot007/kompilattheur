@@ -1,10 +1,11 @@
-use crate::ast::nodes::{ExpressionKind, FactorKind};
+use colored::{Color, Colorize};
+
 use crate::common::diagnostic::{Diagnostic, DiagnosticGravity};
 use crate::common::symbol_table::{
     enter_scope, exit_scope, init_symbol_table, Symbol, SymbolTableElement, SymbolTableRef,
 };
 use crate::{
-    ast::nodes::{self, Factor, Statement},
+    ast::nodes::{self, Statement},
     typing::{Function, Type, Typeable, TypingContext, Weak},
 };
 
@@ -121,41 +122,49 @@ fn generate_from_block(
                             &assign.value,
                             DiagnosticGravity::Error,
                             "AssignationTypingError".into(),
-                            format!("Could not parse destination type"),
+                            format!("Could not parse assignation value type"),
                         ));
                         continue;
-                    } // No use in typing the value if the destination cannot be typed
+                    } // No use in typing the destination if the value cannot be typed
                 };
 
-                let dest_val = match assign.destination.parse_type(context) {
+                let dest_type = match assign.destination.parse_type(context) {
                     Ok(t) => t,
-                    Err(()) => continue,
+                    Err(()) => {
+                        context.errors.push(Diagnostic::from_localizable_ref(
+                            &assign.value,
+                            DiagnosticGravity::Error,
+                            "AssignationTypingError".into(),
+                            format!("Could not parse assignation destination type"),
+                        ));
+                        continue;
+                    }
                 };
 
-                // If the destination is a single identifier, check or set the type with the value
-                if let ExpressionKind::Factor(Factor {
-                    factor_type: _,
-                    kind: FactorKind::Identifier(id),
-                }) = &assign.destination.kind
-                {
-                    // Clone all the data we need before any borrowing
-                    let id_element = id.element.clone();
+                if !dest_type.is_compatible(value_type.clone()) {
+                    context.errors.push(Diagnostic::from_localizable_ref(
+                        &assign.value,
+                        DiagnosticGravity::Error,
+                        "TypeError".into(),
+                        format!(
+                            "Incompatible destination type {} for value of type {}",
+                            dest_type.to_string().color(Color::BrightRed),
+                            value_type.to_string().color(Color::BrightRed)
+                        ),
+                    ));
+                    continue;
+                }
 
-                    // TODO : check if types are compatible
-                    match context.get_symbol_type(&id_element) {
-                        Some(_) => (),
-                        None => {
-                            // Symbol does not exist, insert it
-                            context.add_symbol(
-                                &id_element,
-                                Symbol::Variable {
-                                    offset: 0,
-                                    ptr_id: None,
-                                },
-                                value_type,
+                match (dest_type, value_type) {
+                    (Type::Weak(w1), Type::Weak(w2)) => w1.intersection(&w2),
+                    (Type::Weak(w), t) | (t, Type::Weak(w)) => {
+                        if t != Type::Any {
+                            w.restrict(&[t]).expect(
+                                "Restriction should not fail since compatibility was checked",
                             );
                         }
                     }
+                    _ => (),
                 }
             }
             Statement::For(ref mut for_loop) => {

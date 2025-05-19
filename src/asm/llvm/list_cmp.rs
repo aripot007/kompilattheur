@@ -6,13 +6,11 @@ use crate::{
     },
     typing::Type,
 };
-use inkwell::values::FunctionValue;
-use inkwell::IntPredicate;
+use inkwell::{basic_block::BasicBlock, values::FunctionValue, IntPredicate};
 
-/// Initialize the internal list comparison function
-pub fn init_internal_list_cmp_function<'ctx>(
+pub fn pre_init_internal_list_cmp_function<'ctx>(
     cg: &mut CodeGen<'ctx>,
-) -> Result<(), LLVMCodegenError> {
+) -> (BasicBlock<'ctx>, FunctionValue<'ctx>) {
     let i8_type = cg.context.i8_type();
     let var_type = cg.smolpp_types.list_type;
 
@@ -27,6 +25,15 @@ pub fn init_internal_list_cmp_function<'ctx>(
         .context
         .append_basic_block(function, internal_function_prefix!("list_cmp_entry"));
 
+    return (entry, function);
+}
+
+/// Initialize the internal list comparison function
+pub fn init_internal_list_cmp_function<'ctx>(
+    entry: BasicBlock<'ctx>,
+    function: FunctionValue<'ctx>,
+    cg: &mut CodeGen<'ctx>,
+) -> Result<(), LLVMCodegenError> {
     // Switch builder to the function block
     cg.builder.position_at_end(entry);
     cg.current_function = function;

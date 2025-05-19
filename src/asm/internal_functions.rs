@@ -4,7 +4,7 @@ use super::{
     codegen::CodeGen,
     llvm::{
         init_internal_compare_generic_function, init_internal_generic_print_function,
-        init_internal_list_cmp_function, LLVMCodegenError,
+        init_internal_list_cmp_function, pre_init_internal_list_cmp_function, LLVMCodegenError,
     },
 };
 
@@ -98,9 +98,8 @@ pub(super) fn init_internal_functions<'ctx>(
     // generic_print
     init_internal_generic_print_function(cg)?;
 
-    // list_cmp function
-    // TODO(Romain): init just signture function then generic compare then do internal function
-    init_internal_list_cmp_function(cg)?;
+    // pre init because used in generic function
+    let (entry, function) = pre_init_internal_list_cmp_function(cg);
 
     // generic_compare
     init_internal_compare_generic_function(cg, BinOp::EQ)?;
@@ -109,6 +108,9 @@ pub(super) fn init_internal_functions<'ctx>(
     init_internal_compare_generic_function(cg, BinOp::LESSEQ)?;
     init_internal_compare_generic_function(cg, BinOp::GREATER)?;
     init_internal_compare_generic_function(cg, BinOp::GREATEREQ)?;
+
+    // list_cmp function
+    init_internal_list_cmp_function(entry, function, cg)?;
 
     return Ok(());
 }

@@ -3,15 +3,12 @@ use crate::{
         codegen::CodeGen,
         get_internal_func,
         llvm::{
-            assert_type, panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError,
+            assert_dyn_type, assert_type, panic::smolpp_panic_with_unreachable, smolvar::SmolVar,
+            LLVMCodegenError,
         },
         InternalFuctions, RuntimeErrorMsg,
     },
     typing::Type,
-};
-use inkwell::{
-    values::{FunctionValue, IntValue},
-    IntPredicate,
 };
 
 pub fn compute_mult<'ctx>(
@@ -195,101 +192,13 @@ pub fn init_internal_add_generic_function<'ctx>(
         .unwrap()
         .into_struct_value();
 
+    // Assert they are the same type
+    assert_dyn_type(&value1, &value2, cg)?;
+
     // Load runtime type tags
-    let t1 = cg.get_variable_type(value1)?;
-    let t2 = cg.get_variable_type(value2)?;
+    let typ = cg.get_variable_type(value1)?;
 
-    // Check dynamique à l'execution Si c'est le même type, on fait la compare classique
-    let same_type = cg
-        .builder
-        .build_int_compare(IntPredicate::EQ, t1, t2, "dyn_eq")?;
-
-    // Branch if the types are equal
-    let parent_block = cg.builder.get_insert_block().unwrap();
-    let then_block = cg
-        .context
-        .insert_basic_block_after(parent_block, "generic_add_same_type");
-    let else_block = cg
-        .context
-        .insert_basic_block_after(then_block, "generic_add_different_type");
-    let then_bool_or_int_block = cg
-        .context
-        .insert_basic_block_after(parent_block, "generic_add_same_type");
-    let else_bool_or_int_block = cg
-        .context
-        .insert_basic_block_after(then_block, "generic_add_different_type");
-
-    cg.builder
-        .build_conditional_branch(same_type, then_block, else_block)?;
-
-    // Case Same type
-    cg.builder.position_at_end(then_block);
-
-    build_switch_add_generic_same_type(cg, function, value1, value2, t1)?;
-
-    // Case Different type
-    cg.builder.position_at_end(else_block);
-
-    // Create the comparaison calcul
-
-    let i8_type = cg.context.i8_type();
-    let bool_type = i8_type.const_int(Type::Bool.get_bitmask().into(), false);
-    let int_type = i8_type.const_int(Type::Int.get_bitmask().into(), false);
-    let mask = cg.builder.build_or(bool_type, int_type, "mask")?;
-    let left_type = cg.builder.build_and(t1, mask, "left_type")?;
-    let left_cond = cg.builder.build_int_compare(
-        IntPredicate::NE,
-        left_type,
-        i8_type.const_zero(),
-        "left_cond",
-    )?;
-
-    let right_type = cg.builder.build_and(t2, mask, "right_type")?;
-    let right_cond = cg.builder.build_int_compare(
-        IntPredicate::NE,
-        right_type,
-        i8_type.const_zero(),
-        "right_cond",
-    )?;
-
-    let final_cond = cg.builder.build_and(left_cond, right_cond, "final_cond")?;
-
-    // Si le type est Bool ou Int, alors on fait compare int
-    cg.builder.build_conditional_branch(
-        final_cond,
-        then_bool_or_int_block,
-        else_bool_or_int_block,
-    )?;
-
-    cg.builder.position_at_end(then_bool_or_int_block);
-    let result = compute_add_unchecked(value1, value2, cg)?;
-    cg.builder.build_return(Some(&result))?;
-
-    cg.builder.position_at_end(else_bool_or_int_block);
-
-    smolpp_panic_with_unreachable(
-        cg,
-        RuntimeErrorMsg::PanicInvalidInternalTypeAddGeneric,
-        &[t1.into()],
-    )?;
-
-    // Return builder to main block because it's init function
-    cg.current_function = cg.main_function;
-    cg.builder.position_at_end(cg.current_main_block);
-    return Ok(());
-}
-
-fn build_switch_add_generic_same_type<'ctx>(
-    cg: &mut CodeGen<'ctx>,
-    function: FunctionValue<'ctx>,
-    value1: SmolVar<'ctx>,
-    value2: SmolVar<'ctx>,
-    t1: IntValue<'ctx>,
-) -> Result<(), LLVMCodegenError> {
-    // Contruire un switch case dynamique en fonction du type de value1
-    // Create a switch based on the type field
-
-    let case_int_bool = cg
+    let case_int = cg
         .context
         .append_basic_block(function, "generic_add_case_int");
     let case_range = cg
@@ -308,16 +217,12 @@ fn build_switch_add_generic_same_type<'ctx>(
     let i8_type = cg.context.i8_type();
 
     cg.builder.build_switch(
-        t1,
+        typ,
         default_block,
         &[
             (
-                i8_type.const_int(Type::Bool.get_bitmask().into(), false),
-                case_int_bool,
-            ),
-            (
                 i8_type.const_int(Type::Int.get_bitmask().into(), false),
-                case_int_bool,
+                case_int,
             ),
             (
                 i8_type.const_int(Type::Range.get_bitmask().into(), false),
@@ -334,7 +239,7 @@ fn build_switch_add_generic_same_type<'ctx>(
         ],
     )?;
 
-    cg.builder.position_at_end(case_int_bool);
+    cg.builder.position_at_end(case_int);
     let result = compute_add_unchecked(value1, value2, cg)?;
     cg.builder.build_return(Some(&result))?;
 
@@ -356,8 +261,11 @@ fn build_switch_add_generic_same_type<'ctx>(
     smolpp_panic_with_unreachable(
         cg,
         RuntimeErrorMsg::PanicInvalidInternalTypeAddGeneric,
-        &[t1.into()],
+        &[typ.into()],
     )?;
 
+    // Return builder to main block because it's init function
+    cg.current_function = cg.main_function;
+    cg.builder.position_at_end(cg.current_main_block);
     return Ok(());
 }

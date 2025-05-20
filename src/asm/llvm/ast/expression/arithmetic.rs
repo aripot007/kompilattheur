@@ -1,6 +1,7 @@
 use crate::{
     asm::{
         codegen::CodeGen,
+        get_internal_func,
         llvm::{
             assert_type, panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError,
         },
@@ -118,6 +119,17 @@ pub fn compute_add_unchecked<'ctx>(
     return cg.create_variable(Type::Int, res);
 }
 
+pub fn compute_add_range<'ctx>(
+    x: SmolVar<'ctx>,
+    y: SmolVar<'ctx>,
+    cg: &mut CodeGen<'ctx>,
+) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
+    let x_val = cg.get_variable_value(x)?.into_int_value();
+    let y_val = cg.get_variable_value(y)?.into_int_value();
+    let res = cg.builder.build_int_add(x_val, y_val, "add")?;
+    return cg.create_variable(Type::Range, res);
+}
+
 pub fn compute_add_list<'ctx>(
     x: SmolVar<'ctx>,
     y: SmolVar<'ctx>,
@@ -136,6 +148,19 @@ pub fn compute_add_string<'ctx>(
     // TODO: implement concat string
     let res = cg.context.i64_type().const_int(0, false);
     return cg.create_variable(Type::Int, res);
+}
+
+pub fn compute_add_generic<'ctx>(
+    x: SmolVar<'ctx>,
+    y: SmolVar<'ctx>,
+    cg: &mut CodeGen<'ctx>,
+) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
+    let res = cg.builder.build_call(
+        get_internal_func!(cg, InternalFuctions::GenericAdd),
+        &[x.into(), y.into()],
+        "generic_add_call",
+    )?;
+    return Ok(res.try_as_basic_value().left().unwrap().into_struct_value());
 }
 
 pub fn init_internal_add_generic_function<'ctx>(
@@ -267,6 +292,9 @@ fn build_switch_add_generic_same_type<'ctx>(
     let case_int_bool = cg
         .context
         .append_basic_block(function, "generic_add_case_int");
+    let case_range = cg
+        .context
+        .append_basic_block(function, "generic_add_case_range");
     let case_string = cg
         .context
         .append_basic_block(function, "generic_add_case_string");
@@ -292,6 +320,10 @@ fn build_switch_add_generic_same_type<'ctx>(
                 case_int_bool,
             ),
             (
+                i8_type.const_int(Type::Range.get_bitmask().into(), false),
+                case_range,
+            ),
+            (
                 i8_type.const_int(Type::String.get_bitmask().into(), false),
                 case_string,
             ),
@@ -304,6 +336,10 @@ fn build_switch_add_generic_same_type<'ctx>(
 
     cg.builder.position_at_end(case_int_bool);
     let result = compute_add_unchecked(value1, value2, cg)?;
+    cg.builder.build_return(Some(&result))?;
+
+    cg.builder.position_at_end(case_range);
+    let result = compute_add_range(value1, value2, cg)?;
     cg.builder.build_return(Some(&result))?;
 
     cg.builder.position_at_end(case_string);

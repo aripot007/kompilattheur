@@ -1,7 +1,9 @@
 use inkwell::{types::FunctionType, values::FunctionValue, AddressSpace};
 
 use crate::{
-    asm::{codegen::CodeGen, llvm::assert_type_oneof, LLVMCodegenError}, common::localizable::{Localizable, LocalizationInfo}, typing::{Function, Type, Weak}
+    asm::{codegen::CodeGen, llvm::assert_type_oneof, LLVMCodegenError},
+    common::localizable::{Localizable, LocalizationInfo},
+    typing::{Function, Type, Weak},
 };
 
 use super::SmollibFunction;
@@ -30,7 +32,7 @@ impl SmollibFunction for SmolLen {
     fn build_llvm<'ctx>(
         &self,
         function: FunctionValue<'ctx>,
-        cg: &mut CodeGen<'ctx>
+        cg: &mut CodeGen<'ctx>,
     ) -> Result<(), LLVMCodegenError> {
         let entry = cg.context.append_basic_block(function, "len_entry");
         cg.builder.position_at_end(entry);

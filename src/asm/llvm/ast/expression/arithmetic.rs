@@ -7,16 +7,21 @@ use crate::{
             LLVMCodegenError,
         },
         InternalFuctions, RuntimeErrorMsg,
-    }, common::localizable::{Localizable, LocalizationInfo}, typing::Type
+    },
+    common::localizable::{Localizable, LocalizationInfo},
+    typing::Type,
 };
 
 pub fn compute_mult<'ctx, T>(
     x: SmolVar<'ctx>,
     y: SmolVar<'ctx>,
     cg: &mut CodeGen<'ctx>,
-    loc1 : Option<T>,
-    loc2 : Option<T>,
-) -> Result<SmolVar<'ctx>, LLVMCodegenError> where T: Localizable {
+    loc1: Option<T>,
+    loc2: Option<T>,
+) -> Result<SmolVar<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
     assert_type(Type::Int, &x, cg, None, loc1)?;
     assert_type(Type::Int, &y, cg, None, loc2)?;
     return compute_mult_unchecked(x, y, cg);
@@ -37,9 +42,12 @@ pub fn compute_div<'ctx, T>(
     x: SmolVar<'ctx>,
     y: SmolVar<'ctx>,
     cg: &mut CodeGen<'ctx>,
-    loc1 : Option<T>,
-    loc2 : Option<T>,
-) -> Result<SmolVar<'ctx>, LLVMCodegenError> where T: Localizable {
+    loc1: Option<T>,
+    loc2: Option<T>,
+) -> Result<SmolVar<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
     assert_type(Type::Int, &x, cg, None, loc1)?;
     assert_type(Type::Int, &y, cg, None, loc2)?;
     return compute_div_unchecked(x, y, cg);
@@ -60,9 +68,12 @@ pub fn compute_mod<'ctx, T>(
     x: SmolVar<'ctx>,
     y: SmolVar<'ctx>,
     cg: &mut CodeGen<'ctx>,
-    loc1 : Option<T>,
-    loc2 : Option<T>,
-) -> Result<SmolVar<'ctx>, LLVMCodegenError> where T: Localizable {
+    loc1: Option<T>,
+    loc2: Option<T>,
+) -> Result<SmolVar<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
     assert_type(Type::Int, &x, cg, None, loc1)?;
     assert_type(Type::Int, &y, cg, None, loc2)?;
     return compute_mod_unchecked(x, y, cg);
@@ -83,9 +94,12 @@ pub fn compute_sub<'ctx, T>(
     x: SmolVar<'ctx>,
     y: SmolVar<'ctx>,
     cg: &mut CodeGen<'ctx>,
-    loc1 : Option<T>,
-    loc2 : Option<T>,
-) -> Result<SmolVar<'ctx>, LLVMCodegenError> where T: Localizable {
+    loc1: Option<T>,
+    loc2: Option<T>,
+) -> Result<SmolVar<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
     assert_type(Type::Int, &x, cg, None, loc1)?;
     assert_type(Type::Int, &y, cg, None, loc2)?;
     return compute_sub_unchecked(x, y, cg);
@@ -106,9 +120,12 @@ pub fn compute_add<'ctx, T>(
     x: SmolVar<'ctx>,
     y: SmolVar<'ctx>,
     cg: &mut CodeGen<'ctx>,
-    loc1 : Option<T>,
-    loc2 : Option<T>,
-) -> Result<SmolVar<'ctx>, LLVMCodegenError> where T: Localizable {
+    loc1: Option<T>,
+    loc2: Option<T>,
+) -> Result<SmolVar<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
     assert_type(Type::Int, &x, cg, None, loc1)?;
     assert_type(Type::Int, &y, cg, None, loc2)?;
     return compute_add_unchecked(x, y, cg);
@@ -271,7 +288,7 @@ pub fn init_internal_add_generic_function<'ctx>(
         cg,
         RuntimeErrorMsg::PanicInvalidInternalTypeAddGeneric,
         &[typ.into()],
-        None //FIXME: potentially add localization info, but i don't know how I am supposed to do that with generic functions
+        None, //FIXME: potentially add localization info, but i don't know how I am supposed to do that with generic functions
     )?;
 
     // Return builder to main block because it's init function

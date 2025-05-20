@@ -1,5 +1,6 @@
 use crate::{
-    ast::nodes::BinOp, smollib::{build_smollib_llvm, register_smollib_funcs_in_module}
+    ast::nodes::BinOp,
+    smollib::{build_smollib_llvm, register_smollib_funcs_in_module},
 };
 
 use super::{

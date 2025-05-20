@@ -265,14 +265,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
 
     create_global_string(
         RuntimeErrorMsg::LocalizeError,
-        format!(
-            "{} {}{}",
-            "At line :"
-                .bold(),
-            " %d:%d",
-            "\x1b[0m\n"
-        )
-        .as_str(),
+        format!("{} {}{}", "At line :".bold(), " %d:%d", "\x1b[0m\n").as_str(),
         cg,
     );
 }

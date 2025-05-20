@@ -6,7 +6,10 @@ use crate::{
         internal_global_constants::RuntimeErrorMsg,
         llvm::{panic::smolpp_panic_with_unreachable, LLVMCodegenError},
         InternalFuctions,
-    }, common::localizable::LocalizationInfo, smollib::{get_smollib_func, SmollibFunctionNames}, typing::Type
+    },
+    common::localizable::LocalizationInfo,
+    smollib::{get_smollib_func, SmollibFunctionNames},
+    typing::Type,
 };
 
 pub fn init_internal_bool_cast_function(cg: &mut CodeGen) -> Result<(), LLVMCodegenError> {

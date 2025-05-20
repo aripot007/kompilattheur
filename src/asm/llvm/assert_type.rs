@@ -1,7 +1,9 @@
 use inkwell::{basic_block::BasicBlock, values::IntValue, AddressSpace, IntPredicate};
 
 use crate::{
-    asm::{codegen::CodeGen, internal_global_constants::RuntimeErrorMsg}, common::localizable::Localizable, typing::Type
+    asm::{codegen::CodeGen, internal_global_constants::RuntimeErrorMsg},
+    common::localizable::Localizable,
+    typing::Type,
 };
 
 use super::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError};
@@ -14,8 +16,11 @@ pub fn assert_type<'ctx, T>(
     value: &SmolVar<'ctx>,
     cg: &CodeGen<'ctx>,
     msg: Option<String>,
-    localizable: Option<T>
-) -> Result<BasicBlock<'ctx>, LLVMCodegenError> where T: Localizable {
+    localizable: Option<T>,
+) -> Result<BasicBlock<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
     let msg = match msg {
         Some(s) => s,
         None => format!("Expected type {} ({})", valtype, valtype.get_bitmask()),
@@ -45,7 +50,10 @@ pub fn assert_type_oneof<'ctx, T>(
     cg: &CodeGen<'ctx>,
     msg: Option<String>,
     localizable: Option<T>,
-) -> Result<BasicBlock<'ctx>, LLVMCodegenError> where T: Localizable {
+) -> Result<BasicBlock<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
     let expected_bitmask: u8 = types
         .iter()
         .map(Type::get_bitmask)
@@ -101,7 +109,10 @@ fn create_assert_type_branch<'ctx, T>(
     cg: &CodeGen<'ctx>,
     msg: String,
     localizable: Option<T>,
-) -> Result<BasicBlock<'ctx>, LLVMCodegenError> where T: Localizable {
+) -> Result<BasicBlock<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
     let string_value = cg.context.const_string(msg.as_str().as_bytes(), true);
 
     // Declare it as a global variable
@@ -146,7 +157,10 @@ pub fn assert_assignation_type<'ctx, T>(
     value: &SmolVar<'ctx>,
     cg: &CodeGen<'ctx>,
     localizable: Option<T>,
-) -> Result<BasicBlock<'ctx>, LLVMCodegenError> where T: Localizable {
+) -> Result<BasicBlock<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
     let value_type_field = cg.get_variable_type(*value)?;
     let dest_type_field = cg.get_variable_type(*destination)?;
 
@@ -164,7 +178,7 @@ pub fn assert_assignation_type<'ctx, T>(
         cdt,
         cg,
         String::from("Incompatible types during assignation"),
-        localizable
+        localizable,
     );
 }
 
@@ -173,11 +187,19 @@ pub fn assert_dyn_type<'ctx, T>(
     value2: &SmolVar<'ctx>,
     cg: &CodeGen<'ctx>,
     localizable: Option<T>,
-) -> Result<BasicBlock<'ctx>, LLVMCodegenError> where T: Localizable {
+) -> Result<BasicBlock<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
     let t1 = cg.get_variable_type(*value1)?;
     let t2 = cg.get_variable_type(*value2)?;
     let cdt = cg
         .builder
         .build_int_compare(IntPredicate::EQ, t1, t2, "assert_dyn_type")?;
-    return create_assert_type_branch(cdt, cg, String::from("Runtime type mismatch in comparison"), localizable);
+    return create_assert_type_branch(
+        cdt,
+        cg,
+        String::from("Runtime type mismatch in comparison"),
+        localizable,
+    );
 }

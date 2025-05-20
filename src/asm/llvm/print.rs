@@ -4,7 +4,9 @@ use crate::{
     asm::{
         codegen::CodeGen, get_internal_func, get_internal_global_const, internal_function_prefix,
         internal_global_constants::RuntimeErrorMsg, InternalFuctions, InternalGlobalConst,
-    }, common::localizable::LocalizationInfo, typing::Type
+    },
+    common::localizable::LocalizationInfo,
+    typing::Type,
 };
 
 use super::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError};

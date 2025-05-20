@@ -1,17 +1,23 @@
 use inkwell::{builder::BuilderError, values::BasicMetadataValueEnum};
 
-use crate::{asm::{
-    codegen::CodeGen, get_internal_func, get_internal_global_const,
-    internal_global_constants::RuntimeErrorMsg, InternalFuctions,
-}, common::localizable::Localizable};
+use crate::{
+    asm::{
+        codegen::CodeGen, get_internal_func, get_internal_global_const,
+        internal_global_constants::RuntimeErrorMsg, InternalFuctions,
+    },
+    common::localizable::Localizable,
+};
 
 /// Generate llvm to exit the program after printing an error message
 pub fn smolpp_panic<'ctx, T>(
     cg: &CodeGen<'ctx>,
     error: RuntimeErrorMsg,
     fmt_args: &[BasicMetadataValueEnum<'ctx>],
-    localizable: Option<T>
-) -> Result<(), BuilderError> where T: Localizable{
+    localizable: Option<T>,
+) -> Result<(), BuilderError>
+where
+    T: Localizable,
+{
     let fmt_string = get_internal_global_const!(cg, error)
         .as_pointer_value()
         .into();
@@ -59,8 +65,11 @@ pub fn smolpp_panic_with_unreachable<'ctx, T>(
     cg: &CodeGen<'ctx>,
     error: RuntimeErrorMsg,
     fmt_args: &[BasicMetadataValueEnum<'ctx>],
-    localizable: Option<T>
-) -> Result<(), BuilderError> where T: Localizable{
+    localizable: Option<T>,
+) -> Result<(), BuilderError>
+where
+    T: Localizable,
+{
     smolpp_panic(cg, error, fmt_args, localizable)?;
     cg.builder.build_unreachable()?;
     return Ok(());

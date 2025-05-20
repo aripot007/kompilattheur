@@ -9,7 +9,9 @@ use crate::{
         codegen::CodeGen,
         llvm::{assert_type_oneof, panic::smolpp_panic_with_unreachable, smolvar::SmolVar},
         LLVMCodegenError, RuntimeErrorMsg,
-    }, common::localizable::LocalizationInfo, typing::{Function, Type, Weak}
+    },
+    common::localizable::LocalizationInfo,
+    typing::{Function, Type, Weak},
 };
 
 use super::SmollibFunction;
@@ -51,7 +53,13 @@ impl SmollibFunction for SmolList {
             .unwrap()
             .into_struct_value();
 
-        assert_type_oneof::<LocalizationInfo>(&[Type::List, Type::String, Type::Range], &var1, cg, None, None)?;
+        assert_type_oneof::<LocalizationInfo>(
+            &[Type::List, Type::String, Type::Range],
+            &var1,
+            cg,
+            None,
+            None,
+        )?;
 
         // Si type == Range => return Create the list with the range
 

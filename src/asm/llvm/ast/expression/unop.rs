@@ -4,7 +4,10 @@ use crate::{
         get_internal_func,
         llvm::{assert_type, smolvar::SmolVar, LLVMCodegenError},
         InternalFuctions,
-    }, ast::nodes::{Expression, UnOp}, common::localizable::Localizable, typing::Type
+    },
+    ast::nodes::{Expression, UnOp},
+    common::localizable::Localizable,
+    typing::Type,
 };
 
 use super::llvm_compute_expr;
@@ -65,8 +68,11 @@ fn llvm_compute_not_unchecked<'ctx>(
 fn llvm_compute_neg<'ctx, T>(
     val: SmolVar<'ctx>,
     cg: &mut CodeGen<'ctx>,
-    loc: Option<T>
-) -> Result<SmolVar<'ctx>, LLVMCodegenError> where T: Localizable {
+    loc: Option<T>,
+) -> Result<SmolVar<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
     assert_type(Type::Int, &val, cg, None, loc)?;
     return llvm_compute_neg_unchecked(val, cg);
 }

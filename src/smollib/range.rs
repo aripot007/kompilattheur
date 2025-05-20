@@ -1,7 +1,9 @@
 use inkwell::{types::FunctionType, values::FunctionValue};
 
 use crate::{
-    asm::{codegen::CodeGen, llvm::assert_type, LLVMCodegenError}, common::localizable::{Localizable, LocalizationInfo}, typing::{Function, Type}
+    asm::{codegen::CodeGen, llvm::assert_type, LLVMCodegenError},
+    common::localizable::{Localizable, LocalizationInfo},
+    typing::{Function, Type},
 };
 
 use super::SmollibFunction;

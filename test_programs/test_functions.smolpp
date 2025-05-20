@@ -5,6 +5,9 @@ def foo(a, b):
 def bar(arg):
     return arg
 
+def bar(b):
+    return b
+
 def poo(a, b, c):
     d = a - b
     if c < d:

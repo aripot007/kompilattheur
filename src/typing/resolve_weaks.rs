@@ -91,8 +91,9 @@ pub fn resolve_weaks(node: Ast, symbol_table: &SymbolTableRef) -> Ast {
             factor.factor_type = resolve_type_opt(&factor.factor_type);
             factor.kind = match factor.kind {
                 FactorKind::Identifier(fe) => {
-                    let symbol = get_symbol(&symbol_table.clone(), &fe.element.id).unwrap();
-                    factor.factor_type = Some(resolve_type(&symbol.symbol_type));
+                    if let Some(symbol) = get_symbol(&symbol_table.clone(), &fe.element.id) {
+                        factor.factor_type = Some(resolve_type(&symbol.symbol_type));
+                    };
                     FactorKind::Identifier(fe)
                 }
                 FactorKind::Expr(expr) => {

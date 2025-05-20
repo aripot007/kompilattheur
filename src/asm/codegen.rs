@@ -37,6 +37,7 @@ pub struct CodeGen<'ctx> {
 pub struct CodeGenTypedefs<'ctx> {
     pub dynamic_type: StructType<'ctx>,
     pub list_type: StructType<'ctx>,
+    pub string_type: StructType<'ctx>,
 }
 
 impl<'ctx> CodeGen<'ctx> {
@@ -108,6 +109,7 @@ impl<'ctx> CodeGen<'ctx> {
             smolpp_types: CodeGenTypedefs {
                 dynamic_type: context.opaque_struct_type("dynamic_type_struct"),
                 list_type: context.opaque_struct_type("list_struct"),
+                string_type: context.opaque_struct_type("string_struct"),
             },
             pointers_table: Vec::new(),
             current_symbol_table: None,
@@ -126,6 +128,7 @@ impl<'ctx> CodeGen<'ctx> {
     fn init_smolpp_types(&mut self) {
         self.init_dynamic_type();
         self.init_list_type();
+        self.init_string_type();
     }
 
     fn get_linker(&self) -> Result<String, String> {

@@ -88,14 +88,16 @@ pub fn print_string_value<'ctx>(
 
     let value_generic = cg.get_variable_value(*variable)?;
 
-    let value = match value_generic.is_int_value() {
+    let struct_ptr = match value_generic.is_int_value() {
         true => cg
             .builder
             .build_int_to_ptr(value_generic.into_int_value(), ptr_type, "str_ptr")?,
         false => value_generic.into_pointer_value(),
     };
 
-    llvm_printf!(cg, value, "printf_string");
+    let str_array_ptr = cg.build_get_string_array_ptr_from_ptr(struct_ptr)?;
+
+    llvm_printf!(cg, str_array_ptr, "printf_string");
 
     return Ok(());
 }

@@ -4,9 +4,9 @@
 # println([1] and [52])
 # println([0] or a[1])
 # println(len([0]))
-a = [range(5)]
+a = [range(5), 1]
 println(a[0])
-println(list(range(10)))
+println(list(a[0]))
 # println(not 1)
 # if [1, 2]:
 #     println(1)

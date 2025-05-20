@@ -8,7 +8,9 @@ use super::{
     llvm::{
         init_internal_add_generic_function, init_internal_bool_cast_function,
         init_internal_compare_generic_function, init_internal_generic_print_function,
-        init_internal_list_cmp_function, pre_init_internal_list_cmp_function, LLVMCodegenError,
+        init_internal_list_cmp_function, pre_init_internal_list_cmp_function,
+        strings::{init_internal_str_cmp_function, register_internal_str_cmp_function},
+        LLVMCodegenError,
     },
 };
 
@@ -22,6 +24,7 @@ pub enum InternalFuctions {
     GenericCompareGREATER,
     GenericCompareGREATEREQ,
     ListCmp,
+    StrCmp,
     BoolCast,
     GenericAdd,
     // Syscalls
@@ -52,6 +55,7 @@ impl Into<&'static str> for InternalFuctions {
             InternalFuctions::Main => "main",
             InternalFuctions::GenericPrint => internal_function_prefix!("generic_print"),
             InternalFuctions::ListCmp => internal_function_prefix!("list_cmp"),
+            InternalFuctions::StrCmp => internal_function_prefix!("str_cmp"),
             InternalFuctions::Puts => "puts",
             InternalFuctions::Printf => "printf",
             InternalFuctions::Trap => "llvm.debugtrap",
@@ -109,6 +113,7 @@ pub(super) fn init_internal_functions<'ctx>(
 
     // pre init because used in generic function
     let (entry_list_cmp, function_list_cmp) = pre_init_internal_list_cmp_function(cg);
+    let function_str_cmp = register_internal_str_cmp_function(cg);
 
     // generic_compare
     init_internal_compare_generic_function(cg, BinOp::EQ)?;
@@ -120,6 +125,7 @@ pub(super) fn init_internal_functions<'ctx>(
 
     // list_cmp function
     init_internal_list_cmp_function(entry_list_cmp, function_list_cmp, cg)?;
+    init_internal_str_cmp_function(function_str_cmp, cg)?;
 
     // This function is using len should be initialized after the len function
     init_internal_bool_cast_function(cg)?;

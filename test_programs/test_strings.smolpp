@@ -11,3 +11,10 @@ for s in l:
     print(s)
     print(" ")
 println("")
+
+println("abc" < "def")
+println("abc" < "abc")
+println("abc" < "abcd")
+println("abc" <= "abc")
+println("" == "")
+println("" != "")

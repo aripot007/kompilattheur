@@ -26,6 +26,7 @@ pub enum InternalGlobalConst {
     //
     /// Format string for converting int to string (eg. for concatenation)
     IntFormatString,
+    RangeFormatString,
 
     // \n string
     LineReturn,
@@ -54,6 +55,9 @@ pub enum RuntimeErrorMsg {
 
     /// index, length
     IndexOutOfBound,
+
+    //
+    InvalidTypeListFunction,
 }
 
 macro_rules! internal_global_prefix {
@@ -78,6 +82,7 @@ impl Into<&'static str> for InternalGlobalConst {
                 internal_global_prefix!("list_separator_string")
             }
             InternalGlobalConst::IntFormatString => internal_global_prefix!("int_fmt_string"),
+            InternalGlobalConst::RangeFormatString => internal_global_prefix!("range_fmt_string"),
             InternalGlobalConst::LineReturn => internal_global_prefix!("line_return"),
         }
     }
@@ -97,6 +102,9 @@ impl Into<&'static str> for RuntimeErrorMsg {
             }
             RuntimeErrorMsg::PanicInvalidInternalTypeAddGeneric => {
                 internal_global_prefix!("panic_invalid_type_add_generic")
+            }
+            RuntimeErrorMsg::InvalidTypeListFunction => {
+                internal_global_prefix!("invalid_type_list_function")
             }
         }
     }
@@ -137,6 +145,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
 
     // Format strings
     create_global_string(InternalGlobalConst::IntFormatString, "%d", cg);
+    create_global_string(InternalGlobalConst::RangeFormatString, "range(%d)", cg);
     create_global_string(InternalGlobalConst::LineReturn, "\n", cg);
 
     // Error messages
@@ -168,4 +177,10 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         "PANIC: Invalid internal type value for generic add\n",
         cg,
     );
+
+    create_global_string(
+        RuntimeErrorMsg::InvalidTypeListFunction,
+        "PANIC: Invalid type for list function\n",
+        cg,
+    )
 }

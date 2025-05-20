@@ -6,6 +6,7 @@ use crate::common::symbol_table::{
     enter_scope, exit_scope, get_symbol, init_symbol_table, Symbol, SymbolTableElement,
     SymbolTableRef,
 };
+use crate::smollib::register_smollib_funcs;
 use crate::{
     ast::nodes::{self, Statement},
     typing::{Function, Type, Typeable, TypingContext, Weak},
@@ -42,6 +43,8 @@ fn generate_from_node_root(
 ) -> SymbolTableRef {
     let mut table = table;
 
+    register_smollib_funcs(&mut table);
+
     // Signature function
     let mut function_tables: Vec<SymbolTableRef> = Vec::new();
     for mut def in &mut root.defs.defs {
@@ -61,6 +64,26 @@ fn generate_from_node_root(
 
     table
 }
+
+/*
+fn register_smollib_function(table: &mut SymbolTableRef, name: Token) {
+    let function_type = Function {
+        args: ,
+        returns: Type::Weak(return_type_weak.clone()),
+    };
+
+    // Note: no need to get old type, because first time we define the function, return update in sub node
+
+    let symbol_table_element = SymbolTableElement {
+        symbol: Symbol::Function(),
+        name,
+        symbol_type: Type::Function(Box::from(function_type)),
+    };
+    table
+        .borrow_mut()
+        .insert_symbol(func_id, symbol_table_element);
+}
+*/
 
 fn generate_sign_def(
     def: &mut nodes::Def,

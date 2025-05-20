@@ -59,10 +59,7 @@ pub fn assert_type_oneof<'ctx>(
                 .map(Type::to_string)
                 .collect::<Vec<_>>()
                 .join(", ");
-            format!(
-                "Expected type {} ({:#b}), got %s",
-                types_str, expected_bitmask
-            )
+            format!("Expected type {} ({:#b})", types_str, expected_bitmask)
         }
     };
 

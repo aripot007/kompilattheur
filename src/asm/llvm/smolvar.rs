@@ -4,7 +4,7 @@ use crate::{asm::codegen::CodeGen, typing::Type};
 
 use super::LLVMCodegenError;
 
-pub(super) type SmolVar<'ctx> = StructValue<'ctx>;
+pub(crate) type SmolVar<'ctx> = StructValue<'ctx>;
 
 //
 // TODO: Replace StructValue with SmolVar in whole prog

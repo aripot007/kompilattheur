@@ -6,6 +6,7 @@ mod common;
 mod lexer;
 mod parser;
 mod reader;
+mod smollib;
 mod typing;
 use analysis_table::{get_analysis_table, setup_analysis_table, AnalysisTable};
 use asm::codegen::CodeGen;

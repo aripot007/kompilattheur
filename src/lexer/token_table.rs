@@ -7,6 +7,11 @@ pub struct TokenTable {
 
     /// Stocke les noms des identifieurs déjà connus
     id_names: Vec<String>,
+
+    /// Stocke les noms des identifiants des fonctions smollib
+    smollib_names: Vec<String>,
+    /// as assigned id for smollib function
+    last_smollib_ident_id: usize,
 }
 
 impl TokenTable {
@@ -14,6 +19,19 @@ impl TokenTable {
         TokenTable {
             known_tokens: HashMap::new(),
             id_names: Vec::new(),
+            smollib_names: Vec::new(),
+            last_smollib_ident_id: 0,
+        }
+    }
+
+    pub fn reserve_smollib_name(&mut self, name: &str, token: Token) {
+        self.reserve_word(name, token);
+        self.smollib_names.push(String::from(name));
+
+        if self.last_smollib_ident_id == 0 {
+            self.last_smollib_ident_id = usize::MAX;
+        } else {
+            self.last_smollib_ident_id -= 1;
         }
     }
 
@@ -38,7 +56,11 @@ impl TokenTable {
     }
 
     pub fn get_ident_name(&self, id: usize) -> &String {
-        &self.id_names[id]
+        if id < self.id_names.len() {
+            &self.id_names[id]
+        } else {
+            &self.smollib_names[usize::MAX - id]
+        }
     }
 }
 

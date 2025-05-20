@@ -5,11 +5,14 @@ use inkwell::builder::BuilderError;
 pub(super) use print::*;
 mod list_cmp;
 pub(super) use list_cmp::*;
-mod panic;
+pub mod panic;
 use thiserror::Error;
 mod assert_type;
 pub use assert_type::*;
+mod cast;
 pub mod smolvar;
+pub(crate) use ast::{user_function_prefix, user_function_prefix_format};
+pub use cast::init_internal_bool_cast_function;
 
 pub mod lists;
 

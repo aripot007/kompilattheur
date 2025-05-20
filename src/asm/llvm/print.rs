@@ -56,6 +56,29 @@ pub fn print_int_value<'ctx>(
     return Ok(());
 }
 
+/// Generate LLVM to print a range value
+pub fn print_range_value<'ctx>(
+    variable: &SmolVar<'ctx>,
+    cg: &CodeGen<'ctx>,
+) -> Result<(), LLVMCodegenError> {
+    // Get the variable value as int
+    let value = cg.get_variable_value(*variable)?.into_int_value();
+
+    // Call printf("%d", value)
+    cg.builder.build_call(
+        get_internal_func!(cg, InternalFuctions::Printf),
+        &[
+            // Format string
+            get_internal_global_const!(cg, InternalGlobalConst::RangeFormatString)
+                .as_pointer_value()
+                .into(),
+            value.into(), // value
+        ],
+        "printf_int",
+    )?;
+    return Ok(());
+}
+
 /// Generate LLVM to print a String value
 pub fn print_string_value<'ctx>(
     variable: &SmolVar<'ctx>,
@@ -304,6 +327,7 @@ pub fn init_internal_generic_print_function<'ctx>(
     let case_int = cg.context.append_basic_block(function, "case_int");
     let case_string = cg.context.append_basic_block(function, "case_string");
     let case_list = cg.context.append_basic_block(function, "case_list");
+    let case_range = cg.context.append_basic_block(function, "case_range");
     let default_block = cg.context.append_basic_block(function, "default");
 
     let i8_type = cg.context.i8_type();
@@ -332,6 +356,10 @@ pub fn init_internal_generic_print_function<'ctx>(
                 i8_type.const_int(Type::List.get_bitmask().into(), false),
                 case_list,
             ),
+            (
+                i8_type.const_int(Type::Range.get_bitmask().into(), false),
+                case_range,
+            ),
         ],
     )?;
 
@@ -353,6 +381,10 @@ pub fn init_internal_generic_print_function<'ctx>(
 
     cg.builder.position_at_end(case_list);
     print_list_value(&param, cg)?;
+    cg.builder.build_return(None)?;
+
+    cg.builder.position_at_end(case_range);
+    print_range_value(&param, cg)?;
     cg.builder.build_return(None)?;
 
     // Default case, print error message

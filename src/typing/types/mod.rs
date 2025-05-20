@@ -17,6 +17,7 @@ pub enum Type {
     Int,
     String,
     List,
+    Range,
     Any,
     NTuple(NTuple),
     Function(Box<Function>),
@@ -32,7 +33,8 @@ impl Type {
             Type::Int => 0b00000100,
             Type::String => 0b00001000,
             Type::List => 0b00010000,
-            Type::Any => 0b00011111,
+            Type::Range => 0b00100000,
+            Type::Any => 0b00111111,
             Type::Weak(w) => w
                 .get_possible()
                 .iter()
@@ -54,6 +56,7 @@ impl Display for Type {
             Type::Int => write!(f, "int"),
             Type::String => write!(f, "string"),
             Type::List => write!(f, "list"),
+            Type::Range => write!(f, "range"),
             Type::Any => write!(f, "any"),
             Type::NTuple(t) => t.fmt(f),
             Type::Function(t) => (*(t.as_ref())).fmt(f),
@@ -70,6 +73,7 @@ impl Type {
             Type::Int => WORD_SIZE * 2,
             Type::String => WORD_SIZE * 2,
             Type::List => WORD_SIZE * 2,
+            Type::Range => WORD_SIZE * 2,
             Type::Any => WORD_SIZE * 2,
             Type::NTuple(_) => panic!("You shouldn't ask for the decalage of a NTuple"),
             Type::Function(_) => panic!("You shouldn't ask for the decalage of a Function"),

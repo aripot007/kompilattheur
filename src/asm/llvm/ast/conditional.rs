@@ -1,7 +1,7 @@
 use crate::asm::{
     codegen::CodeGen,
     get_internal_func,
-    llvm::{assert_type, llvm_from_block, smolvar::SmolVar, LLVMCodegenError},
+    llvm::{llvm_from_block, smolvar::SmolVar, LLVMCodegenError},
     InternalFuctions,
 };
 use crate::ast::nodes::Conditional;

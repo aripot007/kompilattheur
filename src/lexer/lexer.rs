@@ -1,3 +1,4 @@
+use crate::smollib::register_smollib_names;
 use crate::{common::types::FileElement, reader};
 
 use super::token_table::TokenTable;
@@ -80,6 +81,8 @@ fn init_token_table() -> TokenTable {
     table.reserve_word("return", Token::Return);
     table.reserve_word("print", Token::Print);
     table.reserve_word("println", Token::Println);
+
+    register_smollib_names(&mut table);
 
     return table;
 }

@@ -3,8 +3,6 @@ pub use block::llvm_from_block;
 mod root;
 pub use root::llvm_from_root;
 mod expression;
-pub use expression::init_internal_bool_cast_function;
-pub use expression::init_len_function;
 pub use expression::{
     compare_generic_values, init_internal_add_generic_function,
     init_internal_compare_generic_function, llvm_compute_expr,
@@ -15,7 +13,7 @@ mod assign;
 pub use assign::llvm_from_assign;
 mod defs;
 pub use defs::llvm_from_defs;
-pub(crate) use defs::user_function_prefix;
+pub(crate) use defs::{user_function_prefix, user_function_prefix_format};
 mod def_return;
 pub use def_return::llvm_from_return;
 mod conditional;

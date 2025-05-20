@@ -129,7 +129,7 @@ pub fn llvm_from_for_loop<'ctx>(
 
             let iterator_is_list = cg.builder.build_int_compare(
                 inkwell::IntPredicate::EQ,
-                i8_type.const_int(Type::None.get_bitmask().into(), false),
+                i8_type.const_int(Type::List.get_bitmask().into(), false),
                 iterator_type,
                 "iterator_is_list",
             )?;

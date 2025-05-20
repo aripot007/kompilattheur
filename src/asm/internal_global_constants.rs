@@ -58,6 +58,9 @@ pub enum RuntimeErrorMsg {
 
     //
     InvalidTypeListFunction,
+
+    //
+    InvalidStringForIntFunction,
 }
 
 macro_rules! internal_global_prefix {
@@ -105,6 +108,9 @@ impl Into<&'static str> for RuntimeErrorMsg {
             }
             RuntimeErrorMsg::InvalidTypeListFunction => {
                 internal_global_prefix!("invalid_type_list_function")
+            }
+            RuntimeErrorMsg::InvalidStringForIntFunction => {
+                internal_global_prefix!("invalid_string_value_int_function")
             }
         }
     }
@@ -182,5 +188,11 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         RuntimeErrorMsg::InvalidTypeListFunction,
         "PANIC: Invalid type for list function\n",
         cg,
-    )
+    );
+
+    create_global_string(
+        RuntimeErrorMsg::InvalidStringForIntFunction,
+        "PANIC: Invalid string for int function\n",
+        cg,
+    );
 }

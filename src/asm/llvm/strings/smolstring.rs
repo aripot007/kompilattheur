@@ -246,10 +246,16 @@ impl<'ctx> CodeGen<'ctx> {
         &self,
         string: SmolString<'ctx>,
     ) -> Result<PointerValue<'ctx>, LLVMCodegenError> {
-        return Ok(self
+        let ptr = self
             .builder
             .build_extract_value(string, 1, "string_array_ptr")?
-            .into_pointer_value());
+            .into_pointer_value();
+        let ptr = self.builder.build_int_to_ptr(
+            ptr,
+            self.context.ptr_type(AddressSpace::default()),
+            "string_ptr",
+        )?;
+        return Ok(ptr);
     }
 
     pub fn build_get_string_array_ptr_from_ptr(

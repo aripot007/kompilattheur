@@ -1,6 +1,5 @@
 use crate::{
-    ast::nodes::BinOp,
-    smollib::{build_smollib_llvm, register_smollib_funcs_in_module},
+    ast::nodes::BinOp, smollib::{build_smollib_llvm, register_smollib_funcs_in_module}
 };
 
 use super::{
@@ -127,7 +126,7 @@ pub(super) fn init_internal_functions<'ctx>(
     init_internal_add_generic_function(cg)?;
 
     // smollib user functions
-    build_smollib_llvm(cg)?;
+    build_smollib_llvm(cg)?; //FIXME: potentially add localization info, but i don't know how I am supposed to do that with generic functions
 
     return Ok(());
 }

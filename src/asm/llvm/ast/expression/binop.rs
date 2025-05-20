@@ -28,7 +28,7 @@ pub fn llvm_compute_binop<'ctx>(
     op: &BinOp,
     e2: &Expression,
     cg: &mut CodeGen<'ctx>,
-    root: &Expression,
+    _root: &Expression,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
     match op {
         BinOp::AND | BinOp::OR => return llvm_compute_and_or(e1, op, e2, cg),
@@ -82,10 +82,10 @@ fn llvm_compute_arithmetic<'ctx>(
         assert!(e1.get_type().is_compatible(Type::Int) && e2.get_type().is_compatible(Type::Int));
 
         match op {
-            BinOp::MULT => compute_mult(val1, val2, cg),
-            BinOp::DIV => compute_div(val1, val2, cg),
-            BinOp::MOD => compute_mod(val1, val2, cg),
-            BinOp::SUB => compute_sub(val1, val2, cg),
+            BinOp::MULT => compute_mult(val1, val2, cg, Some(e1), Some(e2)),
+            BinOp::DIV => compute_div(val1, val2, cg, Some(e1), Some(e2)),
+            BinOp::MOD => compute_mod(val1, val2, cg, Some(e1), Some(e2)),
+            BinOp::SUB => compute_sub(val1, val2, cg, Some(e1), Some(e2)),
             _ => panic!("Trying to compute arithmetic with a {} operation", op),
         }
     }
@@ -103,24 +103,24 @@ fn llvm_compute_add<'ctx>(
         (Type::Int, Type::Int) => return compute_add_unchecked(val1, val2, cg),
         (Type::Int, t) | (t, Type::Int) => {
             assert!(t.is_compatible(Type::Int));
-            return compute_add(val1, val2, cg);
+            return compute_add(val1, val2, cg, Some(e1), Some(e2));
         }
         (Type::String, Type::String) => return compute_add_string(val1, val2, cg),
         (Type::String, t) | (t, Type::String) => {
             assert!(t.is_compatible(Type::String));
-            assert_dyn_type(&val1, &val2, cg)?;
+            assert_dyn_type(&val1, &val2, cg, Some(e1))?;
             return compute_add_string(val1, val2, cg);
         }
         (Type::List, Type::List) => return compute_add_list(val1, val2, cg),
         (Type::List, t) | (t, Type::List) => {
             assert!(t.is_compatible(Type::List));
-            assert_dyn_type(&val1, &val2, cg)?;
+            assert_dyn_type(&val1, &val2, cg, Some(e1))?;
             return compute_add_list(val1, val2, cg);
         }
         (Type::Range, Type::Range) => return compute_add_range(val1, val2, cg),
         (Type::Range, t) | (t, Type::Range) => {
             assert!(t.is_compatible(Type::Range));
-            assert_dyn_type(&val1, &val2, cg)?;
+            assert_dyn_type(&val1, &val2, cg, Some(e1))?;
             return compute_add_range(val1, val2, cg);
         }
         _ => return compute_add_generic(val1, val2, cg),

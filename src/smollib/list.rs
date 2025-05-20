@@ -9,11 +9,12 @@ use crate::{
         codegen::CodeGen,
         llvm::{assert_type_oneof, panic::smolpp_panic_with_unreachable, smolvar::SmolVar},
         LLVMCodegenError, RuntimeErrorMsg,
-    },
-    typing::{Function, Type, Weak},
+    }, common::localizable::LocalizationInfo, typing::{Function, Type, Weak}
 };
 
 use super::SmollibFunction;
+
+use crate::common::localizable::Localizable;
 
 pub(super) struct SmolList {}
 
@@ -50,7 +51,7 @@ impl SmollibFunction for SmolList {
             .unwrap()
             .into_struct_value();
 
-        assert_type_oneof(&[Type::List, Type::String, Type::Range], &var1, cg, None)?;
+        assert_type_oneof::<LocalizationInfo>(&[Type::List, Type::String, Type::Range], &var1, cg, None, None)?;
 
         // Si type == Range => return Create the list with the range
 
@@ -109,7 +110,12 @@ impl SmollibFunction for SmolList {
 
         // Default case, print error message
         cg.builder.position_at_end(default_block);
-        smolpp_panic_with_unreachable(cg, RuntimeErrorMsg::InvalidTypeListFunction, &[t1.into()])?;
+        smolpp_panic_with_unreachable::<LocalizationInfo>(
+            cg,
+            RuntimeErrorMsg::InvalidTypeListFunction,
+            &[t1.into()],
+            None,
+        )?;
 
         // Return builder to main block because it's init function
         cg.current_function = cg.main_function;

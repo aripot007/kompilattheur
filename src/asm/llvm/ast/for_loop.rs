@@ -60,7 +60,7 @@ pub fn llvm_from_for_loop<'ctx>(
     let iterator_variable: SmolVar<'ctx> = llvm_compute_expr(&for_loop.iterator, cg)?;
 
     // Check if the iterator_value is a list
-    assert_type(Type::List, &iterator_variable, cg, None)?;
+    assert_type(Type::List, &iterator_variable, cg, None, Some(for_loop))?;
 
     let iterator_value = cg.get_variable_value(iterator_variable)?;
 

@@ -4,9 +4,7 @@ use crate::{
         get_internal_func,
         llvm::{assert_type, smolvar::SmolVar, LLVMCodegenError},
         InternalFuctions,
-    },
-    ast::nodes::{Expression, UnOp},
-    typing::Type,
+    }, ast::nodes::{Expression, UnOp}, common::localizable::Localizable, typing::Type
 };
 
 use super::llvm_compute_expr;
@@ -22,7 +20,7 @@ pub fn llvm_compute_unop<'ctx>(
         (UnOp::NOT, Some(Type::Bool)) => llvm_compute_not_unchecked(val, cg),
         (UnOp::NOT, _) => llvm_compute_not(val, cg),
         (UnOp::NEG, Some(Type::Int)) => llvm_compute_neg_unchecked(val, cg),
-        (UnOp::NEG, _) => llvm_compute_neg(val, cg),
+        (UnOp::NEG, _) => llvm_compute_neg(val, cg, Some(expr)),
     }
 }
 
@@ -64,11 +62,12 @@ fn llvm_compute_not_unchecked<'ctx>(
 }
 
 /// Compute the NEG operation for a given variable
-fn llvm_compute_neg<'ctx>(
+fn llvm_compute_neg<'ctx, T>(
     val: SmolVar<'ctx>,
     cg: &mut CodeGen<'ctx>,
-) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    assert_type(Type::Int, &val, cg, None)?;
+    loc: Option<T>
+) -> Result<SmolVar<'ctx>, LLVMCodegenError> where T: Localizable {
+    assert_type(Type::Int, &val, cg, None, loc)?;
     return llvm_compute_neg_unchecked(val, cg);
 }
 

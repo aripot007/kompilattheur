@@ -6,9 +6,7 @@ use crate::{
         internal_global_constants::RuntimeErrorMsg,
         llvm::{panic::smolpp_panic_with_unreachable, LLVMCodegenError},
         InternalFuctions,
-    },
-    smollib::{get_smollib_func, SmollibFunctionNames},
-    typing::Type,
+    }, common::localizable::LocalizationInfo, smollib::{get_smollib_func, SmollibFunctionNames}, typing::Type
 };
 
 pub fn init_internal_bool_cast_function(cg: &mut CodeGen) -> Result<(), LLVMCodegenError> {
@@ -122,10 +120,11 @@ pub fn init_internal_bool_cast_function(cg: &mut CodeGen) -> Result<(), LLVMCode
     // Default case, print error message
     cg.builder.position_at_end(default_block);
 
-    smolpp_panic_with_unreachable(
+    smolpp_panic_with_unreachable::<LocalizationInfo>(
         cg,
         RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric,
         &[t1.into()],
+        None, //FIXME: potentially add localization info, not sure how to do that with internal functions
     )?;
 
     // Return builder to main block because it's init function

@@ -4,8 +4,7 @@ use crate::{
     asm::{
         codegen::CodeGen, get_internal_func, get_internal_global_const, internal_function_prefix,
         internal_global_constants::RuntimeErrorMsg, InternalFuctions, InternalGlobalConst,
-    },
-    typing::Type,
+    }, common::localizable::LocalizationInfo, typing::Type
 };
 
 use super::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError};
@@ -392,10 +391,11 @@ pub fn init_internal_generic_print_function<'ctx>(
     // Default case, print error message
     cg.builder.position_at_end(default_block);
 
-    smolpp_panic_with_unreachable(
+    smolpp_panic_with_unreachable::<LocalizationInfo>(
         cg,
         RuntimeErrorMsg::PanicInvalidInternalTypeValueFormatString,
         &[type_field.into()],
+        None, //FIXME: potentially add localization info, not sure how to do that with internal functions
     )?;
 
     // Return builder to main block because it's init function

@@ -8,8 +8,7 @@ use crate::{
     },
     ast::nodes::{AstNode, BinOp, Expression, ExpressionKind, Factor, FactorKind},
     common::{
-        diagnostic::Diagnostic,
-        symbol_table::{get_symbol, Symbol, SymbolTableElement},
+        diagnostic::Diagnostic, symbol_table::{get_symbol, Symbol, SymbolTableElement}
     },
     typing::Type,
 };
@@ -121,6 +120,7 @@ pub fn access_to_ptr<'ctx>(
         &base_value,
         cg,
         Some("Expected list for access".into()),
+        Some(expr1)
     )?;
 
     // Evaluate the index expression
@@ -206,6 +206,7 @@ pub fn access_to_ptr<'ctx>(
         cg,
         RuntimeErrorMsg::IndexOutOfBound,
         &[index_i32.into(), list_length_i32.into()],
+        Some(expr2)
     )?;
 
     // Handle in-bounds access

@@ -61,6 +61,9 @@ pub enum RuntimeErrorMsg {
 
     //
     InvalidTypeListFunction,
+
+    // Used for error messages that gives the line and column of the error
+    LocalizeError,
 }
 
 macro_rules! internal_global_prefix {
@@ -109,6 +112,7 @@ impl Into<&'static str> for RuntimeErrorMsg {
             RuntimeErrorMsg::InvalidTypeListFunction => {
                 internal_global_prefix!("invalid_type_list_function")
             }
+            RuntimeErrorMsg::LocalizeError => internal_global_prefix!("localize_error"),
         }
     }
 }
@@ -253,6 +257,19 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
                 HIGHLIGHT_ERROR_COLOR.1,
                 HIGHLIGHT_ERROR_COLOR.2
             ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
+        cg,
+    );
+
+    create_global_string(
+        RuntimeErrorMsg::LocalizeError,
+        format!(
+            "{} {}{}",
+            "At line :"
+                .bold(),
+            " %d:%d",
             "\x1b[0m\n"
         )
         .as_str(),

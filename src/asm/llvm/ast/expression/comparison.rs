@@ -5,9 +5,7 @@ use crate::{
         internal_functions::InternalFuctions,
         internal_global_constants::RuntimeErrorMsg,
         llvm::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError},
-    },
-    ast::nodes::BinOp,
-    typing::Type,
+    }, ast::nodes::{BinOp, Expression}, common::localizable::{Localizable, LocalizationInfo}, typing::Type
 };
 use inkwell::AddressSpace;
 use inkwell::{
@@ -353,7 +351,7 @@ pub fn init_internal_compare_generic_function<'ctx>(
     // Case Same type
     cg.builder.position_at_end(then_block);
 
-    build_switch_compare_generic_same_type(cg, function, value1, value2, operation, t1)?;
+    build_switch_compare_generic_same_type(cg, function, value1, value2, operation, t1)?; 
 
     // Case Different type
     cg.builder.position_at_end(else_block);
@@ -405,10 +403,11 @@ pub fn init_internal_compare_generic_function<'ctx>(
             cg.builder.build_return(Some(&res))?;
         }
         _ => {
-            smolpp_panic_with_unreachable(
+            smolpp_panic_with_unreachable::<LocalizationInfo>(
                 cg,
                 RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric,
                 &[t1.into()],
+                None //FIXME: potentially add localization info, but i don't know how I am supposed to do that with generic functions
             )?;
         }
     }
@@ -484,10 +483,11 @@ fn build_switch_compare_generic_same_type<'ctx>(
             cg.builder.build_return(Some(&result))?;
         }
         _ => {
-            smolpp_panic_with_unreachable(
+            smolpp_panic_with_unreachable::<LocalizationInfo>(
                 cg,
                 RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric,
                 &[t1.into()],
+                None, //FIXME: potentially add localization info, but i don't know how I am supposed to do that with generic functions
             )?;
         }
     }
@@ -507,10 +507,11 @@ fn build_switch_compare_generic_same_type<'ctx>(
     // Default case, print error message
     cg.builder.position_at_end(default_block);
 
-    smolpp_panic_with_unreachable(
+    smolpp_panic_with_unreachable::<LocalizationInfo>(
         cg,
         RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric,
         &[t1.into()],
+        None, //FIXME: potentially add localization info, but i don't know how I am supposed to do that with generic functions
     )?;
 
     return Ok(());

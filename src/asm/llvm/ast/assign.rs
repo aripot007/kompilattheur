@@ -24,7 +24,7 @@ pub fn llvm_from_assign<'ctx>(
                 cg.builder
                     .build_load(cg.smolpp_types.dynamic_type, dest_ptr, "load_dest_value")?;
 
-            assert_assignation_type(&dest_var.into_struct_value(), &expr_value, cg)?;
+            assert_assignation_type(&dest_var.into_struct_value(), &expr_value, cg, Some(assign))?;
 
             // Store the result
             cg.builder.build_store(dest_ptr, expr_value)?;

@@ -291,6 +291,20 @@ fn generate_from_block(
 
                 table = exit_scope(loop_table);
                 context.symbol_table = table.clone();
+
+                // Parse iterator type
+                let t = match for_loop.iterator.parse_type(context) {
+                    Err(_) => continue,
+                    Ok(t) => {
+                        if !t.is_compatible(Type::List) && !t.is_compatible(Type::Range) {
+                            context.errors.push(Diagnostic::incompatible_type(
+                                &for_loop.iterator,
+                                &t,
+                                &[Type::List, Type::Range],
+                            ));
+                        }
+                    }
+                };
             }
             Statement::Conditional(ref mut cond) => {
                 // Parse condition expression type

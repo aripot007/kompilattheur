@@ -1,8 +1,4 @@
-def a():
-    if i == 0:
-        return None
-    i = i-1
-    a()
 
-i = 10
-a()
+
+print(int("5")+1)
+print(int(5)+2)

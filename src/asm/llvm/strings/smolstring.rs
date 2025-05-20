@@ -66,8 +66,34 @@ impl<'ctx> CodeGen<'ctx> {
         return Ok(string_ptr);
     }
 
+    /// Create a string in the heap and return the pointer to it
+    pub fn create_const_string_in_heap(
+        &self,
+        s: &String,
+    ) -> Result<PointerValue<'ctx>, LLVMCodegenError> {
+        let string_struct = self.build_const_string(s)?;
+
+        // Store the structure in the heap
+        let string_ptr = self
+            .builder
+            .build_malloc(self.smolpp_types.string_type, "string")?;
+        self.builder.build_store(string_ptr, string_struct)?;
+        return Ok(string_ptr);
+    }
+
+    /// Create a constant string
+    pub fn build_const_string(&self, s: &String) -> Result<SmolString<'ctx>, LLVMCodegenError> {
+        let str_const_ptr = self.builder.build_global_string_ptr(&s, "string_const")?;
+
+        let len = self.context.i64_type().const_int(s.len() as u64, false);
+
+        let string_struct = self.build_string_struct(len, str_const_ptr.as_pointer_value())?;
+
+        return Ok(string_struct);
+    }
+
     /// Create a string with the capable of storing len - 1 char
-    fn build_string_struct(
+    pub fn build_string_struct(
         &self,
         len: IntValue<'ctx>,
         array_ptr: PointerValue<'ctx>,
@@ -97,6 +123,42 @@ impl<'ctx> CodeGen<'ctx> {
             false => {
                 // Create the string and store it on the stack
                 let string_struct = self.build_string(len)?;
+
+                let string_ptr = self
+                    .builder
+                    .build_alloca(self.smolpp_types.string_type, "string")?;
+                self.builder.build_store(string_ptr, string_struct)?;
+                string_ptr
+            }
+        };
+
+        let val_type = self
+            .smolpp_types
+            .dynamic_type
+            .get_field_type_at_index(1)
+            .unwrap();
+        let string_ptr_int =
+            self.builder
+                .build_ptr_to_int(string_ptr, val_type.into_int_type(), "string_ptr")?;
+
+        return Ok((
+            self.create_variable(Type::String, string_ptr_int)?,
+            string_ptr,
+        ));
+    }
+
+    /// Create a string variable capable of storing len - 1 char
+    /// If `heap` is true, store the string data on the heap instead of the stack
+    pub fn build_const_string_variable(
+        &self,
+        s: &String,
+        heap: bool,
+    ) -> Result<(SmolVar<'ctx>, PointerValue<'ctx>), LLVMCodegenError> {
+        let string_ptr = match heap {
+            true => self.create_const_string_in_heap(s)?,
+            false => {
+                // Create the string and store it on the stack
+                let string_struct = self.build_const_string(s)?;
 
                 let string_ptr = self
                     .builder
@@ -186,8 +248,26 @@ impl<'ctx> CodeGen<'ctx> {
     ) -> Result<PointerValue<'ctx>, LLVMCodegenError> {
         return Ok(self
             .builder
-            .build_extract_value(string, 2, "string_array_ptr")?
+            .build_extract_value(string, 1, "string_array_ptr")?
             .into_pointer_value());
+    }
+
+    pub fn build_get_string_array_ptr_from_ptr(
+        &self,
+        string_ptr: PointerValue<'ctx>,
+    ) -> Result<PointerValue<'ctx>, LLVMCodegenError> {
+        let ptr_ptr = self.builder.build_struct_gep(
+            self.smolpp_types.string_type,
+            string_ptr,
+            1,
+            "string_array_ptr",
+        )?;
+        let ptr = self.builder.build_load(
+            self.context.ptr_type(AddressSpace::default()),
+            ptr_ptr,
+            "string_array_ptr",
+        )?;
+        return Ok(ptr.into_pointer_value());
     }
 
     fn build_set_string_array_ptr(
@@ -197,7 +277,7 @@ impl<'ctx> CodeGen<'ctx> {
     ) -> Result<SmolString<'ctx>, LLVMCodegenError> {
         return Ok(self
             .builder
-            .build_insert_value(string, ptr, 2, "set_string_array_ptr")?
+            .build_insert_value(string, ptr, 1, "set_string_array_ptr")?
             .into_struct_value());
     }
 }

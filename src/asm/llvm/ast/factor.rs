@@ -43,9 +43,8 @@ fn llvm_compute_string_value<'ctx>(
     s: &String,
     cg: &mut CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    let str_const_ptr = cg.builder.build_global_string_ptr(&s, "string_const")?;
-
-    return cg.create_variable(Type::String, str_const_ptr.as_pointer_value());
+    let (str_struct, _str_ptr) = cg.build_const_string_variable(s, true)?;
+    return Ok(str_struct);
 }
 
 fn llvm_compute_int_value<'ctx>(

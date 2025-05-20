@@ -128,6 +128,7 @@ impl<'ctx> CodeGen<'ctx> {
     fn init_smolpp_types(&mut self) {
         self.init_dynamic_type();
         self.init_list_type();
+        self.init_string_type();
     }
 
     fn get_linker(&self) -> Result<String, String> {

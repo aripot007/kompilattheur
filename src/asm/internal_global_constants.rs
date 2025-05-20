@@ -157,42 +157,42 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
     // Error messages
     create_global_string(
         RuntimeErrorMsg::PanicInvalidInternalTypeValueFormatString,
-        "PANIC: Invalid internal type value %d\n",
+        "Error: Invalid internal type value %d\n",
         cg,
     );
     create_global_string(
         RuntimeErrorMsg::PanicNotImplemented,
-        "PANIC: LLVM not implemented yet\n",
+        "Error: LLVM not implemented yet\n",
         cg,
     );
     create_global_string(RuntimeErrorMsg::TypeError, "TypeError: %s\n", cg);
     create_global_string(
         RuntimeErrorMsg::IndexOutOfBound,
-        "IndexError: index %d out of bounds for list of length %d\n",
+        "Error: index %d out of bounds for list of length %d\n",
         cg,
     );
 
     create_global_string(
         RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric,
-        "PANIC: Invalid internal type value for generic comparison\n",
+        "Error: Invalid internal type value for generic comparison\n",
         cg,
     );
 
     create_global_string(
         RuntimeErrorMsg::PanicInvalidInternalTypeAddGeneric,
-        "PANIC: Invalid internal type value for generic add\n",
+        "Error: Invalid internal type value for generic add\n",
         cg,
     );
 
     create_global_string(
         RuntimeErrorMsg::InvalidTypeListFunction,
-        "PANIC: Invalid type for list function\n",
+        "Error: Invalid type for list function\n",
         cg,
     );
 
     create_global_string(
         RuntimeErrorMsg::InvalidStringForIntFunction,
-        "PANIC: Invalid string for int function\n",
+        "Error: Invalid string for int function\n",
         cg,
     );
 }

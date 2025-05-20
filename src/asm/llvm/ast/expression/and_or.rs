@@ -4,10 +4,7 @@ use crate::{
     asm::{
         codegen::CodeGen,
         get_internal_func,
-        llvm::{
-            smolvar::SmolVar,
-            LLVMCodegenError,
-        },
+        llvm::{smolvar::SmolVar, LLVMCodegenError},
         InternalFuctions,
     },
     ast::nodes::{BinOp, Expression},

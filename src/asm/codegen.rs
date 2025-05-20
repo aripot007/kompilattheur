@@ -37,6 +37,7 @@ pub struct CodeGen<'ctx> {
 pub struct CodeGenTypedefs<'ctx> {
     pub dynamic_type: StructType<'ctx>,
     pub list_type: StructType<'ctx>,
+    pub string_type: StructType<'ctx>,
 }
 
 impl<'ctx> CodeGen<'ctx> {
@@ -108,6 +109,7 @@ impl<'ctx> CodeGen<'ctx> {
             smolpp_types: CodeGenTypedefs {
                 dynamic_type: context.opaque_struct_type("dynamic_type_struct"),
                 list_type: context.opaque_struct_type("list_struct"),
+                string_type: context.opaque_struct_type("string_struct"),
             },
             pointers_table: Vec::new(),
             current_symbol_table: None,

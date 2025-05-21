@@ -60,7 +60,13 @@ fn llvm_compute_not_unchecked<'ctx>(
     cg: &mut CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
     let val_field = cg.get_variable_value(val)?.into_int_value();
-    let new_value = cg.builder.build_not(val_field, "smolvar_not")?;
+    let val_as_bool =
+        cg.builder
+            .build_int_cast(val_field, cg.context.bool_type(), "val_as_bool")?;
+    let new_value = cg.builder.build_not(val_as_bool, "smolvar_not")?;
+    let new_value = cg
+        .builder
+        .build_int_cast(new_value, cg.context.i64_type(), "val_as_int")?;
     return cg.set_variable_value(val, new_value);
 }
 

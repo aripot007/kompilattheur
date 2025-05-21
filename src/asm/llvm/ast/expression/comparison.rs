@@ -6,8 +6,8 @@ use crate::{
         internal_global_constants::RuntimeErrorMsg,
         llvm::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError},
     },
-    ast::nodes::{BinOp, Expression},
-    common::localizable::{Localizable, LocalizationInfo},
+    ast::nodes::BinOp,
+    common::localizable::LocalizationInfo,
     typing::Type,
 };
 use inkwell::AddressSpace;

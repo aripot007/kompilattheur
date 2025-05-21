@@ -121,6 +121,7 @@ impl<'ctx> CodeGen<'ctx> {
 
     /// Create a string variable capable of storing len - 1 char
     /// If `heap` is true, store the string data on the heap instead of the stack
+    #[allow(unused)]
     pub fn build_string_variable(
         &self,
         len: IntValue<'ctx>,
@@ -194,6 +195,7 @@ impl<'ctx> CodeGen<'ctx> {
     /// Free a string variable stored in the heap
     /// This function MUST ONLY be used on string variables stored ON THE HEAP,
     /// ie created with `create_string_variable` with the `heap` parameter to `true`.
+    #[allow(unused)]
     pub fn build_free_string_variable(
         &self,
         string: SmolVar<'ctx>,
@@ -239,17 +241,6 @@ impl<'ctx> CodeGen<'ctx> {
             .into_int_value());
     }
 
-    fn build_set_string_length(
-        &self,
-        string: SmolString<'ctx>,
-        len: IntValue<'ctx>,
-    ) -> Result<SmolString<'ctx>, LLVMCodegenError> {
-        return Ok(self
-            .builder
-            .build_insert_value(string, len, STRING_STRUCT_LEN_INDEX, "set_string_len")?
-            .into_struct_value());
-    }
-
     pub fn build_get_string_array_ptr(
         &self,
         string: SmolString<'ctx>,
@@ -283,21 +274,5 @@ impl<'ctx> CodeGen<'ctx> {
             "string_array_ptr",
         )?;
         return Ok(ptr.into_pointer_value());
-    }
-
-    fn build_set_string_array_ptr(
-        &self,
-        string: SmolString<'ctx>,
-        ptr: PointerValue<'ctx>,
-    ) -> Result<SmolString<'ctx>, LLVMCodegenError> {
-        return Ok(self
-            .builder
-            .build_insert_value(
-                string,
-                ptr,
-                STRING_STRUCT_ARRAY_INDEX,
-                "set_string_array_ptr",
-            )?
-            .into_struct_value());
     }
 }

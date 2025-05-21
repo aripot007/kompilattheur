@@ -1,10 +1,7 @@
 use inkwell::{basic_block::BasicBlock, values::IntValue, AddressSpace, IntPredicate};
 
 use crate::{
-    asm::{
-        codegen::CodeGen, get_internal_func, internal_global_constants::RuntimeErrorMsg,
-        InternalFuctions,
-    },
+    asm::{codegen::CodeGen, internal_global_constants::RuntimeErrorMsg},
     common::localizable::Localizable,
     smollib::{get_smollib_func, SmollibFunctionNames},
     typing::Type,

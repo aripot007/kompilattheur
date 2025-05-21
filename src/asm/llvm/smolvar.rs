@@ -60,29 +60,6 @@ impl<'ctx> CodeGen<'ctx> {
         return Ok(val);
     }
 
-    pub fn set_variable_type(
-        &self,
-        variable: SmolVar<'ctx>,
-        t: Type,
-    ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-        return self.set_variable_type_bitmask(variable, t.get_bitmask());
-    }
-
-    pub fn set_variable_type_bitmask(
-        &self,
-        variable: SmolVar<'ctx>,
-        bitmask: u8,
-    ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-        let bitmask_val = self.context.i8_type().const_int(bitmask as u64, false);
-        let res = self.builder.build_insert_value(
-            variable,
-            bitmask_val,
-            0,
-            format!("set_type_{:#b}", bitmask).as_str(),
-        )?;
-        return Ok(res.into_struct_value());
-    }
-
     pub fn set_variable_value<BV>(
         &self,
         variable: SmolVar<'ctx>,

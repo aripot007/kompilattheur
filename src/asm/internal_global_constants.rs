@@ -1,5 +1,3 @@
-use core::panic;
-
 use colored::Colorize;
 use inkwell::AddressSpace;
 
@@ -255,7 +253,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         RuntimeErrorMsg::PanicInvalidInternalTypeValueFormatString,
         format!(
             "{} {}{}",
-            "PANIC :"
+            "PANIC:"
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
             "Invalid internal type value %d".truecolor(
@@ -273,7 +271,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         RuntimeErrorMsg::PanicNotImplemented,
         format!(
             "{} {}{}",
-            "PANIC :"
+            "PANIC:"
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
             "Not implemented yet".truecolor(
@@ -291,7 +289,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         RuntimeErrorMsg::PanicGetlineError,
         format!(
             "{} {}{}",
-            "PANIC :"
+            "PANIC:"
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
             "Could not read from standard input".truecolor(
@@ -309,7 +307,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         RuntimeErrorMsg::PanicGetlineError,
         format!(
             "{} {}{}",
-            "PANIC :"
+            "PANIC:"
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
             "Could not read from standard input".truecolor(
@@ -345,7 +343,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         RuntimeErrorMsg::IndexOutOfBound,
         format!(
             "{} {}{}",
-            "IndexError :"
+            "IndexError:"
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
             "index %d out of bounds for list of length %d".truecolor(
@@ -363,7 +361,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric,
         format!(
             "{} {}{}",
-            "PANIC :"
+            "TypeError:"
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
             "Invalid internal type value for generic comparison".truecolor(
@@ -381,7 +379,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         RuntimeErrorMsg::PanicInvalidInternalTypeAddGeneric,
         format!(
             "{} {}{}",
-            "PANIC :"
+            "PANIC:"
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
             "Invalid internal type value for generic addition".truecolor(
@@ -399,7 +397,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         RuntimeErrorMsg::InvalidTypeListFunction,
         format!(
             "{} {}{}",
-            "PANIC :"
+            "TypeError:"
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
             "Invalid type for list function".truecolor(
@@ -417,7 +415,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         RuntimeErrorMsg::InvalidStringForIntFunction,
         format!(
             "{} {}{}",
-            "InvalidIntError :"
+            "InvalidIntError:"
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
             "Invalid string for int function".truecolor(
@@ -435,7 +433,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         RuntimeErrorMsg::PanicInvalidInternalTypeInTypeFunction,
         format!(
             "{} {}{}",
-            "PANIC :"
+            "PANIC:"
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
             "Invalid internal type value for type function".truecolor(

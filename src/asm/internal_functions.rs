@@ -43,7 +43,7 @@ macro_rules! get_internal_func {
         $cg.module.get_function($name.into()).unwrap()
     };
 }
-pub(super) use get_internal_func;
+pub(crate) use get_internal_func;
 
 macro_rules! internal_function_prefix {
     ($name: expr) => {
@@ -144,7 +144,6 @@ pub(super) fn init_internal_functions<'ctx>(
     init_internal_list_cmp_function(entry_list_cmp, function_list_cmp, cg)?;
     init_internal_str_cmp_function(function_str_cmp, cg)?;
 
-    // This function is using len should be initialized after the len function
     init_internal_bool_cast_function(cg)?;
 
     init_internal_add_generic_function(cg)?;

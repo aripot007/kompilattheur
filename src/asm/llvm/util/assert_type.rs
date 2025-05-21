@@ -1,13 +1,16 @@
 use inkwell::{basic_block::BasicBlock, values::IntValue, AddressSpace, IntPredicate};
 
 use crate::{
-    asm::{codegen::CodeGen, internal_global_constants::RuntimeErrorMsg, llvm::smolvar::SmolVar},
+    asm::{
+        codegen::CodeGen, get_internal_func, internal_global_constants::RuntimeErrorMsg,
+        InternalFuctions,
+    },
     common::localizable::Localizable,
+    smollib::{get_smollib_func, SmollibFunctionNames},
     typing::Type,
 };
 
-use super::panic::smolpp_panic_with_unreachable;
-use crate::asm::LLVMCodegenError;
+use super::super::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError};
 
 /// Generate LLVM to assert the type of a variable at runtime
 /// The runtime type must be exactly `valtype`, weak types will not match
@@ -40,7 +43,7 @@ where
         format!("assert_type_{}", valtype).as_str(),
     )?;
 
-    return create_assert_type_branch(cdt, cg, msg, localizable);
+    return create_assert_type_branch(cdt, cg, msg, localizable, *value);
 }
 
 /// Generate LLVM to assert the type of a variable at runtime
@@ -69,7 +72,7 @@ where
                 .map(Type::to_string)
                 .collect::<Vec<_>>()
                 .join(", ");
-            format!("Expected type {} ({:#b})", types_str, expected_bitmask)
+            format!("Expected type {}", types_str)
         }
     };
 
@@ -98,7 +101,7 @@ where
         "convert_to_bool",
     )?;
 
-    return create_assert_type_branch(cdt, cg, msg, localizable);
+    return create_assert_type_branch(cdt, cg, msg, localizable, *value);
 }
 
 /// Create the conditional branch for type assertion.
@@ -110,6 +113,7 @@ fn create_assert_type_branch<'ctx, T>(
     cg: &CodeGen<'ctx>,
     msg: String,
     localizable: Option<T>,
+    value: SmolVar<'ctx>,
 ) -> Result<BasicBlock<'ctx>, LLVMCodegenError>
 where
     T: Localizable,
@@ -136,10 +140,35 @@ where
 
     // "Panic" block : type is not the same
     cg.builder.position_at_end(panic_block);
+
+    // Value
+    let call_type_value = cg.builder.build_call(
+        get_smollib_func!(cg, SmollibFunctionNames::SmolType),
+        &[value.into()],
+        "type_call",
+    )?;
+
+    // La fonction Type retourne directement un pointeur
+    let smol_var = call_type_value
+        .try_as_basic_value()
+        .left()
+        .unwrap()
+        .into_struct_value();
+
+    let smol_var_value = cg.get_variable_value(smol_var)?.into_int_value();
+
+    let ptr_type = cg.context.ptr_type(AddressSpace::default());
+
+    let smol_var_ptr = cg
+        .builder
+        .build_int_to_ptr(smol_var_value, ptr_type, "smol_var_ptr")?;
+
+    let actual_type_ptr = cg.build_get_string_array_ptr_from_ptr(smol_var_ptr)?;
+
     smolpp_panic_with_unreachable(
         cg,
         RuntimeErrorMsg::TypeError,
-        &[global_var.as_pointer_value().into()],
+        &[global_var.as_pointer_value().into(), actual_type_ptr.into()],
         localizable,
     )?;
 
@@ -180,6 +209,7 @@ where
         cg,
         String::from("Incompatible types during assignation"),
         localizable,
+        *value,
     );
 }
 
@@ -202,5 +232,6 @@ where
         cg,
         String::from("Runtime type mismatch in comparison"),
         localizable,
+        *value1,
     );
 }

@@ -7,6 +7,9 @@ use crate::common::diagnostic::{ERROR_COLOR, HIGHLIGHT_ERROR_COLOR};
 
 /// Internal global constants
 pub enum InternalGlobalConst {
+    /// stdin FILE*
+    StdinFile,
+
     //
     // Printing strings
     //
@@ -78,6 +81,7 @@ macro_rules! internal_global_prefix {
 impl Into<&'static str> for InternalGlobalConst {
     fn into(self) -> &'static str {
         match self {
+            InternalGlobalConst::StdinFile => internal_global_prefix!("stdin"),
             InternalGlobalConst::NoneString => internal_global_prefix!("none_string"),
             InternalGlobalConst::TrueString => internal_global_prefix!("true_string"),
             InternalGlobalConst::FalseString => internal_global_prefix!("false_string"),
@@ -147,6 +151,14 @@ pub(super) use get_internal_global_const;
 
 /// Initialize internal global constants used by smolpp (eg. error strings)
 pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
+    // stdin FILE*
+    let file_ptr_type = cg.context.ptr_type(AddressSpace::default()); // Treat FILE* as i8*
+
+    let stdin_global =
+        cg.module
+            .add_global(file_ptr_type, None, InternalGlobalConst::StdinFile.into());
+    stdin_global.set_linkage(inkwell::module::Linkage::External);
+
     // Printing strings
     create_global_string(InternalGlobalConst::NoneString, "None", cg);
     create_global_string(InternalGlobalConst::TrueString, "True", cg);

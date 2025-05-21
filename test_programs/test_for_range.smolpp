@@ -1,5 +1,0 @@
-
-def foo(a):
-    return a
-
-b = foo

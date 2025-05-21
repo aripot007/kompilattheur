@@ -21,13 +21,15 @@ Les fonctions sont typées par leur type de retour, les paramètres et variables
 - Int
 - String
 - List
-- Range (Itérateur pour la fonction range)
 - Any
 - Weak
+- Range (Itérateur pour la fonction range)
 
 Chaque type est représenté sur 9 octets, dont 8 pour stocker la donnée et 1 pour stocker le type.
-Cela nous permet d'utiliser des types Any et Weak, afin de typer dynamiquement nos variables. 
-Le type Any perm
+Cela nous permet d'utiliser des types `Any` et `Weak`, afin de typer dynamiquement nos variables. 
+Le type `Any` permet de representer n'importe quel type, il est nécéssaire pour le contenu des listes. Un acces à une liste donne un type `Any`, les controles sémantiques seront fait dynamiquement plus tard à l'éxécution.
+Le type `Weak` permet de faire soit une intersection de types ou une union de types afin de pouvoir inférer un type à la compilation. Ex: deux variables faisant une opération "-" n'est possible qu'entre deux `Int`, le type final sera un `Int`. Si une fonction retourne soit un booléen soit un string `Weak(String, Bool)`, alors une opération "-" avec le retour de cette fonction donnera une erreur statique.
+Le type `Range` est un type interne. Il contient un `Int` et imite le fonctionnement d'un itérateur Python dans une boucle `for`et une fonction `list`.
 
 ## Schéma de traduction
 <!-- TODO: là je peux pas vraiment aider 💀, ce que j'ai fait est basique : "Il faut présenter les chémas de traduction (source smollpp vers LLVM-IR pour les structures intéréssantes : appel fonction, conditionnelles imbriquées, appels récursifs ?, ...)"-->

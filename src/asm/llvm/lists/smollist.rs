@@ -12,6 +12,32 @@ use inkwell::{
 
 pub(super) type SmolList<'ctx> = StructValue<'ctx>;
 
+pub static LIST_STRUCT_LEN_INDEX: u32 = 0;
+pub static LIST_STRUCT_CAPA_INDEX: u32 = 1;
+pub static LIST_STRUCT_ARRAY_INDEX: u32 = 2;
+
+macro_rules! printf_list_ptr {
+    ($cg: expr, $list_ptr: expr) => {{
+        use crate::asm::llvm::print::llvm_printf_custom;
+        use crate::asm::InternalFuctions;
+        let __list_struct = $cg
+            .builder
+            .build_load($cg.smolpp_types.list_type, $list_ptr, "__list_struct")?
+            .into_struct_value();
+        let __list_len = $cg.build_get_list_length(__list_struct)?;
+        let __list_cap = $cg.build_get_list_capacity(__list_struct)?;
+        let __list_ptr = $cg.build_get_list_array_ptr(__list_struct)?;
+        llvm_printf_custom!(
+            $cg,
+            "List {len=%d, capa=%d, array=%p}",
+            __list_len,
+            __list_cap,
+            __list_ptr
+        );
+    }};
+}
+pub(crate) use printf_list_ptr;
+
 impl<'ctx> CodeGen<'ctx> {
     /// Initialize the LLVM struct to represent lists
     ///
@@ -57,18 +83,41 @@ impl<'ctx> CodeGen<'ctx> {
             capacity,
             "list_heap_array",
         )?;
-        let list_struct = self.build_list_struct(capacity, array_ptr)?;
 
         // Store the structure in the heap
         let list_ptr = self
             .builder
             .build_malloc(self.smolpp_types.list_type, "list")?;
-        self.builder.build_store(list_ptr, list_struct)?;
+
+        let struct_len_ptr = self.builder.build_struct_gep(
+            self.smolpp_types.list_type,
+            list_ptr,
+            LIST_STRUCT_LEN_INDEX,
+            "struct_len_ptr",
+        )?;
+        let struct_capa_ptr = self.builder.build_struct_gep(
+            self.smolpp_types.list_type,
+            list_ptr,
+            LIST_STRUCT_CAPA_INDEX,
+            "struct_capa_ptr",
+        )?;
+        let struct_array_ptr = self.builder.build_struct_gep(
+            self.smolpp_types.list_type,
+            list_ptr,
+            LIST_STRUCT_ARRAY_INDEX,
+            "struct_array_ptr",
+        )?;
+
+        self.builder
+            .build_store(struct_len_ptr, self.context.i64_type().const_zero())?;
+        self.builder.build_store(struct_capa_ptr, capacity)?;
+        self.builder.build_store(struct_array_ptr, array_ptr)?;
+
         return Ok(list_ptr);
     }
 
     /// Create a list with the given capacity in the stack
-    fn build_list_struct(
+    pub fn build_list_struct(
         &self,
         capacity: IntValue<'ctx>,
         array_ptr: PointerValue<'ctx>,
@@ -77,15 +126,15 @@ impl<'ctx> CodeGen<'ctx> {
         let len = self.context.i64_type().const_zero();
         let with_len = self
             .builder
-            .build_insert_value(undef, len, 0, "with_len")?
+            .build_insert_value(undef, len, LIST_STRUCT_LEN_INDEX, "with_len")?
             .into_struct_value();
         let with_capa = self
             .builder
-            .build_insert_value(with_len, capacity, 1, "with_capa")?
+            .build_insert_value(with_len, capacity, LIST_STRUCT_CAPA_INDEX, "with_capa")?
             .into_struct_value();
         let full_struct = self
             .builder
-            .build_insert_value(with_capa, array_ptr, 2, "full_struct")?
+            .build_insert_value(with_capa, array_ptr, LIST_STRUCT_ARRAY_INDEX, "full_struct")?
             .into_struct_value();
 
         return Ok(full_struct);
@@ -161,28 +210,28 @@ impl<'ctx> CodeGen<'ctx> {
     ) -> Result<IntValue<'ctx>, LLVMCodegenError> {
         return Ok(self
             .builder
-            .build_extract_value(list, 0, "list_len")?
+            .build_extract_value(list, LIST_STRUCT_LEN_INDEX, "list_len")?
             .into_int_value());
     }
 
-    fn build_set_list_length(
+    pub fn build_set_list_length(
         &self,
         list: SmolList<'ctx>,
         len: IntValue<'ctx>,
     ) -> Result<SmolList<'ctx>, LLVMCodegenError> {
         return Ok(self
             .builder
-            .build_insert_value(list, len, 0, "set_list_len")?
+            .build_insert_value(list, len, LIST_STRUCT_LEN_INDEX, "set_list_len")?
             .into_struct_value());
     }
 
-    fn build_get_list_capacity(
+    pub fn build_get_list_capacity(
         &self,
         list: SmolList<'ctx>,
     ) -> Result<IntValue<'ctx>, LLVMCodegenError> {
         return Ok(self
             .builder
-            .build_extract_value(list, 1, "list_cap")?
+            .build_extract_value(list, LIST_STRUCT_CAPA_INDEX, "list_cap")?
             .into_int_value());
     }
 
@@ -193,7 +242,7 @@ impl<'ctx> CodeGen<'ctx> {
     ) -> Result<SmolList<'ctx>, LLVMCodegenError> {
         return Ok(self
             .builder
-            .build_insert_value(list, capacity, 1, "set_list_cap")?
+            .build_insert_value(list, capacity, LIST_STRUCT_CAPA_INDEX, "set_list_cap")?
             .into_struct_value());
     }
 
@@ -203,8 +252,29 @@ impl<'ctx> CodeGen<'ctx> {
     ) -> Result<PointerValue<'ctx>, LLVMCodegenError> {
         return Ok(self
             .builder
-            .build_extract_value(list, 2, "list_array_ptr")?
+            .build_extract_value(list, LIST_STRUCT_ARRAY_INDEX, "list_array_ptr")?
             .into_pointer_value());
+    }
+
+    pub fn build_get_list_array_ptr_from_ptr(
+        &self,
+        list_ptr: PointerValue<'ctx>,
+    ) -> Result<PointerValue<'ctx>, LLVMCodegenError> {
+        let ptr_ptr = self.builder.build_struct_gep(
+            self.smolpp_types.list_type,
+            list_ptr,
+            LIST_STRUCT_ARRAY_INDEX,
+            "list_array_ptr_ptr",
+        )?;
+        let ptr = self
+            .builder
+            .build_load(
+                self.context.ptr_type(AddressSpace::default()),
+                ptr_ptr,
+                "list_array_ptr",
+            )?
+            .into_pointer_value();
+        return Ok(ptr);
     }
 
     fn build_set_list_array_ptr(
@@ -214,7 +284,7 @@ impl<'ctx> CodeGen<'ctx> {
     ) -> Result<SmolList<'ctx>, LLVMCodegenError> {
         return Ok(self
             .builder
-            .build_insert_value(list, ptr, 2, "set_list_array_ptr")?
+            .build_insert_value(list, ptr, LIST_STRUCT_ARRAY_INDEX, "set_list_array_ptr")?
             .into_struct_value());
     }
 }

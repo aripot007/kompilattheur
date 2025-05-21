@@ -1,0 +1,8 @@
+
+a = [105,106,107]
+b = [108,109,110]
+
+println(a)
+println(b)
+
+println(a + b)

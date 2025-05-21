@@ -4,6 +4,7 @@ use crate::{
         get_internal_func,
         llvm::{
             assert_type::{assert_dyn_type, assert_type},
+            lists::llvm_build_list_concat,
             panic::smolpp_panic_with_unreachable,
             smolvar::SmolVar,
             LLVMCodegenError,
@@ -134,9 +135,7 @@ pub fn compute_add_list<'ctx>(
     y: SmolVar<'ctx>,
     cg: &mut CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    // TODO: implement concat list
-    let res = cg.context.i64_type().const_int(0, false);
-    return cg.create_variable(Type::Int, res);
+    return llvm_build_list_concat(x, y, cg);
 }
 
 pub fn compute_add_string<'ctx>(

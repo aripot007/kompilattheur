@@ -33,7 +33,7 @@ def merge_sort(arr):
         return arr
 
     # Divide the array into two halves
-    mid = len(arr) / 2
+    mid = len(arr) // 2
 
     # Sort each half
     left = []
@@ -63,7 +63,7 @@ sorted1 = merge_sort(unsorted1)
 print("Sorted array: ")
 println(sorted1)
 
-println()
+println("")
 
 # Test with already sorted array
 unsorted2 = [1, 2, 3, 4, 5]
@@ -74,7 +74,7 @@ sorted2 = merge_sort(unsorted2)
 print("After merge sort: ")
 println(sorted2)
 
-println()
+println("")
 
 # Test with reversed array
 unsorted3 = [5, 4, 3, 2, 1]
@@ -85,7 +85,7 @@ sorted3 = merge_sort(unsorted3)
 print("After merge sort: ")
 println(sorted3)
 
-println()
+println("")
 
 # Test with empty array
 unsorted4 = []

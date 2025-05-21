@@ -14,20 +14,21 @@ justify: true,
 )
 
 #set document(
-title: "Rapport d'investigation : Sujet 3",
-author: "Luca MANDRELLI",
+title: "Projet compilation partie 2",
+author: "URLI Aristide & PONSON--LISSALDE Romain & Luca MANDRELLI & JULLIEN Baptiste",
 date: auto,
 )
 
 #v(1fr)
 #align(center, text(24pt, weight: "bold")[
-Rapport d'investigation : Sujet 3
+Projet compilation partie 2
 ])
 #align(center, text(16pt)[
 #datetime.today().display("[day]/[month]/[year]")
 ])
 #align(center, text(12pt)[
-Luca MANDRELLI & Nathan LIENARD
+URLI Aristide & PONSON--LISSALDE Romain #linebreak()
+Luca MANDRELLI & JULLIEN Baptiste
 ])
 #v(1fr)
 
@@ -66,17 +67,18 @@ footer: context [
 
 La structure de la table des symboles suit ce schéma :
 
-#table(
-  columns: (auto, auto, auto, auto, auto),
-  stroke: 0.5pt,
-  inset: 5pt,
-  align: center,
-  [clé], [nom], [symbole], [type], [offset(octet)],
-  [1], [f], [Function], [Int], [-],
-  [2], [i], [Parameter], [Int], [-9],
-  [3], [foo], [Variable], [List], [0],
-  [4], [toto], [Variable], [String], [+9],
-)
+Par exemple, pour le code suivant :
+```python
+def f(i):
+    return i
+foo = [1, 2, 3]
+toto = "toto"
+```
+Nous aurons la table des symboles suivante :
+
+
+
+TODO: Expliquer la structure de données de la table des symboles avec un image d'exemple pour le code ci-dessus
 
 Les données sont enregistrées dans une Hashmap, avec en clé un entier représentatif de la variable, donné par la table des identifier.
 Les types de symboles sont : 
@@ -101,18 +103,50 @@ Le type `Any` permet de representer n'importe quel type, il est nécéssaire pou
 Le type `Weak` permet de faire soit une intersection de types ou une union de types afin de pouvoir inférer un type à la compilation. Ex: deux variables faisant une opération "-" n'est possible qu'entre deux `Int`, le type final sera un `Int`. Si une fonction retourne soit un booléen soit un string `Weak(String, Bool)`, alors une opération "-" avec le retour de cette fonction donnera une erreur statique.
 Le type `Range` est un type interne. Il contient un `Int` et imite le fonctionnement d'un itérateur Python dans une boucle `for`et une fonction `list`.
 
+#linebreak()
+#linebreak()
 = Contrôles sémantiques
 
+#linebreak()
 == statiques
 
 À la compilation, nous pouvons détecter un certain nombre d'erreur sémantique. Notamment, nous essayons d'inférer tous les types de chaque identifieur. Si 2 types sont incompatibles sur un binop nous renvoyons une erreur.
-exemple : addition de `Int` et de `List`
 
+Exemple : addition de `Int` et de `List`
+
+```python
+0 + [1, 2, 3] # Erreur
+```
+
+Exemple : addition de `Int` et de `Weak(String, List)`
+
+```python
+def f():
+    if 0:
+        return [1, 2, 3]
+    else:
+        return "toto"
+
+# f est typé Weak(String, List)
+0 + f() # Erreur car Int + Weak(String, List) incompatible
+```
+
+#linebreak()
 == dynamiques
 
 Pour certaine partie du programme, nous ne pouvons pas déviner à l'avance son comportement, nous avons donc ajouté un nombre certain de teste à l'éxécution.
 exemple : vérifier que les indices d'accès à une liste soit bien compris dans sa taille
 
+Exemple d'erreur dynamique :
+
+```python
+a = ["test"]
+# a[0] est typé Any
+a[0] + 1 # Erreur Dynamique String + Int
+```
+
+#linebreak()
+#linebreak()
 = Schéma de traduction
 
 ```python
@@ -125,6 +159,10 @@ def fibonacci(n): # 🟥
 
 fibonacci(5) # 🟩
 ```
+
+#linebreak()
+#line(length: 100%)
+#linebreak()
 
 ```llvm
 define i32 @main() {
@@ -187,25 +225,31 @@ merge8:                                           ; preds = %else7
 }
 ```
 
+#linebreak()
+#linebreak()
 = Gestion de Projet
 
+#linebreak()
 == Aristide
 *Typage* : typage statique (10h); typage dynamique (3h)\
 *Controle sémantique statiques* : verification des types statiques (5h);\
 *Controle sémantique statiques* : assertion des types pour les opérations (3h);\
 *Assembleur* : print de base (1h); print générique (1h); Variables (4h); Strings (3h); Listes (5h); arithmétique générique (2h); type Weak (17h); boucle while (1h); fonctions de la librairie standard (input) (2h); concaténation des strings et des listes (5h); comparaison des strings (1h);
 
+#linebreak()
 == Baptiste
 *Controles sémantiques dynamique* : comparaison generique (10h); "and", "or", "not", "if" -> cast n'importe quel type en booléen (2h); verif boucle for : list ou range (4h)\
 *Config LLVM* : configuration des librairies et recherches, choix entre inkwell et llvm-ir (20h); config du linker LLVM pour Linux (20h); adaptation du CLI pour compilation et execution (5h)\
 *Assembleur* : structure base : function main, setup initial (4h); expression (2h); loops : boucle "for" (12h); fonctions "and", "or", "not" (4h); fonction "len", "list", "range" (6h); creation d'une librairie standard (3h);
 
+#linebreak()
 == Luca 
 *TDS* : remplissage de la TDS depuis l'AST (7h); gestion des offsets (5h)\
 *Contrôle sémantiques statiques* : portée des variables (4h);\
 *Configuration LLVM* : adaptation config linker LLVM pour macOS en préservant config Linux (4h)\
 *Assembleur* : opérations binaire (3h); compairaison statiques (4h); fonctions internes : range et list (5h); affichage des erreurs pendant l'éxecution (2h); localisation des erreurs d'execution (5h);
 
+#linebreak()
 == Romain
 *TDS* : affinage des structures de données (2h);\
 *Contrôles sémantiques statiques* : verification des arguments et retours de fonctions (3h);\

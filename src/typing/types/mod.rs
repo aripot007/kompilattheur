@@ -69,12 +69,12 @@ impl Type {
     pub fn get_decalage(&self) -> usize {
         match self {
             Type::None => 0,
-            Type::Bool => WORD_SIZE * 2,
-            Type::Int => WORD_SIZE * 2,
-            Type::String => WORD_SIZE * 2,
-            Type::List => WORD_SIZE * 2,
-            Type::Range => WORD_SIZE * 2,
-            Type::Any => WORD_SIZE * 2,
+            Type::Bool => WORD_SIZE + 1,
+            Type::Int => WORD_SIZE + 1,
+            Type::String => WORD_SIZE + 1,
+            Type::List => WORD_SIZE + 1,
+            Type::Range => WORD_SIZE + 1,
+            Type::Any => WORD_SIZE + 1,
             Type::NTuple(_) => panic!("You shouldn't ask for the decalage of a NTuple"),
             Type::Function(_) => panic!("You shouldn't ask for the decalage of a Function"),
             Type::Weak(t) => t.get_decalage(),

@@ -2,7 +2,7 @@ use crate::{
     asm::{
         codegen::CodeGen,
         get_internal_func,
-        llvm::{assert_type, smolvar::SmolVar, LLVMCodegenError},
+        llvm::{assert_type::assert_type, smolvar::SmolVar, LLVMCodegenError},
         InternalFuctions,
     },
     ast::nodes::{Expression, UnOp},

@@ -27,6 +27,7 @@ impl Weak {
             Type::Int,
             Type::String,
             Type::List,
+            Type::Range,
         ]);
     }
 
@@ -110,7 +111,9 @@ impl Weak {
         let others: HashSet<Type> = others
             .iter()
             .filter(|t| match t {
-                Type::Bool | Type::Int | Type::List | Type::String | Type::None => true,
+                Type::Bool | Type::Int | Type::List | Type::String | Type::None | Type::Range => {
+                    true
+                }
                 _ => panic!("Cannot restrict weak with type {}", t),
             })
             .cloned()

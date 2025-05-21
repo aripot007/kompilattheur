@@ -12,13 +12,14 @@ use crate::{
     parser::Lexem,
 };
 
-use super::{Assign, Ast, AstNode, Conditional, Expression, For};
+use super::{Assign, Ast, AstNode, Conditional, Expression, For, While};
 
 pub enum Statement {
     Print(Expression),
     Println(Expression),
     Return(Expression),
     For(For),
+    While(While),
     Conditional(Conditional),
     Assign(Assign),
     Expr(Expression),
@@ -32,6 +33,7 @@ impl AstNode for Statement {
             Statement::Println(_) => "Statement::Println",
             Statement::Return(_) => "Statement::Return",
             Statement::For(_) => "Statement::For",
+            Statement::While(_) => "Statement::While",
             Statement::Conditional(_) => "Statement::Conditional",
             Statement::Assign(_) => "Statement::Assign",
             Statement::Expr(_) => "Statement::Expr",
@@ -71,6 +73,7 @@ impl From<Tree<FileElement<Lexem>>> for Statement {
                 return parse_simple(root.borrow().get_children()[0].clone())
             }
             Lexem::Terminal(Token::For) => return Statement::For(For::from(root)),
+            Lexem::Terminal(Token::While) => return Statement::While(While::from(root)),
             Lexem::Terminal(Token::If) => return Statement::Conditional(Conditional::from(root)),
             _ => return Statement::NotImplemented,
         }
@@ -343,6 +346,7 @@ impl Into<Tree<String>> for Statement {
                 return r;
             }
             Statement::For(for_loop) => return for_loop.into(),
+            Statement::While(while_loop) => return while_loop.into(),
             Statement::Conditional(cdt) => return cdt.into(),
             Statement::Assign(assign) => return assign.into(),
             Statement::Expr(expression) => return expression.into(),
@@ -358,6 +362,7 @@ impl Localizable for Statement {
             Statement::Println(expr) => expr.get_len(),
             Statement::Return(expr) => expr.get_len(),
             Statement::For(for_loop) => for_loop.get_len(),
+            Statement::While(while_loop) => while_loop.get_len(),
             Statement::Conditional(cdt) => cdt.get_len(),
             Statement::Assign(assign) => assign.get_len(),
             Statement::Expr(expression) => expression.get_len(),
@@ -371,6 +376,7 @@ impl Localizable for Statement {
             Statement::Println(expr) => expr.get_start_line(),
             Statement::Return(expr) => expr.get_start_line(),
             Statement::For(for_loop) => for_loop.get_start_line(),
+            Statement::While(while_loop) => while_loop.get_start_line(),
             Statement::Conditional(cdt) => cdt.get_start_line(),
             Statement::Assign(assign) => assign.get_start_line(),
             Statement::Expr(expression) => expression.get_start_line(),
@@ -384,6 +390,7 @@ impl Localizable for Statement {
             Statement::Println(expr) => expr.get_end_line(),
             Statement::Return(expr) => expr.get_end_line(),
             Statement::For(for_loop) => for_loop.get_end_line(),
+            Statement::While(while_loop) => while_loop.get_end_line(),
             Statement::Conditional(cdt) => cdt.get_end_line(),
             Statement::Assign(assign) => assign.get_end_line(),
             Statement::Expr(expression) => expression.get_end_line(),
@@ -397,6 +404,7 @@ impl Localizable for Statement {
             Statement::Println(expr) => expr.get_start_char(),
             Statement::Return(expr) => expr.get_start_char(),
             Statement::For(for_loop) => for_loop.get_start_char(),
+            Statement::While(while_loop) => while_loop.get_start_char(),
             Statement::Conditional(cdt) => cdt.get_start_char(),
             Statement::Assign(assign) => assign.get_start_char(),
             Statement::Expr(expression) => expression.get_start_char(),
@@ -410,6 +418,7 @@ impl Localizable for Statement {
             Statement::Println(expr) => expr.get_end_char(),
             Statement::Return(expr) => expr.get_end_char(),
             Statement::For(for_loop) => for_loop.get_end_char(),
+            Statement::While(while_loop) => while_loop.get_end_char(),
             Statement::Conditional(cdt) => cdt.get_end_char(),
             Statement::Assign(assign) => assign.get_end_char(),
             Statement::Expr(expression) => expression.get_end_char(),

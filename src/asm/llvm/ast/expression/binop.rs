@@ -2,7 +2,8 @@ use crate::{
     asm::{
         codegen::CodeGen,
         llvm::{
-            access_to_ptr, assert_dyn_type,
+            access_to_ptr,
+            assert_type::assert_dyn_type,
             ast::expression::{
                 compute_add_string, compute_div, compute_mod, compute_mult, compute_sub,
             },

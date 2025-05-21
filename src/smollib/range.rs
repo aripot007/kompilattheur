@@ -1,8 +1,8 @@
 use inkwell::{types::FunctionType, values::FunctionValue};
 
 use crate::{
-    asm::{codegen::CodeGen, llvm::assert_type, LLVMCodegenError},
-    common::localizable::{Localizable, LocalizationInfo},
+    asm::{codegen::CodeGen, llvm::assert_type::assert_type, LLVMCodegenError},
+    common::localizable::LocalizationInfo,
     typing::{Function, Type},
 };
 

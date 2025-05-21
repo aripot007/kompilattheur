@@ -6,9 +6,10 @@ use crate::{
 use super::{
     codegen::CodeGen,
     llvm::{
-        init_internal_add_generic_function, init_internal_bool_cast_function,
-        init_internal_compare_generic_function, init_internal_generic_print_function,
-        init_internal_list_cmp_function, pre_init_internal_list_cmp_function,
+        cast::init_internal_bool_cast_function,
+        init_internal_add_generic_function, init_internal_compare_generic_function,
+        lists::{init_internal_list_cmp_function, pre_init_internal_list_cmp_function},
+        print::init_internal_generic_print_function,
         strings::{init_internal_str_cmp_function, register_internal_str_cmp_function},
         LLVMCodegenError,
     },
@@ -27,10 +28,11 @@ pub enum InternalFuctions {
     StrCmp,
     BoolCast,
     GenericAdd,
-    // Syscalls
+    // Syscalls and libc
     Trap,
     Puts,
     Printf,
+    Getline,
 }
 
 /// Get an internal function registered in the CodeGen.
@@ -58,6 +60,7 @@ impl Into<&'static str> for InternalFuctions {
             InternalFuctions::StrCmp => internal_function_prefix!("str_cmp"),
             InternalFuctions::Puts => "puts",
             InternalFuctions::Printf => "printf",
+            InternalFuctions::Getline => "getline",
             InternalFuctions::Trap => "llvm.debugtrap",
             InternalFuctions::GenericCompareEQ => internal_function_prefix!("generic_compareEQ"),
             InternalFuctions::GenericCompareNEQ => internal_function_prefix!("generic_compareNEQ"),
@@ -87,6 +90,7 @@ pub(super) fn init_internal_functions<'ctx>(
     //
 
     let i32_type = cg.context.i32_type();
+    let i64_type = cg.context.i64_type();
     let ptr_type = cg.context.ptr_type(inkwell::AddressSpace::default());
 
     // puts
@@ -98,6 +102,12 @@ pub(super) fn init_internal_functions<'ctx>(
     let printf_type = i32_type.fn_type(&[ptr_type.into()], true);
     cg.module
         .add_function(InternalFuctions::Printf.into(), printf_type, None);
+
+    // getline
+    let getline_type =
+        i64_type.fn_type(&[ptr_type.into(), ptr_type.into(), ptr_type.into()], false);
+    cg.module
+        .add_function(InternalFuctions::Getline.into(), getline_type, None);
 
     // llvm.trap
     let trap_type = cg.context.void_type().fn_type(&[], false);

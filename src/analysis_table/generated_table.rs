@@ -13,121 +13,121 @@ use std::mem::{discriminant, Discriminant};
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
 pub enum NonTerminal {
-    ExprCmp,
-    Expr2,
-    ExprAdd2,
-    ExprAddNoAccess,
-    ExprNoIdentNoAccess,
-    ExprAdd2NoAccess,
-    Suite,
-    Stmt,
-    ExprAnd2NoAccess,
-    ExprNegNoAccess,
-    ExprMultNoIdentNoAccess,
+    ExprNotNoAccess,
     ExprAccess2,
-    ExprAccess2Eq,
-    Const,
-    ExprList,
-    OptStmts,
-    ExprMult2,
-    FactorIdent,
+    ExprListExpr,
     IdentList,
+    File,
     IdentListSuite,
     IdentListIdent,
-    Factor,
-    SimpleStmt,
-    StmtIf,
-    Expr,
-    NewlineOpt,
-    ExprNotNoAccess,
-    ExprAddNoIdentNoAccess,
-    FactorNoIdent,
-    ExprAnd2,
+    ExprAdd2,
     ExprCmpNoAccess,
-    ExprNotNoIdentNoAccess,
-    Def,
-    SimpleStmtExpr,
-    ExprMultNoAccess,
-    ExprNoIdentNoAccess2,
-    ExprAnd,
-    ExprListExpr,
-    Defs,
-    SimpleStateIdent,
-    ExprMult,
-    ExprAccess,
-    Expr2NoAccess,
-    ExprMult2NoAccess,
+    StmtIf,
+    Stmt,
+    ExprAnd2NoAccess,
     ExprListSuite,
-    File,
-    ExprCmp2NoAccess,
-    ExprAdd,
-    ExprAndNoIdentNoAccess,
-    ExprNegNoIdentNoAccess,
-    ExprCmpNoIdentNoAccess,
-    ExprAndNoAccess,
+    ExprMult2,
+    Expr2NoAccess,
+    SimpleStmtExpr,
+    Def,
     ExprNeg,
-    ExprCmp2,
     ExprNot,
+    Expr,
+    ExprCmp2NoAccess,
+    ExprNegNoAccess,
+    Factor,
+    ExprCmpNoIdentNoAccess,
+    ExprAddNoAccess,
+    Expr2,
+    ExprNoIdentNoAccess2,
+    ExprNotNoIdentNoAccess,
+    NewlineOpt,
+    ExprAndNoAccess,
+    ExprCmp,
+    ExprMult2NoAccess,
+    FactorIdent,
+    SimpleStateIdent,
+    ExprAnd,
+    ExprAndNoIdentNoAccess,
+    SimpleStmt,
+    ExprAnd2,
+    ExprAdd,
+    OptStmts,
+    ExprAddNoIdentNoAccess,
+    ExprMultNoAccess,
+    Defs,
+    ExprAdd2NoAccess,
+    ExprMultNoIdentNoAccess,
+    ExprNegNoIdentNoAccess,
+    ExprAccess2Eq,
+    ExprCmp2,
+    Suite,
+    FactorNoIdent,
+    Const,
+    ExprList,
+    ExprAccess,
+    ExprMult,
+    ExprNoIdentNoAccess,
 }
 
 impl Display for NonTerminal {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            NonTerminal::ExprCmp => write!(f, "<expr_cmp>"),
-            NonTerminal::Expr2 => write!(f, "<expr2>"),
-            NonTerminal::ExprAdd2 => write!(f, "<expr_add2>"),
-            NonTerminal::ExprAddNoAccess => write!(f, "<expr_add_no_access>"),
-            NonTerminal::ExprNoIdentNoAccess => write!(f, "<expr_no_ident_no_access>"),
-            NonTerminal::ExprAdd2NoAccess => write!(f, "<expr_add2_no_access>"),
-            NonTerminal::Suite => write!(f, "<suite>"),
-            NonTerminal::Stmt => write!(f, "<stmt>"),
-            NonTerminal::ExprAnd2NoAccess => write!(f, "<expr_and2_no_access>"),
-            NonTerminal::ExprNegNoAccess => write!(f, "<expr_neg_no_access>"),
-            NonTerminal::ExprMultNoIdentNoAccess => write!(f, "<expr_mult_no_ident_no_access>"),
+            NonTerminal::ExprNotNoAccess => write!(f, "<expr_not_no_access>"),
             NonTerminal::ExprAccess2 => write!(f, "<expr_access2>"),
-            NonTerminal::ExprAccess2Eq => write!(f, "<expr_access2_eq>"),
-            NonTerminal::Const => write!(f, "<const>"),
-            NonTerminal::ExprList => write!(f, "<expr_list>"),
-            NonTerminal::OptStmts => write!(f, "<opt_stmts>"),
-            NonTerminal::ExprMult2 => write!(f, "<expr_mult2>"),
-            NonTerminal::FactorIdent => write!(f, "<factor_ident>"),
+            NonTerminal::ExprListExpr => write!(f, "<expr_list_expr>"),
             NonTerminal::IdentList => write!(f, "<ident_list>"),
+            NonTerminal::File => write!(f, "<file>"),
             NonTerminal::IdentListSuite => write!(f, "<ident_list_suite>"),
             NonTerminal::IdentListIdent => write!(f, "<ident_list_ident>"),
-            NonTerminal::Factor => write!(f, "<factor>"),
-            NonTerminal::SimpleStmt => write!(f, "<simple_stmt>"),
-            NonTerminal::StmtIf => write!(f, "<stmt_if>"),
-            NonTerminal::Expr => write!(f, "<expr>"),
-            NonTerminal::NewlineOpt => write!(f, "<newline_opt>"),
-            NonTerminal::ExprNotNoAccess => write!(f, "<expr_not_no_access>"),
-            NonTerminal::ExprAddNoIdentNoAccess => write!(f, "<expr_add_no_ident_no_access>"),
-            NonTerminal::FactorNoIdent => write!(f, "<factor_no_ident>"),
-            NonTerminal::ExprAnd2 => write!(f, "<expr_and2>"),
+            NonTerminal::ExprAdd2 => write!(f, "<expr_add2>"),
             NonTerminal::ExprCmpNoAccess => write!(f, "<expr_cmp_no_access>"),
-            NonTerminal::ExprNotNoIdentNoAccess => write!(f, "<expr_not_no_ident_no_access>"),
-            NonTerminal::Def => write!(f, "<def>"),
-            NonTerminal::SimpleStmtExpr => write!(f, "<simple_stmt_expr>"),
-            NonTerminal::ExprMultNoAccess => write!(f, "<expr_mult_no_access>"),
-            NonTerminal::ExprNoIdentNoAccess2 => write!(f, "<expr_no_ident_no_access2>"),
-            NonTerminal::ExprAnd => write!(f, "<expr_and>"),
-            NonTerminal::ExprListExpr => write!(f, "<expr_list_expr>"),
-            NonTerminal::Defs => write!(f, "<defs>"),
-            NonTerminal::SimpleStateIdent => write!(f, "<simple_state_ident>"),
-            NonTerminal::ExprMult => write!(f, "<expr_mult>"),
-            NonTerminal::ExprAccess => write!(f, "<expr_access>"),
-            NonTerminal::Expr2NoAccess => write!(f, "<expr2_no_access>"),
-            NonTerminal::ExprMult2NoAccess => write!(f, "<expr_mult2_no_access>"),
+            NonTerminal::StmtIf => write!(f, "<stmt_if>"),
+            NonTerminal::Stmt => write!(f, "<stmt>"),
+            NonTerminal::ExprAnd2NoAccess => write!(f, "<expr_and2_no_access>"),
             NonTerminal::ExprListSuite => write!(f, "<expr_list_suite>"),
-            NonTerminal::File => write!(f, "<file>"),
-            NonTerminal::ExprCmp2NoAccess => write!(f, "<expr_cmp2_no_access>"),
-            NonTerminal::ExprAdd => write!(f, "<expr_add>"),
-            NonTerminal::ExprAndNoIdentNoAccess => write!(f, "<expr_and_no_ident_no_access>"),
-            NonTerminal::ExprNegNoIdentNoAccess => write!(f, "<expr_neg_no_ident_no_access>"),
-            NonTerminal::ExprCmpNoIdentNoAccess => write!(f, "<expr_cmp_no_ident_no_access>"),
-            NonTerminal::ExprAndNoAccess => write!(f, "<expr_and_no_access>"),
+            NonTerminal::ExprMult2 => write!(f, "<expr_mult2>"),
+            NonTerminal::Expr2NoAccess => write!(f, "<expr2_no_access>"),
+            NonTerminal::SimpleStmtExpr => write!(f, "<simple_stmt_expr>"),
+            NonTerminal::Def => write!(f, "<def>"),
             NonTerminal::ExprNeg => write!(f, "<expr_neg>"),
-            NonTerminal::ExprCmp2 => write!(f, "<expr_cmp2>"),
             NonTerminal::ExprNot => write!(f, "<expr_not>"),
+            NonTerminal::Expr => write!(f, "<expr>"),
+            NonTerminal::ExprCmp2NoAccess => write!(f, "<expr_cmp2_no_access>"),
+            NonTerminal::ExprNegNoAccess => write!(f, "<expr_neg_no_access>"),
+            NonTerminal::Factor => write!(f, "<factor>"),
+            NonTerminal::ExprCmpNoIdentNoAccess => write!(f, "<expr_cmp_no_ident_no_access>"),
+            NonTerminal::ExprAddNoAccess => write!(f, "<expr_add_no_access>"),
+            NonTerminal::Expr2 => write!(f, "<expr2>"),
+            NonTerminal::ExprNoIdentNoAccess2 => write!(f, "<expr_no_ident_no_access2>"),
+            NonTerminal::ExprNotNoIdentNoAccess => write!(f, "<expr_not_no_ident_no_access>"),
+            NonTerminal::NewlineOpt => write!(f, "<newline_opt>"),
+            NonTerminal::ExprAndNoAccess => write!(f, "<expr_and_no_access>"),
+            NonTerminal::ExprCmp => write!(f, "<expr_cmp>"),
+            NonTerminal::ExprMult2NoAccess => write!(f, "<expr_mult2_no_access>"),
+            NonTerminal::FactorIdent => write!(f, "<factor_ident>"),
+            NonTerminal::SimpleStateIdent => write!(f, "<simple_state_ident>"),
+            NonTerminal::ExprAnd => write!(f, "<expr_and>"),
+            NonTerminal::ExprAndNoIdentNoAccess => write!(f, "<expr_and_no_ident_no_access>"),
+            NonTerminal::SimpleStmt => write!(f, "<simple_stmt>"),
+            NonTerminal::ExprAnd2 => write!(f, "<expr_and2>"),
+            NonTerminal::ExprAdd => write!(f, "<expr_add>"),
+            NonTerminal::OptStmts => write!(f, "<opt_stmts>"),
+            NonTerminal::ExprAddNoIdentNoAccess => write!(f, "<expr_add_no_ident_no_access>"),
+            NonTerminal::ExprMultNoAccess => write!(f, "<expr_mult_no_access>"),
+            NonTerminal::Defs => write!(f, "<defs>"),
+            NonTerminal::ExprAdd2NoAccess => write!(f, "<expr_add2_no_access>"),
+            NonTerminal::ExprMultNoIdentNoAccess => write!(f, "<expr_mult_no_ident_no_access>"),
+            NonTerminal::ExprNegNoIdentNoAccess => write!(f, "<expr_neg_no_ident_no_access>"),
+            NonTerminal::ExprAccess2Eq => write!(f, "<expr_access2_eq>"),
+            NonTerminal::ExprCmp2 => write!(f, "<expr_cmp2>"),
+            NonTerminal::Suite => write!(f, "<suite>"),
+            NonTerminal::FactorNoIdent => write!(f, "<factor_no_ident>"),
+            NonTerminal::Const => write!(f, "<const>"),
+            NonTerminal::ExprList => write!(f, "<expr_list>"),
+            NonTerminal::ExprAccess => write!(f, "<expr_access>"),
+            NonTerminal::ExprMult => write!(f, "<expr_mult>"),
+            NonTerminal::ExprNoIdentNoAccess => write!(f, "<expr_no_ident_no_access>"),
         }
     }
 }
@@ -135,61 +135,61 @@ impl Display for NonTerminal {
 impl From<String> for NonTerminal {
     fn from(value: String) -> Self {
         match value.as_str() {
-            "<expr_cmp>" => NonTerminal::ExprCmp,
-            "<expr2>" => NonTerminal::Expr2,
-            "<expr_add2>" => NonTerminal::ExprAdd2,
-            "<expr_add_no_access>" => NonTerminal::ExprAddNoAccess,
-            "<expr_no_ident_no_access>" => NonTerminal::ExprNoIdentNoAccess,
-            "<expr_add2_no_access>" => NonTerminal::ExprAdd2NoAccess,
-            "<suite>" => NonTerminal::Suite,
-            "<stmt>" => NonTerminal::Stmt,
-            "<expr_and2_no_access>" => NonTerminal::ExprAnd2NoAccess,
-            "<expr_neg_no_access>" => NonTerminal::ExprNegNoAccess,
-            "<expr_mult_no_ident_no_access>" => NonTerminal::ExprMultNoIdentNoAccess,
+            "<expr_not_no_access>" => NonTerminal::ExprNotNoAccess,
             "<expr_access2>" => NonTerminal::ExprAccess2,
-            "<expr_access2_eq>" => NonTerminal::ExprAccess2Eq,
-            "<const>" => NonTerminal::Const,
-            "<expr_list>" => NonTerminal::ExprList,
-            "<opt_stmts>" => NonTerminal::OptStmts,
-            "<expr_mult2>" => NonTerminal::ExprMult2,
-            "<factor_ident>" => NonTerminal::FactorIdent,
+            "<expr_list_expr>" => NonTerminal::ExprListExpr,
             "<ident_list>" => NonTerminal::IdentList,
+            "<file>" => NonTerminal::File,
             "<ident_list_suite>" => NonTerminal::IdentListSuite,
             "<ident_list_ident>" => NonTerminal::IdentListIdent,
-            "<factor>" => NonTerminal::Factor,
-            "<simple_stmt>" => NonTerminal::SimpleStmt,
-            "<stmt_if>" => NonTerminal::StmtIf,
-            "<expr>" => NonTerminal::Expr,
-            "<newline_opt>" => NonTerminal::NewlineOpt,
-            "<expr_not_no_access>" => NonTerminal::ExprNotNoAccess,
-            "<expr_add_no_ident_no_access>" => NonTerminal::ExprAddNoIdentNoAccess,
-            "<factor_no_ident>" => NonTerminal::FactorNoIdent,
-            "<expr_and2>" => NonTerminal::ExprAnd2,
+            "<expr_add2>" => NonTerminal::ExprAdd2,
             "<expr_cmp_no_access>" => NonTerminal::ExprCmpNoAccess,
-            "<expr_not_no_ident_no_access>" => NonTerminal::ExprNotNoIdentNoAccess,
-            "<def>" => NonTerminal::Def,
-            "<simple_stmt_expr>" => NonTerminal::SimpleStmtExpr,
-            "<expr_mult_no_access>" => NonTerminal::ExprMultNoAccess,
-            "<expr_no_ident_no_access2>" => NonTerminal::ExprNoIdentNoAccess2,
-            "<expr_and>" => NonTerminal::ExprAnd,
-            "<expr_list_expr>" => NonTerminal::ExprListExpr,
-            "<defs>" => NonTerminal::Defs,
-            "<simple_state_ident>" => NonTerminal::SimpleStateIdent,
-            "<expr_mult>" => NonTerminal::ExprMult,
-            "<expr_access>" => NonTerminal::ExprAccess,
-            "<expr2_no_access>" => NonTerminal::Expr2NoAccess,
-            "<expr_mult2_no_access>" => NonTerminal::ExprMult2NoAccess,
+            "<stmt_if>" => NonTerminal::StmtIf,
+            "<stmt>" => NonTerminal::Stmt,
+            "<expr_and2_no_access>" => NonTerminal::ExprAnd2NoAccess,
             "<expr_list_suite>" => NonTerminal::ExprListSuite,
-            "<file>" => NonTerminal::File,
-            "<expr_cmp2_no_access>" => NonTerminal::ExprCmp2NoAccess,
-            "<expr_add>" => NonTerminal::ExprAdd,
-            "<expr_and_no_ident_no_access>" => NonTerminal::ExprAndNoIdentNoAccess,
-            "<expr_neg_no_ident_no_access>" => NonTerminal::ExprNegNoIdentNoAccess,
-            "<expr_cmp_no_ident_no_access>" => NonTerminal::ExprCmpNoIdentNoAccess,
-            "<expr_and_no_access>" => NonTerminal::ExprAndNoAccess,
+            "<expr_mult2>" => NonTerminal::ExprMult2,
+            "<expr2_no_access>" => NonTerminal::Expr2NoAccess,
+            "<simple_stmt_expr>" => NonTerminal::SimpleStmtExpr,
+            "<def>" => NonTerminal::Def,
             "<expr_neg>" => NonTerminal::ExprNeg,
-            "<expr_cmp2>" => NonTerminal::ExprCmp2,
             "<expr_not>" => NonTerminal::ExprNot,
+            "<expr>" => NonTerminal::Expr,
+            "<expr_cmp2_no_access>" => NonTerminal::ExprCmp2NoAccess,
+            "<expr_neg_no_access>" => NonTerminal::ExprNegNoAccess,
+            "<factor>" => NonTerminal::Factor,
+            "<expr_cmp_no_ident_no_access>" => NonTerminal::ExprCmpNoIdentNoAccess,
+            "<expr_add_no_access>" => NonTerminal::ExprAddNoAccess,
+            "<expr2>" => NonTerminal::Expr2,
+            "<expr_no_ident_no_access2>" => NonTerminal::ExprNoIdentNoAccess2,
+            "<expr_not_no_ident_no_access>" => NonTerminal::ExprNotNoIdentNoAccess,
+            "<newline_opt>" => NonTerminal::NewlineOpt,
+            "<expr_and_no_access>" => NonTerminal::ExprAndNoAccess,
+            "<expr_cmp>" => NonTerminal::ExprCmp,
+            "<expr_mult2_no_access>" => NonTerminal::ExprMult2NoAccess,
+            "<factor_ident>" => NonTerminal::FactorIdent,
+            "<simple_state_ident>" => NonTerminal::SimpleStateIdent,
+            "<expr_and>" => NonTerminal::ExprAnd,
+            "<expr_and_no_ident_no_access>" => NonTerminal::ExprAndNoIdentNoAccess,
+            "<simple_stmt>" => NonTerminal::SimpleStmt,
+            "<expr_and2>" => NonTerminal::ExprAnd2,
+            "<expr_add>" => NonTerminal::ExprAdd,
+            "<opt_stmts>" => NonTerminal::OptStmts,
+            "<expr_add_no_ident_no_access>" => NonTerminal::ExprAddNoIdentNoAccess,
+            "<expr_mult_no_access>" => NonTerminal::ExprMultNoAccess,
+            "<defs>" => NonTerminal::Defs,
+            "<expr_add2_no_access>" => NonTerminal::ExprAdd2NoAccess,
+            "<expr_mult_no_ident_no_access>" => NonTerminal::ExprMultNoIdentNoAccess,
+            "<expr_neg_no_ident_no_access>" => NonTerminal::ExprNegNoIdentNoAccess,
+            "<expr_access2_eq>" => NonTerminal::ExprAccess2Eq,
+            "<expr_cmp2>" => NonTerminal::ExprCmp2,
+            "<suite>" => NonTerminal::Suite,
+            "<factor_no_ident>" => NonTerminal::FactorNoIdent,
+            "<const>" => NonTerminal::Const,
+            "<expr_list>" => NonTerminal::ExprList,
+            "<expr_access>" => NonTerminal::ExprAccess,
+            "<expr_mult>" => NonTerminal::ExprMult,
+            "<expr_no_ident_no_access>" => NonTerminal::ExprNoIdentNoAccess,
             name => panic!("Invalid non terminal {}", name),
         }
     }
@@ -197,77 +197,113 @@ impl From<String> for NonTerminal {
 
 pub fn get_analysis_table() -> AnalysisTable {
     let used_non_terminals: HashSet<NonTerminal> = HashSet::from([
-        NonTerminal::ExprCmp,
-        NonTerminal::Expr2,
-        NonTerminal::ExprAdd2,
-        NonTerminal::ExprAddNoAccess,
-        NonTerminal::ExprNoIdentNoAccess,
-        NonTerminal::ExprAdd2NoAccess,
-        NonTerminal::Suite,
-        NonTerminal::Stmt,
-        NonTerminal::ExprAnd2NoAccess,
-        NonTerminal::ExprNegNoAccess,
-        NonTerminal::ExprMultNoIdentNoAccess,
+        NonTerminal::ExprNotNoAccess,
         NonTerminal::ExprAccess2,
-        NonTerminal::ExprAccess2Eq,
-        NonTerminal::Const,
-        NonTerminal::ExprList,
-        NonTerminal::OptStmts,
-        NonTerminal::ExprMult2,
-        NonTerminal::FactorIdent,
+        NonTerminal::ExprListExpr,
         NonTerminal::IdentList,
+        NonTerminal::File,
         NonTerminal::IdentListSuite,
         NonTerminal::IdentListIdent,
-        NonTerminal::Factor,
-        NonTerminal::SimpleStmt,
-        NonTerminal::StmtIf,
-        NonTerminal::Expr,
-        NonTerminal::NewlineOpt,
-        NonTerminal::ExprNotNoAccess,
-        NonTerminal::ExprAddNoIdentNoAccess,
-        NonTerminal::FactorNoIdent,
-        NonTerminal::ExprAnd2,
+        NonTerminal::ExprAdd2,
         NonTerminal::ExprCmpNoAccess,
-        NonTerminal::ExprNotNoIdentNoAccess,
-        NonTerminal::Def,
-        NonTerminal::SimpleStmtExpr,
-        NonTerminal::ExprMultNoAccess,
-        NonTerminal::ExprNoIdentNoAccess2,
-        NonTerminal::ExprAnd,
-        NonTerminal::ExprListExpr,
-        NonTerminal::Defs,
-        NonTerminal::SimpleStateIdent,
-        NonTerminal::ExprMult,
-        NonTerminal::ExprAccess,
-        NonTerminal::Expr2NoAccess,
-        NonTerminal::ExprMult2NoAccess,
+        NonTerminal::StmtIf,
+        NonTerminal::Stmt,
+        NonTerminal::ExprAnd2NoAccess,
         NonTerminal::ExprListSuite,
-        NonTerminal::File,
-        NonTerminal::ExprCmp2NoAccess,
-        NonTerminal::ExprAdd,
-        NonTerminal::ExprAndNoIdentNoAccess,
-        NonTerminal::ExprNegNoIdentNoAccess,
-        NonTerminal::ExprCmpNoIdentNoAccess,
-        NonTerminal::ExprAndNoAccess,
+        NonTerminal::ExprMult2,
+        NonTerminal::Expr2NoAccess,
+        NonTerminal::SimpleStmtExpr,
+        NonTerminal::Def,
         NonTerminal::ExprNeg,
-        NonTerminal::ExprCmp2,
         NonTerminal::ExprNot,
+        NonTerminal::Expr,
+        NonTerminal::ExprCmp2NoAccess,
+        NonTerminal::ExprNegNoAccess,
+        NonTerminal::Factor,
+        NonTerminal::ExprCmpNoIdentNoAccess,
+        NonTerminal::ExprAddNoAccess,
+        NonTerminal::Expr2,
+        NonTerminal::ExprNoIdentNoAccess2,
+        NonTerminal::ExprNotNoIdentNoAccess,
+        NonTerminal::NewlineOpt,
+        NonTerminal::ExprAndNoAccess,
+        NonTerminal::ExprCmp,
+        NonTerminal::ExprMult2NoAccess,
+        NonTerminal::FactorIdent,
+        NonTerminal::SimpleStateIdent,
+        NonTerminal::ExprAnd,
+        NonTerminal::ExprAndNoIdentNoAccess,
+        NonTerminal::SimpleStmt,
+        NonTerminal::ExprAnd2,
+        NonTerminal::ExprAdd,
+        NonTerminal::OptStmts,
+        NonTerminal::ExprAddNoIdentNoAccess,
+        NonTerminal::ExprMultNoAccess,
+        NonTerminal::Defs,
+        NonTerminal::ExprAdd2NoAccess,
+        NonTerminal::ExprMultNoIdentNoAccess,
+        NonTerminal::ExprNegNoIdentNoAccess,
+        NonTerminal::ExprAccess2Eq,
+        NonTerminal::ExprCmp2,
+        NonTerminal::Suite,
+        NonTerminal::FactorNoIdent,
+        NonTerminal::Const,
+        NonTerminal::ExprList,
+        NonTerminal::ExprAccess,
+        NonTerminal::ExprMult,
+        NonTerminal::ExprNoIdentNoAccess,
     ]);
 
     let tokens_discriminants: HashMap<Discriminant<Token>, Token> = HashMap::from([
-        (discriminant(&Token::Sub), Token::Sub),
-        (discriminant(&Token::And), Token::And),
+        (discriminant(&Token::Add), Token::Add),
+        (discriminant(&Token::LessEq), Token::LessEq),
+        (
+            discriminant(&Token::Integer(NumToken { value: 0 })),
+            Token::Integer(NumToken { value: 0 }),
+        ),
+        (discriminant(&Token::GreaterEq), Token::GreaterEq),
         (discriminant(&Token::Print), Token::Print),
         (discriminant(&Token::Greater), Token::Greater),
-        (discriminant(&Token::Add), Token::Add),
-        (discriminant(&Token::None), Token::None),
-        (discriminant(&Token::EOF), Token::EOF),
-        (discriminant(&Token::GreaterEq), Token::GreaterEq),
+        (
+            discriminant(&Token::CloseParenthesis),
+            Token::CloseParenthesis,
+        ),
+        (discriminant(&Token::Println), Token::Println),
+        (
+            discriminant(&Token::OpenParenthesis),
+            Token::OpenParenthesis,
+        ),
+        (discriminant(&Token::Def), Token::Def),
         (discriminant(&Token::If), Token::If),
+        (discriminant(&Token::Not), Token::Not),
         (discriminant(&Token::Mult), Token::Mult),
-        (discriminant(&Token::Equal), Token::Equal),
+        (discriminant(&Token::CloseBracket), Token::CloseBracket),
+        (discriminant(&Token::Or), Token::Or),
         (discriminant(&Token::Div), Token::Div),
+        (discriminant(&Token::None), Token::None),
+        (discriminant(&Token::Sub), Token::Sub),
+        (discriminant(&Token::Mod), Token::Mod),
+        (discriminant(&Token::NotEqual), Token::NotEqual),
+        (discriminant(&Token::Else), Token::Else),
+        (discriminant(&Token::Equal), Token::Equal),
+        (discriminant(&Token::Return), Token::Return),
+        (discriminant(&Token::End), Token::End),
+        (discriminant(&Token::Less), Token::Less),
+        (discriminant(&Token::While), Token::While),
+        (discriminant(&Token::Newline), Token::Newline),
+        (discriminant(&Token::And), Token::And),
+        (discriminant(&Token::True), Token::True),
+        (discriminant(&Token::OpenBracket), Token::OpenBracket),
+        (
+            discriminant(&Token::String(String::from(""))),
+            Token::String(String::from("")),
+        ),
+        (discriminant(&Token::Sep), Token::Sep),
+        (discriminant(&Token::False), Token::False),
+        (discriminant(&Token::Assign), Token::Assign),
         (discriminant(&Token::For), Token::For),
+        (discriminant(&Token::EOF), Token::EOF),
+        (discriminant(&Token::Comma), Token::Comma),
         (
             discriminant(&Token::Identifier(IdToken {
                 id: 0,
@@ -278,712 +314,71 @@ pub fn get_analysis_table() -> AnalysisTable {
                 name: String::new(),
             }),
         ),
-        (discriminant(&Token::Comma), Token::Comma),
-        (discriminant(&Token::Mod), Token::Mod),
-        (
-            discriminant(&Token::Integer(NumToken { value: 0 })),
-            Token::Integer(NumToken { value: 0 }),
-        ),
-        (discriminant(&Token::Not), Token::Not),
-        (discriminant(&Token::Less), Token::Less),
-        (discriminant(&Token::Return), Token::Return),
-        (discriminant(&Token::NotEqual), Token::NotEqual),
-        (discriminant(&Token::Else), Token::Else),
-        (discriminant(&Token::Sep), Token::Sep),
-        (discriminant(&Token::Assign), Token::Assign),
-        (discriminant(&Token::OpenBracket), Token::OpenBracket),
-        (discriminant(&Token::False), Token::False),
-        (discriminant(&Token::LessEq), Token::LessEq),
-        (discriminant(&Token::Newline), Token::Newline),
-        (discriminant(&Token::Or), Token::Or),
-        (discriminant(&Token::End), Token::End),
-        (
-            discriminant(&Token::CloseParenthesis),
-            Token::CloseParenthesis,
-        ),
-        (discriminant(&Token::CloseBracket), Token::CloseBracket),
-        (
-            discriminant(&Token::OpenParenthesis),
-            Token::OpenParenthesis,
-        ),
-        (discriminant(&Token::True), Token::True),
-        (discriminant(&Token::Println), Token::Println),
-        (discriminant(&Token::Def), Token::Def),
-        (
-            discriminant(&Token::String(String::from(""))),
-            Token::String(String::from("")),
-        ),
     ]);
 
     let table: HashMap<NonTerminal, HashMap<Discriminant<Token>, Vec<Lexem>>> = HashMap::from([
         (
-            NonTerminal::ExprCmp,
+            NonTerminal::ExprNotNoAccess,
             HashMap::from([
                 (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAdd),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
-                    ],
+                    discriminant(&Token::True),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess)],
                 ),
                 (
                     discriminant(&Token::Identifier(IdToken {
                         id: 0,
                         name: String::new(),
                     })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAdd),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAdd),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAdd),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAdd),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAdd),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAdd),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAdd),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
-                    ],
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess)],
                 ),
                 (
                     discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAdd),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::Expr2,
-            HashMap::from([
-                (discriminant(&Token::Newline), vec![]),
-                (discriminant(&Token::Sep), vec![]),
-                (discriminant(&Token::CloseParenthesis), vec![]),
-                (discriminant(&Token::CloseBracket), vec![]),
-                (discriminant(&Token::Comma), vec![]),
-                (
-                    discriminant(&Token::Or),
-                    vec![
-                        Lexem::Terminal(Token::Or),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd),
-                        Lexem::NonTerminal(NonTerminal::Expr2),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::ExprAdd2,
-            HashMap::from([
-                (discriminant(&Token::CloseBracket), vec![]),
-                (discriminant(&Token::GreaterEq), vec![]),
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::Terminal(Token::Sub),
-                        Lexem::NonTerminal(NonTerminal::ExprMult),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2),
-                    ],
-                ),
-                (discriminant(&Token::Equal), vec![]),
-                (
-                    discriminant(&Token::Add),
-                    vec![
-                        Lexem::Terminal(Token::Add),
-                        Lexem::NonTerminal(NonTerminal::ExprMult),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2),
-                    ],
-                ),
-                (discriminant(&Token::And), vec![]),
-                (discriminant(&Token::Sep), vec![]),
-                (discriminant(&Token::CloseParenthesis), vec![]),
-                (discriminant(&Token::Or), vec![]),
-                (discriminant(&Token::Comma), vec![]),
-                (discriminant(&Token::Less), vec![]),
-                (discriminant(&Token::LessEq), vec![]),
-                (discriminant(&Token::Newline), vec![]),
-                (discriminant(&Token::NotEqual), vec![]),
-                (discriminant(&Token::Greater), vec![]),
-            ]),
-        ),
-        (
-            NonTerminal::ExprAddNoAccess,
-            HashMap::from([
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::ExprNoIdentNoAccess,
-            HashMap::from([
-                (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAndNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAndNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAndNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAndNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAndNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAndNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAndNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAndNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
-                    ],
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess)],
                 ),
                 (
                     discriminant(&Token::Not),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAndNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::ExprAdd2NoAccess,
-            HashMap::from([
-                (discriminant(&Token::Equal), vec![]),
-                (
-                    discriminant(&Token::Add),
-                    vec![
-                        Lexem::Terminal(Token::Add),
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::Terminal(Token::Sub),
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-                (discriminant(&Token::Or), vec![]),
-                (discriminant(&Token::OpenBracket), vec![]),
-                (discriminant(&Token::LessEq), vec![]),
-                (discriminant(&Token::NotEqual), vec![]),
-                (discriminant(&Token::Less), vec![]),
-                (discriminant(&Token::And), vec![]),
-                (discriminant(&Token::Newline), vec![]),
-                (discriminant(&Token::Greater), vec![]),
-                (discriminant(&Token::GreaterEq), vec![]),
-            ]),
-        ),
-        (
-            NonTerminal::Suite,
-            HashMap::from([
-                (
-                    discriminant(&Token::Println),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Not),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Print),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Newline),
-                    vec![
-                        Lexem::Terminal(Token::Newline),
-                        Lexem::Terminal(Token::Begin),
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                        Lexem::Terminal(Token::End),
-                    ],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Return),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
+                        Lexem::Terminal(Token::Not),
+                        Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess),
                     ],
                 ),
                 (
                     discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::Stmt,
-            HashMap::from([
-                (
-                    discriminant(&Token::True),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::For),
-                    vec![
-                        Lexem::Terminal(Token::For),
-                        Lexem::Terminal(Token::Identifier(IdToken {
-                            id: 0,
-                            name: String::new(),
-                        })),
-                        Lexem::Terminal(Token::In),
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::Terminal(Token::Sep),
-                        Lexem::NonTerminal(NonTerminal::Suite),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::If),
-                    vec![
-                        Lexem::Terminal(Token::If),
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::Terminal(Token::Sep),
-                        Lexem::NonTerminal(NonTerminal::Suite),
-                        Lexem::NonTerminal(NonTerminal::StmtIf),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Return),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Not),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Println),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess)],
                 ),
                 (
                     discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Print),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
-                        Lexem::Terminal(Token::Newline),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::ExprAnd2NoAccess,
-            HashMap::from([
-                (discriminant(&Token::Newline), vec![]),
-                (discriminant(&Token::OpenBracket), vec![]),
-                (discriminant(&Token::Or), vec![]),
-                (
-                    discriminant(&Token::And),
-                    vec![
-                        Lexem::Terminal(Token::And),
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::ExprNegNoAccess,
-            HashMap::from([
-                (
-                    discriminant(&Token::None),
-                    vec![Lexem::NonTerminal(NonTerminal::Factor)],
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess)],
                 ),
                 (
                     discriminant(&Token::False),
-                    vec![Lexem::NonTerminal(NonTerminal::Factor)],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![Lexem::NonTerminal(NonTerminal::Factor)],
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess)],
                 ),
                 (
                     discriminant(&Token::Sub),
-                    vec![
-                        Lexem::Terminal(Token::Sub),
-                        Lexem::NonTerminal(NonTerminal::Factor),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![Lexem::NonTerminal(NonTerminal::Factor)],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![Lexem::NonTerminal(NonTerminal::Factor)],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![Lexem::NonTerminal(NonTerminal::Factor)],
-                ),
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![Lexem::NonTerminal(NonTerminal::Factor)],
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess)],
                 ),
                 (
                     discriminant(&Token::OpenBracket),
-                    vec![Lexem::NonTerminal(NonTerminal::Factor)],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::ExprMultNoIdentNoAccess,
-            HashMap::from([
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
-                    ],
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess)],
                 ),
                 (
                     discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
-                    ],
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess)],
                 ),
             ]),
         ),
         (
             NonTerminal::ExprAccess2,
             HashMap::from([
-                (discriminant(&Token::LessEq), vec![]),
-                (discriminant(&Token::Add), vec![]),
-                (discriminant(&Token::Newline), vec![]),
-                (discriminant(&Token::Equal), vec![]),
-                (discriminant(&Token::Mod), vec![]),
-                (discriminant(&Token::Mult), vec![]),
-                (discriminant(&Token::NotEqual), vec![]),
-                (discriminant(&Token::Sub), vec![]),
-                (discriminant(&Token::Less), vec![]),
                 (discriminant(&Token::Greater), vec![]),
-                (discriminant(&Token::CloseBracket), vec![]),
+                (discriminant(&Token::Mult), vec![]),
+                (discriminant(&Token::GreaterEq), vec![]),
                 (discriminant(&Token::CloseParenthesis), vec![]),
-                (discriminant(&Token::Or), vec![]),
-                (discriminant(&Token::Sep), vec![]),
-                (discriminant(&Token::And), vec![]),
+                (discriminant(&Token::Equal), vec![]),
+                (discriminant(&Token::Sub), vec![]),
                 (discriminant(&Token::Div), vec![]),
+                (discriminant(&Token::Sep), vec![]),
                 (
                     discriminant(&Token::OpenBracket),
                     vec![
@@ -993,319 +388,94 @@ pub fn get_analysis_table() -> AnalysisTable {
                         Lexem::NonTerminal(NonTerminal::ExprAccess2),
                     ],
                 ),
-                (discriminant(&Token::GreaterEq), vec![]),
-                (discriminant(&Token::Comma), vec![]),
-            ]),
-        ),
-        (
-            NonTerminal::ExprAccess2Eq,
-            HashMap::from([
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::Terminal(Token::OpenBracket),
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::Terminal(Token::CloseBracket),
-                        Lexem::NonTerminal(NonTerminal::ExprAccess2Eq),
-                    ],
-                ),
-                (discriminant(&Token::Assign), vec![]),
-            ]),
-        ),
-        (
-            NonTerminal::Const,
-            HashMap::from([
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![Lexem::Terminal(Token::Integer(NumToken { value: 0 }))],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![Lexem::Terminal(Token::None)],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![Lexem::Terminal(Token::String(String::from("")))],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![Lexem::Terminal(Token::True)],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![Lexem::Terminal(Token::False)],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::ExprList,
-            HashMap::from([
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-                (discriminant(&Token::CloseBracket), vec![]),
-                (discriminant(&Token::CloseParenthesis), vec![]),
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Not),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::OptStmts,
-            HashMap::from([
-                (
-                    discriminant(&Token::Print),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Println),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                    ],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                    ],
-                ),
-                (discriminant(&Token::EOF), vec![]),
-                (
-                    discriminant(&Token::If),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Return),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                    ],
-                ),
-                (discriminant(&Token::End), vec![]),
-                (
-                    discriminant(&Token::Not),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                    ],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                    ],
-                ),
-                (
-                    discriminant(&Token::For),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                    ],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::ExprMult2,
-            HashMap::from([
-                (discriminant(&Token::Sep), vec![]),
-                (
-                    discriminant(&Token::Mod),
-                    vec![
-                        Lexem::Terminal(Token::Mod),
-                        Lexem::NonTerminal(NonTerminal::ExprNeg),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2),
-                    ],
-                ),
-                (discriminant(&Token::Comma), vec![]),
-                (
-                    discriminant(&Token::Mult),
-                    vec![
-                        Lexem::Terminal(Token::Mult),
-                        Lexem::NonTerminal(NonTerminal::ExprNeg),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2),
-                    ],
-                ),
-                (discriminant(&Token::CloseBracket), vec![]),
-                (discriminant(&Token::Greater), vec![]),
-                (discriminant(&Token::Or), vec![]),
-                (discriminant(&Token::NotEqual), vec![]),
-                (discriminant(&Token::Less), vec![]),
                 (discriminant(&Token::Add), vec![]),
-                (discriminant(&Token::Newline), vec![]),
-                (
-                    discriminant(&Token::Div),
-                    vec![
-                        Lexem::Terminal(Token::Div),
-                        Lexem::NonTerminal(NonTerminal::ExprNeg),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2),
-                    ],
-                ),
-                (discriminant(&Token::And), vec![]),
                 (discriminant(&Token::LessEq), vec![]),
-                (discriminant(&Token::GreaterEq), vec![]),
-                (discriminant(&Token::Sub), vec![]),
-                (discriminant(&Token::CloseParenthesis), vec![]),
-                (discriminant(&Token::Equal), vec![]),
-            ]),
-        ),
-        (
-            NonTerminal::FactorIdent,
-            HashMap::from([
-                (discriminant(&Token::CloseBracket), vec![]),
-                (discriminant(&Token::Less), vec![]),
-                (discriminant(&Token::Mult), vec![]),
-                (discriminant(&Token::NotEqual), vec![]),
                 (discriminant(&Token::Or), vec![]),
-                (discriminant(&Token::Greater), vec![]),
-                (discriminant(&Token::Sep), vec![]),
-                (discriminant(&Token::GreaterEq), vec![]),
-                (discriminant(&Token::LessEq), vec![]),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::Terminal(Token::OpenParenthesis),
-                        Lexem::NonTerminal(NonTerminal::ExprList),
-                        Lexem::Terminal(Token::CloseParenthesis),
-                    ],
-                ),
-                (discriminant(&Token::Sub), vec![]),
-                (discriminant(&Token::Add), vec![]),
-                (discriminant(&Token::Div), vec![]),
-                (discriminant(&Token::CloseParenthesis), vec![]),
-                (discriminant(&Token::Newline), vec![]),
-                (discriminant(&Token::And), vec![]),
+                (discriminant(&Token::Less), vec![]),
+                (discriminant(&Token::NotEqual), vec![]),
                 (discriminant(&Token::Comma), vec![]),
-                (discriminant(&Token::OpenBracket), vec![]),
+                (discriminant(&Token::And), vec![]),
                 (discriminant(&Token::Mod), vec![]),
-                (discriminant(&Token::Equal), vec![]),
+                (discriminant(&Token::CloseBracket), vec![]),
+                (discriminant(&Token::Newline), vec![]),
+            ]),
+        ),
+        (
+            NonTerminal::ExprListExpr,
+            HashMap::from([
+                (
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Not),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
             ]),
         ),
         (
@@ -1323,6 +493,194 @@ pub fn get_analysis_table() -> AnalysisTable {
                             name: String::new(),
                         })),
                         Lexem::NonTerminal(NonTerminal::IdentListSuite),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::File,
+            HashMap::from([
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::EOF),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Newline),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::EOF),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Def),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::EOF),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::EOF),
+                    ],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::EOF),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::EOF),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::EOF),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::EOF),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Print),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::EOF),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::EOF),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Println),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::EOF),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Return),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::EOF),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Not),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::EOF),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::EOF),
+                    ],
+                ),
+                (
+                    discriminant(&Token::If),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::EOF),
+                    ],
+                ),
+                (
+                    discriminant(&Token::For),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::EOF),
+                    ],
+                ),
+                (
+                    discriminant(&Token::While),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::EOF),
+                    ],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::EOF),
                     ],
                 ),
             ]),
@@ -1357,161 +715,106 @@ pub fn get_analysis_table() -> AnalysisTable {
             )]),
         ),
         (
-            NonTerminal::Factor,
+            NonTerminal::ExprAdd2,
             HashMap::from([
+                (discriminant(&Token::Or), vec![]),
                 (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![Lexem::NonTerminal(NonTerminal::Const)],
-                ),
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
+                    discriminant(&Token::Sub),
                     vec![
-                        Lexem::Terminal(Token::Identifier(IdToken {
-                            id: 0,
-                            name: String::new(),
-                        })),
-                        Lexem::NonTerminal(NonTerminal::FactorIdent),
+                        Lexem::Terminal(Token::Sub),
+                        Lexem::NonTerminal(NonTerminal::ExprMult),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2),
                     ],
                 ),
+                (discriminant(&Token::Newline), vec![]),
+                (discriminant(&Token::Equal), vec![]),
+                (discriminant(&Token::GreaterEq), vec![]),
+                (discriminant(&Token::And), vec![]),
                 (
-                    discriminant(&Token::OpenBracket),
+                    discriminant(&Token::Add),
                     vec![
-                        Lexem::Terminal(Token::OpenBracket),
-                        Lexem::NonTerminal(NonTerminal::ExprList),
-                        Lexem::Terminal(Token::CloseBracket),
+                        Lexem::Terminal(Token::Add),
+                        Lexem::NonTerminal(NonTerminal::ExprMult),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2),
                     ],
                 ),
-                (
-                    discriminant(&Token::False),
-                    vec![Lexem::NonTerminal(NonTerminal::Const)],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![Lexem::NonTerminal(NonTerminal::Const)],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::Terminal(Token::OpenParenthesis),
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::Terminal(Token::CloseParenthesis),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![Lexem::NonTerminal(NonTerminal::Const)],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![Lexem::NonTerminal(NonTerminal::Const)],
-                ),
+                (discriminant(&Token::Sep), vec![]),
+                (discriminant(&Token::Greater), vec![]),
+                (discriminant(&Token::LessEq), vec![]),
+                (discriminant(&Token::NotEqual), vec![]),
+                (discriminant(&Token::Less), vec![]),
+                (discriminant(&Token::CloseBracket), vec![]),
+                (discriminant(&Token::Comma), vec![]),
+                (discriminant(&Token::CloseParenthesis), vec![]),
             ]),
         ),
         (
-            NonTerminal::SimpleStmt,
+            NonTerminal::ExprCmpNoAccess,
             HashMap::from([
                 (
-                    discriminant(&Token::OpenBracket),
+                    discriminant(&Token::False),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![
-                        Lexem::Terminal(Token::Identifier(IdToken {
-                            id: 0,
-                            name: String::new(),
-                        })),
-                        Lexem::NonTerminal(NonTerminal::SimpleStateIdent),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Return),
-                    vec![
-                        Lexem::Terminal(Token::Return),
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Print),
-                    vec![
-                        Lexem::Terminal(Token::Print),
-                        Lexem::Terminal(Token::OpenParenthesis),
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::Terminal(Token::CloseParenthesis),
-                    ],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess2),
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
                     ],
                 ),
                 (
                     discriminant(&Token::Sub),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess2),
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
                     ],
                 ),
                 (
-                    discriminant(&Token::False),
+                    discriminant(&Token::None),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess2),
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
                     ],
                 ),
                 (
                     discriminant(&Token::True),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess2),
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
                     ],
                 ),
                 (
-                    discriminant(&Token::Not),
+                    discriminant(&Token::OpenParenthesis),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess2),
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
                     ],
                 ),
                 (
-                    discriminant(&Token::Println),
+                    discriminant(&Token::OpenBracket),
                     vec![
-                        Lexem::Terminal(Token::Println),
-                        Lexem::Terminal(Token::OpenParenthesis),
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::Terminal(Token::CloseParenthesis),
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
                     ],
                 ),
             ]),
@@ -1519,7 +822,29 @@ pub fn get_analysis_table() -> AnalysisTable {
         (
             NonTerminal::StmtIf,
             HashMap::from([
+                (discriminant(&Token::Println), vec![]),
+                (discriminant(&Token::For), vec![]),
+                (discriminant(&Token::Print), vec![]),
+                (discriminant(&Token::OpenBracket), vec![]),
+                (discriminant(&Token::End), vec![]),
+                (discriminant(&Token::False), vec![]),
+                (discriminant(&Token::Not), vec![]),
+                (discriminant(&Token::Sub), vec![]),
+                (discriminant(&Token::EOF), vec![]),
+                (discriminant(&Token::Return), vec![]),
+                (discriminant(&Token::None), vec![]),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![],
+                ),
+                (discriminant(&Token::While), vec![]),
+                (discriminant(&Token::Integer(NumToken { value: 0 })), vec![]),
+                (discriminant(&Token::String(String::from(""))), vec![]),
                 (discriminant(&Token::If), vec![]),
+                (discriminant(&Token::True), vec![]),
                 (
                     discriminant(&Token::Else),
                     vec![
@@ -1528,424 +853,245 @@ pub fn get_analysis_table() -> AnalysisTable {
                         Lexem::NonTerminal(NonTerminal::Suite),
                     ],
                 ),
-                (discriminant(&Token::OpenBracket), vec![]),
-                (discriminant(&Token::Integer(NumToken { value: 0 })), vec![]),
-                (discriminant(&Token::Return), vec![]),
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![],
-                ),
-                (discriminant(&Token::None), vec![]),
-                (discriminant(&Token::End), vec![]),
-                (discriminant(&Token::EOF), vec![]),
-                (discriminant(&Token::For), vec![]),
-                (discriminant(&Token::Not), vec![]),
-                (discriminant(&Token::Print), vec![]),
-                (discriminant(&Token::String(String::from(""))), vec![]),
-                (discriminant(&Token::Sub), vec![]),
-                (discriminant(&Token::Println), vec![]),
-                (discriminant(&Token::True), vec![]),
-                (discriminant(&Token::False), vec![]),
                 (discriminant(&Token::OpenParenthesis), vec![]),
             ]),
         ),
         (
-            NonTerminal::Expr,
+            NonTerminal::Stmt,
             HashMap::from([
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAnd),
-                        Lexem::NonTerminal(NonTerminal::Expr2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAnd),
-                        Lexem::NonTerminal(NonTerminal::Expr2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAnd),
-                        Lexem::NonTerminal(NonTerminal::Expr2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAnd),
-                        Lexem::NonTerminal(NonTerminal::Expr2),
-                    ],
-                ),
                 (
                     discriminant(&Token::Sub),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAnd),
-                        Lexem::NonTerminal(NonTerminal::Expr2),
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
                     ],
                 ),
                 (
-                    discriminant(&Token::OpenBracket),
+                    discriminant(&Token::For),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAnd),
-                        Lexem::NonTerminal(NonTerminal::Expr2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Not),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAnd),
-                        Lexem::NonTerminal(NonTerminal::Expr2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAnd),
-                        Lexem::NonTerminal(NonTerminal::Expr2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAnd),
-                        Lexem::NonTerminal(NonTerminal::Expr2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAnd),
-                        Lexem::NonTerminal(NonTerminal::Expr2),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::NewlineOpt,
-            HashMap::from([
-                (discriminant(&Token::Println), vec![]),
-                (discriminant(&Token::Sub), vec![]),
-                (discriminant(&Token::If), vec![]),
-                (discriminant(&Token::Integer(NumToken { value: 0 })), vec![]),
-                (discriminant(&Token::OpenBracket), vec![]),
-                (discriminant(&Token::True), vec![]),
-                (discriminant(&Token::Not), vec![]),
-                (
-                    discriminant(&Token::Newline),
-                    vec![Lexem::Terminal(Token::Newline)],
-                ),
-                (discriminant(&Token::String(String::from(""))), vec![]),
-                (discriminant(&Token::False), vec![]),
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![],
-                ),
-                (discriminant(&Token::OpenParenthesis), vec![]),
-                (discriminant(&Token::Return), vec![]),
-                (discriminant(&Token::Print), vec![]),
-                (discriminant(&Token::For), vec![]),
-                (discriminant(&Token::Def), vec![]),
-                (discriminant(&Token::None), vec![]),
-            ]),
-        ),
-        (
-            NonTerminal::ExprNotNoAccess,
-            HashMap::from([
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess)],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess)],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess)],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess)],
-                ),
-                (
-                    discriminant(&Token::Sub),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess)],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess)],
-                ),
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess)],
-                ),
-                (
-                    discriminant(&Token::Not),
-                    vec![
-                        Lexem::Terminal(Token::Not),
-                        Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess)],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess)],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::ExprAddNoIdentNoAccess,
-            HashMap::from([
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMultNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::FactorNoIdent,
-            HashMap::from([
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::Terminal(Token::OpenParenthesis),
+                        Lexem::Terminal(Token::For),
+                        Lexem::Terminal(Token::Identifier(IdToken {
+                            id: 0,
+                            name: String::new(),
+                        })),
+                        Lexem::Terminal(Token::In),
                         Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::Terminal(Token::CloseParenthesis),
+                        Lexem::Terminal(Token::Sep),
+                        Lexem::NonTerminal(NonTerminal::Suite),
                     ],
                 ),
                 (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![Lexem::NonTerminal(NonTerminal::Const)],
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
                 ),
                 (
-                    discriminant(&Token::False),
-                    vec![Lexem::NonTerminal(NonTerminal::Const)],
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
+                ),
+                (
+                    discriminant(&Token::If),
+                    vec![
+                        Lexem::Terminal(Token::If),
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::Terminal(Token::Sep),
+                        Lexem::NonTerminal(NonTerminal::Suite),
+                        Lexem::NonTerminal(NonTerminal::StmtIf),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Println),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Return),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
                 ),
                 (
                     discriminant(&Token::String(String::from(""))),
-                    vec![Lexem::NonTerminal(NonTerminal::Const)],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![Lexem::NonTerminal(NonTerminal::Const)],
-                ),
-                (
-                    discriminant(&Token::OpenBracket),
                     vec![
-                        Lexem::Terminal(Token::OpenBracket),
-                        Lexem::NonTerminal(NonTerminal::ExprList),
-                        Lexem::Terminal(Token::CloseBracket),
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
+                ),
+                (
+                    discriminant(&Token::While),
+                    vec![
+                        Lexem::Terminal(Token::While),
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::Terminal(Token::Sep),
+                        Lexem::NonTerminal(NonTerminal::Suite),
+                    ],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Print),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
                     ],
                 ),
                 (
                     discriminant(&Token::True),
-                    vec![Lexem::NonTerminal(NonTerminal::Const)],
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Not),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
                 ),
             ]),
         ),
         (
-            NonTerminal::ExprAnd2,
+            NonTerminal::ExprAnd2NoAccess,
             HashMap::from([
-                (discriminant(&Token::Comma), vec![]),
                 (discriminant(&Token::Or), vec![]),
-                (discriminant(&Token::Sep), vec![]),
-                (discriminant(&Token::CloseBracket), vec![]),
-                (discriminant(&Token::Newline), vec![]),
                 (
                     discriminant(&Token::And),
                     vec![
                         Lexem::Terminal(Token::And),
-                        Lexem::NonTerminal(NonTerminal::ExprNot),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+                (discriminant(&Token::OpenBracket), vec![]),
+                (discriminant(&Token::Newline), vec![]),
+            ]),
+        ),
+        (
+            NonTerminal::ExprListSuite,
+            HashMap::from([
+                (
+                    discriminant(&Token::Comma),
+                    vec![
+                        Lexem::Terminal(Token::Comma),
+                        Lexem::NonTerminal(NonTerminal::ExprListExpr),
                     ],
                 ),
                 (discriminant(&Token::CloseParenthesis), vec![]),
+                (discriminant(&Token::CloseBracket), vec![]),
             ]),
         ),
         (
-            NonTerminal::ExprCmpNoAccess,
+            NonTerminal::ExprMult2,
             HashMap::from([
+                (discriminant(&Token::Greater), vec![]),
+                (discriminant(&Token::LessEq), vec![]),
+                (discriminant(&Token::Or), vec![]),
+                (discriminant(&Token::CloseBracket), vec![]),
+                (discriminant(&Token::Sub), vec![]),
+                (discriminant(&Token::CloseParenthesis), vec![]),
+                (discriminant(&Token::Sep), vec![]),
+                (discriminant(&Token::Equal), vec![]),
+                (discriminant(&Token::And), vec![]),
                 (
-                    discriminant(&Token::True),
+                    discriminant(&Token::Div),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
+                        Lexem::Terminal(Token::Div),
+                        Lexem::NonTerminal(NonTerminal::ExprNeg),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2),
                     ],
                 ),
+                (discriminant(&Token::Add), vec![]),
                 (
-                    discriminant(&Token::Sub),
+                    discriminant(&Token::Mod),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
+                        Lexem::Terminal(Token::Mod),
+                        Lexem::NonTerminal(NonTerminal::ExprNeg),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2),
                     ],
                 ),
+                (discriminant(&Token::Comma), vec![]),
+                (discriminant(&Token::NotEqual), vec![]),
+                (discriminant(&Token::GreaterEq), vec![]),
+                (discriminant(&Token::Newline), vec![]),
+                (discriminant(&Token::Less), vec![]),
                 (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    discriminant(&Token::Mult),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
+                        Lexem::Terminal(Token::Mult),
+                        Lexem::NonTerminal(NonTerminal::ExprNeg),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2),
                     ],
                 ),
             ]),
         ),
         (
-            NonTerminal::ExprNotNoIdentNoAccess,
+            NonTerminal::Expr2NoAccess,
             HashMap::from([
                 (
-                    discriminant(&Token::None),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoIdentNoAccess)],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoIdentNoAccess)],
-                ),
-                (
-                    discriminant(&Token::Not),
+                    discriminant(&Token::Or),
                     vec![
-                        Lexem::Terminal(Token::Not),
-                        Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess),
+                        Lexem::Terminal(Token::Or),
+                        Lexem::NonTerminal(NonTerminal::ExprAndNoAccess),
+                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
                     ],
                 ),
-                (
-                    discriminant(&Token::True),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoIdentNoAccess)],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoIdentNoAccess)],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoIdentNoAccess)],
-                ),
+                (discriminant(&Token::OpenBracket), vec![]),
+                (discriminant(&Token::Newline), vec![]),
+            ]),
+        ),
+        (
+            NonTerminal::SimpleStmtExpr,
+            HashMap::from([
                 (
                     discriminant(&Token::OpenBracket),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoIdentNoAccess)],
+                    vec![
+                        Lexem::Terminal(Token::OpenBracket),
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::Terminal(Token::CloseBracket),
+                        Lexem::NonTerminal(NonTerminal::ExprAccess2Eq),
+                        Lexem::Terminal(Token::Assign),
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                    ],
                 ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoIdentNoAccess)],
-                ),
-                (
-                    discriminant(&Token::Sub),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoIdentNoAccess)],
-                ),
+                (discriminant(&Token::Newline), vec![]),
             ]),
         ),
         (
@@ -1967,51 +1113,125 @@ pub fn get_analysis_table() -> AnalysisTable {
             )]),
         ),
         (
-            NonTerminal::SimpleStmtExpr,
+            NonTerminal::ExprNeg,
             HashMap::from([
                 (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::Terminal(Token::OpenBracket),
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::Terminal(Token::CloseBracket),
-                        Lexem::NonTerminal(NonTerminal::ExprAccess2Eq),
-                        Lexem::Terminal(Token::Assign),
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                    ],
+                    discriminant(&Token::True),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprAccess)],
                 ),
-                (discriminant(&Token::Newline), vec![]),
-            ]),
-        ),
-        (
-            NonTerminal::ExprMultNoAccess,
-            HashMap::from([
+                (
+                    discriminant(&Token::False),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprAccess)],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprAccess)],
+                ),
                 (
                     discriminant(&Token::String(String::from(""))),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprAccess)],
+                ),
+                (
+                    discriminant(&Token::Sub),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                        Lexem::Terminal(Token::Sub),
+                        Lexem::NonTerminal(NonTerminal::ExprAccess),
                     ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprAccess)],
+                ),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprAccess)],
                 ),
                 (
                     discriminant(&Token::OpenParenthesis),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprAccess)],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprAccess)],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::ExprNot,
+            HashMap::from([
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmp)],
+                ),
+                (
+                    discriminant(&Token::Sub),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmp)],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmp)],
+                ),
+                (
+                    discriminant(&Token::Not),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                        Lexem::Terminal(Token::Not),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmp)],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmp)],
+                ),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmp)],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmp)],
+                ),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmp)],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmp)],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::Expr,
+            HashMap::from([
+                (
+                    discriminant(&Token::True),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAnd),
+                        Lexem::NonTerminal(NonTerminal::Expr2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAnd),
+                        Lexem::NonTerminal(NonTerminal::Expr2),
                     ],
                 ),
                 (
                     discriminant(&Token::False),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd),
+                        Lexem::NonTerminal(NonTerminal::Expr2),
                     ],
                 ),
                 (
@@ -2020,669 +1240,50 @@ pub fn get_analysis_table() -> AnalysisTable {
                         name: String::new(),
                     })),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd),
+                        Lexem::NonTerminal(NonTerminal::Expr2),
                     ],
                 ),
                 (
                     discriminant(&Token::Integer(NumToken { value: 0 })),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::ExprNoIdentNoAccess2,
-            HashMap::from([
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::Terminal(Token::OpenBracket),
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::Terminal(Token::CloseBracket),
-                        Lexem::NonTerminal(NonTerminal::ExprAccess2Eq),
-                        Lexem::Terminal(Token::Assign),
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                    ],
-                ),
-                (discriminant(&Token::Newline), vec![]),
-            ]),
-        ),
-        (
-            NonTerminal::ExprAnd,
-            HashMap::from([
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNot),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd),
+                        Lexem::NonTerminal(NonTerminal::Expr2),
                     ],
                 ),
                 (
                     discriminant(&Token::Not),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNot),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd),
+                        Lexem::NonTerminal(NonTerminal::Expr2),
                     ],
                 ),
                 (
                     discriminant(&Token::Sub),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNot),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNot),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNot),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNot),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNot),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd),
+                        Lexem::NonTerminal(NonTerminal::Expr2),
                     ],
                 ),
                 (
                     discriminant(&Token::OpenBracket),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNot),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd),
+                        Lexem::NonTerminal(NonTerminal::Expr2),
                     ],
                 ),
                 (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
+                    discriminant(&Token::OpenParenthesis),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNot),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd),
+                        Lexem::NonTerminal(NonTerminal::Expr2),
                     ],
                 ),
                 (
                     discriminant(&Token::String(String::from(""))),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNot),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::ExprListExpr,
-            HashMap::from([
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Not),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::Defs,
-            HashMap::from([
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![],
-                ),
-                (discriminant(&Token::Return), vec![]),
-                (discriminant(&Token::String(String::from(""))), vec![]),
-                (
-                    discriminant(&Token::Def),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Def),
-                        Lexem::NonTerminal(NonTerminal::Defs),
-                    ],
-                ),
-                (discriminant(&Token::False), vec![]),
-                (discriminant(&Token::None), vec![]),
-                (discriminant(&Token::Integer(NumToken { value: 0 })), vec![]),
-                (discriminant(&Token::For), vec![]),
-                (discriminant(&Token::Print), vec![]),
-                (discriminant(&Token::True), vec![]),
-                (discriminant(&Token::If), vec![]),
-                (discriminant(&Token::Println), vec![]),
-                (discriminant(&Token::Sub), vec![]),
-                (discriminant(&Token::OpenParenthesis), vec![]),
-                (discriminant(&Token::Not), vec![]),
-                (discriminant(&Token::OpenBracket), vec![]),
-            ]),
-        ),
-        (
-            NonTerminal::SimpleStateIdent,
-            HashMap::from([
-                (
-                    discriminant(&Token::Assign),
-                    vec![
-                        Lexem::Terminal(Token::Assign),
-                        Lexem::NonTerminal(NonTerminal::Expr),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Newline),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::FactorIdent),
-                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
-                        Lexem::NonTerminal(NonTerminal::SimpleStmtExpr),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Or),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::FactorIdent),
-                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
-                        Lexem::NonTerminal(NonTerminal::SimpleStmtExpr),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::FactorIdent),
-                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
-                        Lexem::NonTerminal(NonTerminal::SimpleStmtExpr),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::FactorIdent),
-                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
-                        Lexem::NonTerminal(NonTerminal::SimpleStmtExpr),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::ExprMult,
-            HashMap::from([
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNeg),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNeg),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNeg),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNeg),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNeg),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNeg),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNeg),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNeg),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNeg),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::ExprAccess,
-            HashMap::from([
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Factor),
-                        Lexem::NonTerminal(NonTerminal::ExprAccess2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Factor),
-                        Lexem::NonTerminal(NonTerminal::ExprAccess2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Factor),
-                        Lexem::NonTerminal(NonTerminal::ExprAccess2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Factor),
-                        Lexem::NonTerminal(NonTerminal::ExprAccess2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Factor),
-                        Lexem::NonTerminal(NonTerminal::ExprAccess2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Factor),
-                        Lexem::NonTerminal(NonTerminal::ExprAccess2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Factor),
-                        Lexem::NonTerminal(NonTerminal::ExprAccess2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::Factor),
-                        Lexem::NonTerminal(NonTerminal::ExprAccess2),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::Expr2NoAccess,
-            HashMap::from([
-                (discriminant(&Token::Newline), vec![]),
-                (
-                    discriminant(&Token::Or),
-                    vec![
-                        Lexem::Terminal(Token::Or),
-                        Lexem::NonTerminal(NonTerminal::ExprAndNoAccess),
-                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
-                    ],
-                ),
-                (discriminant(&Token::OpenBracket), vec![]),
-            ]),
-        ),
-        (
-            NonTerminal::ExprMult2NoAccess,
-            HashMap::from([
-                (
-                    discriminant(&Token::Mult),
-                    vec![
-                        Lexem::Terminal(Token::Mult),
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
-                    ],
-                ),
-                (discriminant(&Token::Greater), vec![]),
-                (discriminant(&Token::Less), vec![]),
-                (
-                    discriminant(&Token::Mod),
-                    vec![
-                        Lexem::Terminal(Token::Mod),
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
-                    ],
-                ),
-                (discriminant(&Token::Equal), vec![]),
-                (discriminant(&Token::And), vec![]),
-                (discriminant(&Token::Add), vec![]),
-                (discriminant(&Token::Or), vec![]),
-                (discriminant(&Token::OpenBracket), vec![]),
-                (
-                    discriminant(&Token::Div),
-                    vec![
-                        Lexem::Terminal(Token::Div),
-                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
-                    ],
-                ),
-                (discriminant(&Token::LessEq), vec![]),
-                (discriminant(&Token::Sub), vec![]),
-                (discriminant(&Token::GreaterEq), vec![]),
-                (discriminant(&Token::NotEqual), vec![]),
-                (discriminant(&Token::Newline), vec![]),
-            ]),
-        ),
-        (
-            NonTerminal::ExprListSuite,
-            HashMap::from([
-                (discriminant(&Token::CloseParenthesis), vec![]),
-                (discriminant(&Token::CloseBracket), vec![]),
-                (
-                    discriminant(&Token::Comma),
-                    vec![
-                        Lexem::Terminal(Token::Comma),
-                        Lexem::NonTerminal(NonTerminal::ExprListExpr),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::File,
-            HashMap::from([
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
-                        Lexem::NonTerminal(NonTerminal::Defs),
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                        Lexem::Terminal(Token::EOF),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Def),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
-                        Lexem::NonTerminal(NonTerminal::Defs),
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                        Lexem::Terminal(Token::EOF),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
-                        Lexem::NonTerminal(NonTerminal::Defs),
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                        Lexem::Terminal(Token::EOF),
-                    ],
-                ),
-                (
-                    discriminant(&Token::If),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
-                        Lexem::NonTerminal(NonTerminal::Defs),
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                        Lexem::Terminal(Token::EOF),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Newline),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
-                        Lexem::NonTerminal(NonTerminal::Defs),
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                        Lexem::Terminal(Token::EOF),
-                    ],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
-                        Lexem::NonTerminal(NonTerminal::Defs),
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                        Lexem::Terminal(Token::EOF),
-                    ],
-                ),
-                (
-                    discriminant(&Token::For),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
-                        Lexem::NonTerminal(NonTerminal::Defs),
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                        Lexem::Terminal(Token::EOF),
-                    ],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
-                        Lexem::NonTerminal(NonTerminal::Defs),
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                        Lexem::Terminal(Token::EOF),
-                    ],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
-                        Lexem::NonTerminal(NonTerminal::Defs),
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                        Lexem::Terminal(Token::EOF),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
-                        Lexem::NonTerminal(NonTerminal::Defs),
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                        Lexem::Terminal(Token::EOF),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
-                        Lexem::NonTerminal(NonTerminal::Defs),
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                        Lexem::Terminal(Token::EOF),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Not),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
-                        Lexem::NonTerminal(NonTerminal::Defs),
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                        Lexem::Terminal(Token::EOF),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Return),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
-                        Lexem::NonTerminal(NonTerminal::Defs),
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                        Lexem::Terminal(Token::EOF),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Println),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
-                        Lexem::NonTerminal(NonTerminal::Defs),
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                        Lexem::Terminal(Token::EOF),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Print),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
-                        Lexem::NonTerminal(NonTerminal::Defs),
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                        Lexem::Terminal(Token::EOF),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
-                        Lexem::NonTerminal(NonTerminal::Defs),
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                        Lexem::Terminal(Token::EOF),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::NewlineOpt),
-                        Lexem::NonTerminal(NonTerminal::Defs),
-                        Lexem::NonTerminal(NonTerminal::Stmt),
-                        Lexem::NonTerminal(NonTerminal::OptStmts),
-                        Lexem::Terminal(Token::EOF),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd),
+                        Lexem::NonTerminal(NonTerminal::Expr2),
                     ],
                 ),
             ]),
@@ -2691,36 +1292,9 @@ pub fn get_analysis_table() -> AnalysisTable {
             NonTerminal::ExprCmp2NoAccess,
             HashMap::from([
                 (
-                    discriminant(&Token::Equal),
+                    discriminant(&Token::LessEq),
                     vec![
-                        Lexem::Terminal(Token::Equal),
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
-                    ],
-                ),
-                (discriminant(&Token::OpenBracket), vec![]),
-                (
-                    discriminant(&Token::GreaterEq),
-                    vec![
-                        Lexem::Terminal(Token::GreaterEq),
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
-                    ],
-                ),
-                (discriminant(&Token::Or), vec![]),
-                (discriminant(&Token::Newline), vec![]),
-                (
-                    discriminant(&Token::Greater),
-                    vec![
-                        Lexem::Terminal(Token::Greater),
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Less),
-                    vec![
-                        Lexem::Terminal(Token::Less),
+                        Lexem::Terminal(Token::LessEq),
                         Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
                         Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
                     ],
@@ -2734,14 +1308,922 @@ pub fn get_analysis_table() -> AnalysisTable {
                     ],
                 ),
                 (
-                    discriminant(&Token::LessEq),
+                    discriminant(&Token::Less),
                     vec![
-                        Lexem::Terminal(Token::LessEq),
+                        Lexem::Terminal(Token::Less),
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
+                    ],
+                ),
+                (discriminant(&Token::Newline), vec![]),
+                (discriminant(&Token::OpenBracket), vec![]),
+                (
+                    discriminant(&Token::GreaterEq),
+                    vec![
+                        Lexem::Terminal(Token::GreaterEq),
                         Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
                         Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
                     ],
                 ),
                 (discriminant(&Token::And), vec![]),
+                (
+                    discriminant(&Token::Greater),
+                    vec![
+                        Lexem::Terminal(Token::Greater),
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Equal),
+                    vec![
+                        Lexem::Terminal(Token::Equal),
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
+                    ],
+                ),
+                (discriminant(&Token::Or), vec![]),
+            ]),
+        ),
+        (
+            NonTerminal::ExprNegNoAccess,
+            HashMap::from([
+                (
+                    discriminant(&Token::None),
+                    vec![Lexem::NonTerminal(NonTerminal::Factor)],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![Lexem::NonTerminal(NonTerminal::Factor)],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![Lexem::NonTerminal(NonTerminal::Factor)],
+                ),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![Lexem::NonTerminal(NonTerminal::Factor)],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![Lexem::NonTerminal(NonTerminal::Factor)],
+                ),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![Lexem::NonTerminal(NonTerminal::Factor)],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![Lexem::NonTerminal(NonTerminal::Factor)],
+                ),
+                (
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::Terminal(Token::Sub),
+                        Lexem::NonTerminal(NonTerminal::Factor),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![Lexem::NonTerminal(NonTerminal::Factor)],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::Factor,
+            HashMap::from([
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::Terminal(Token::OpenBracket),
+                        Lexem::NonTerminal(NonTerminal::ExprList),
+                        Lexem::Terminal(Token::CloseBracket),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![Lexem::NonTerminal(NonTerminal::Const)],
+                ),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![
+                        Lexem::Terminal(Token::Identifier(IdToken {
+                            id: 0,
+                            name: String::new(),
+                        })),
+                        Lexem::NonTerminal(NonTerminal::FactorIdent),
+                    ],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![Lexem::NonTerminal(NonTerminal::Const)],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![Lexem::NonTerminal(NonTerminal::Const)],
+                ),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::Terminal(Token::OpenParenthesis),
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::Terminal(Token::CloseParenthesis),
+                    ],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![Lexem::NonTerminal(NonTerminal::Const)],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![Lexem::NonTerminal(NonTerminal::Const)],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::ExprCmpNoIdentNoAccess,
+            HashMap::from([
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAddNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::ExprAddNoAccess,
+            HashMap::from([
+                (
+                    discriminant(&Token::True),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::Expr2,
+            HashMap::from([
+                (discriminant(&Token::Sep), vec![]),
+                (discriminant(&Token::Newline), vec![]),
+                (discriminant(&Token::CloseBracket), vec![]),
+                (discriminant(&Token::CloseParenthesis), vec![]),
+                (
+                    discriminant(&Token::Or),
+                    vec![
+                        Lexem::Terminal(Token::Or),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd),
+                        Lexem::NonTerminal(NonTerminal::Expr2),
+                    ],
+                ),
+                (discriminant(&Token::Comma), vec![]),
+            ]),
+        ),
+        (
+            NonTerminal::ExprNoIdentNoAccess2,
+            HashMap::from([
+                (discriminant(&Token::Newline), vec![]),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::Terminal(Token::OpenBracket),
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::Terminal(Token::CloseBracket),
+                        Lexem::NonTerminal(NonTerminal::ExprAccess2Eq),
+                        Lexem::Terminal(Token::Assign),
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::ExprNotNoIdentNoAccess,
+            HashMap::from([
+                (
+                    discriminant(&Token::False),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoIdentNoAccess)],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoIdentNoAccess)],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoIdentNoAccess)],
+                ),
+                (
+                    discriminant(&Token::Not),
+                    vec![
+                        Lexem::Terminal(Token::Not),
+                        Lexem::NonTerminal(NonTerminal::ExprCmpNoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoIdentNoAccess)],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoIdentNoAccess)],
+                ),
+                (
+                    discriminant(&Token::Sub),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoIdentNoAccess)],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoIdentNoAccess)],
+                ),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![Lexem::NonTerminal(NonTerminal::ExprCmpNoIdentNoAccess)],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::NewlineOpt,
+            HashMap::from([
+                (discriminant(&Token::None), vec![]),
+                (discriminant(&Token::True), vec![]),
+                (discriminant(&Token::OpenParenthesis), vec![]),
+                (discriminant(&Token::False), vec![]),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![],
+                ),
+                (discriminant(&Token::Integer(NumToken { value: 0 })), vec![]),
+                (discriminant(&Token::Not), vec![]),
+                (discriminant(&Token::Def), vec![]),
+                (discriminant(&Token::String(String::from(""))), vec![]),
+                (discriminant(&Token::For), vec![]),
+                (discriminant(&Token::If), vec![]),
+                (discriminant(&Token::Print), vec![]),
+                (discriminant(&Token::While), vec![]),
+                (discriminant(&Token::Sub), vec![]),
+                (discriminant(&Token::OpenBracket), vec![]),
+                (
+                    discriminant(&Token::Newline),
+                    vec![Lexem::Terminal(Token::Newline)],
+                ),
+                (discriminant(&Token::Println), vec![]),
+                (discriminant(&Token::Return), vec![]),
+            ]),
+        ),
+        (
+            NonTerminal::ExprAndNoAccess,
+            HashMap::from([
+                (
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Not),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::ExprCmp,
+            HashMap::from([
+                (
+                    discriminant(&Token::True),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAdd),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAdd),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAdd),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAdd),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAdd),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAdd),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAdd),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAdd),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAdd),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::ExprMult2NoAccess,
+            HashMap::from([
+                (discriminant(&Token::LessEq), vec![]),
+                (discriminant(&Token::Newline), vec![]),
+                (
+                    discriminant(&Token::Div),
+                    vec![
+                        Lexem::Terminal(Token::Div),
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+                (discriminant(&Token::NotEqual), vec![]),
+                (discriminant(&Token::GreaterEq), vec![]),
+                (discriminant(&Token::Or), vec![]),
+                (discriminant(&Token::Sub), vec![]),
+                (discriminant(&Token::And), vec![]),
+                (discriminant(&Token::Equal), vec![]),
+                (discriminant(&Token::OpenBracket), vec![]),
+                (
+                    discriminant(&Token::Mod),
+                    vec![
+                        Lexem::Terminal(Token::Mod),
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+                (discriminant(&Token::Greater), vec![]),
+                (discriminant(&Token::Add), vec![]),
+                (discriminant(&Token::Less), vec![]),
+                (
+                    discriminant(&Token::Mult),
+                    vec![
+                        Lexem::Terminal(Token::Mult),
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::FactorIdent,
+            HashMap::from([
+                (discriminant(&Token::Greater), vec![]),
+                (discriminant(&Token::NotEqual), vec![]),
+                (discriminant(&Token::Add), vec![]),
+                (discriminant(&Token::CloseParenthesis), vec![]),
+                (discriminant(&Token::Equal), vec![]),
+                (discriminant(&Token::CloseBracket), vec![]),
+                (discriminant(&Token::Mult), vec![]),
+                (discriminant(&Token::Sep), vec![]),
+                (discriminant(&Token::And), vec![]),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::Terminal(Token::OpenParenthesis),
+                        Lexem::NonTerminal(NonTerminal::ExprList),
+                        Lexem::Terminal(Token::CloseParenthesis),
+                    ],
+                ),
+                (discriminant(&Token::GreaterEq), vec![]),
+                (discriminant(&Token::Sub), vec![]),
+                (discriminant(&Token::Mod), vec![]),
+                (discriminant(&Token::LessEq), vec![]),
+                (discriminant(&Token::Div), vec![]),
+                (discriminant(&Token::OpenBracket), vec![]),
+                (discriminant(&Token::Less), vec![]),
+                (discriminant(&Token::Newline), vec![]),
+                (discriminant(&Token::Or), vec![]),
+                (discriminant(&Token::Comma), vec![]),
+            ]),
+        ),
+        (
+            NonTerminal::SimpleStateIdent,
+            HashMap::from([
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::FactorIdent),
+                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
+                        Lexem::NonTerminal(NonTerminal::SimpleStmtExpr),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Assign),
+                    vec![
+                        Lexem::Terminal(Token::Assign),
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::FactorIdent),
+                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
+                        Lexem::NonTerminal(NonTerminal::SimpleStmtExpr),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Or),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::FactorIdent),
+                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
+                        Lexem::NonTerminal(NonTerminal::SimpleStmtExpr),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Newline),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::FactorIdent),
+                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
+                        Lexem::NonTerminal(NonTerminal::SimpleStmtExpr),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::ExprAnd,
+            HashMap::from([
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNot),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNot),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNot),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Not),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNot),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNot),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNot),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNot),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNot),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNot),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNot),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::ExprAndNoIdentNoAccess,
+            HashMap::from([
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Not),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNotNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::SimpleStmt,
+            HashMap::from([
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Print),
+                    vec![
+                        Lexem::Terminal(Token::Print),
+                        Lexem::Terminal(Token::OpenParenthesis),
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::Terminal(Token::CloseParenthesis),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Println),
+                    vec![
+                        Lexem::Terminal(Token::Println),
+                        Lexem::Terminal(Token::OpenParenthesis),
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::Terminal(Token::CloseParenthesis),
+                    ],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![
+                        Lexem::Terminal(Token::Identifier(IdToken {
+                            id: 0,
+                            name: String::new(),
+                        })),
+                        Lexem::NonTerminal(NonTerminal::SimpleStateIdent),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Not),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Return),
+                    vec![
+                        Lexem::Terminal(Token::Return),
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprNoIdentNoAccess2),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::ExprAnd2,
+            HashMap::from([
+                (discriminant(&Token::CloseBracket), vec![]),
+                (discriminant(&Token::Comma), vec![]),
+                (discriminant(&Token::CloseParenthesis), vec![]),
+                (
+                    discriminant(&Token::And),
+                    vec![
+                        Lexem::Terminal(Token::And),
+                        Lexem::NonTerminal(NonTerminal::ExprNot),
+                        Lexem::NonTerminal(NonTerminal::ExprAnd2),
+                    ],
+                ),
+                (discriminant(&Token::Or), vec![]),
+                (discriminant(&Token::Sep), vec![]),
+                (discriminant(&Token::Newline), vec![]),
             ]),
         ),
         (
@@ -2755,13 +2237,6 @@ pub fn get_analysis_table() -> AnalysisTable {
                     ],
                 ),
                 (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMult),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2),
-                    ],
-                ),
-                (
                     discriminant(&Token::None),
                     vec![
                         Lexem::NonTerminal(NonTerminal::ExprMult),
@@ -2769,35 +2244,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                     ],
                 ),
                 (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMult),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMult),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMult),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprMult),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
                     vec![
                         Lexem::NonTerminal(NonTerminal::ExprMult),
                         Lexem::NonTerminal(NonTerminal::ExprAdd2),
@@ -2813,72 +2260,419 @@ pub fn get_analysis_table() -> AnalysisTable {
                         Lexem::NonTerminal(NonTerminal::ExprAdd2),
                     ],
                 ),
-            ]),
-        ),
-        (
-            NonTerminal::ExprAndNoIdentNoAccess,
-            HashMap::from([
                 (
-                    discriminant(&Token::None),
+                    discriminant(&Token::String(String::from(""))),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2),
                     ],
                 ),
                 (
                     discriminant(&Token::OpenBracket),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2),
                     ],
                 ),
                 (
                     discriminant(&Token::True),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2),
                     ],
                 ),
                 (
                     discriminant(&Token::False),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2),
                     ],
                 ),
                 (
-                    discriminant(&Token::String(String::from(""))),
+                    discriminant(&Token::Sub),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::OptStmts,
+            HashMap::from([
+                (
+                    discriminant(&Token::Println),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                    ],
+                ),
+                (
+                    discriminant(&Token::If),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                    ],
+                ),
+                (
+                    discriminant(&Token::While),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
                     ],
                 ),
                 (
                     discriminant(&Token::Not),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Print),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                    ],
+                ),
+                (discriminant(&Token::EOF), vec![]),
+                (
+                    discriminant(&Token::For),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                    ],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                    ],
+                ),
+                (discriminant(&Token::End), vec![]),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Return),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
                     ],
                 ),
                 (
                     discriminant(&Token::Integer(NumToken { value: 0 })),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                    ],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::ExprAddNoIdentNoAccess,
+            HashMap::from([
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
                     ],
                 ),
                 (
                     discriminant(&Token::OpenParenthesis),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::ExprMultNoAccess,
+            HashMap::from([
+                (
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::Defs,
+            HashMap::from([
+                (
+                    discriminant(&Token::Def),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Def),
+                        Lexem::NonTerminal(NonTerminal::Defs),
+                    ],
+                ),
+                (discriminant(&Token::While), vec![]),
+                (discriminant(&Token::For), vec![]),
+                (discriminant(&Token::Sub), vec![]),
+                (discriminant(&Token::Print), vec![]),
+                (discriminant(&Token::None), vec![]),
+                (discriminant(&Token::Println), vec![]),
+                (discriminant(&Token::If), vec![]),
+                (discriminant(&Token::OpenParenthesis), vec![]),
+                (discriminant(&Token::OpenBracket), vec![]),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![],
+                ),
+                (discriminant(&Token::Return), vec![]),
+                (discriminant(&Token::String(String::from(""))), vec![]),
+                (discriminant(&Token::True), vec![]),
+                (discriminant(&Token::Not), vec![]),
+                (discriminant(&Token::Integer(NumToken { value: 0 })), vec![]),
+                (discriminant(&Token::False), vec![]),
+            ]),
+        ),
+        (
+            NonTerminal::ExprAdd2NoAccess,
+            HashMap::from([
+                (discriminant(&Token::And), vec![]),
+                (
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::Terminal(Token::Sub),
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
+                    ],
+                ),
+                (discriminant(&Token::Or), vec![]),
+                (discriminant(&Token::Equal), vec![]),
+                (discriminant(&Token::Greater), vec![]),
+                (discriminant(&Token::GreaterEq), vec![]),
+                (discriminant(&Token::Newline), vec![]),
+                (discriminant(&Token::LessEq), vec![]),
+                (discriminant(&Token::Less), vec![]),
+                (discriminant(&Token::OpenBracket), vec![]),
+                (discriminant(&Token::NotEqual), vec![]),
+                (
+                    discriminant(&Token::Add),
+                    vec![
+                        Lexem::Terminal(Token::Add),
+                        Lexem::NonTerminal(NonTerminal::ExprMultNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd2NoAccess),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::ExprMultNoIdentNoAccess,
+            HashMap::from([
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNegNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2NoAccess),
                     ],
                 ),
             ]),
@@ -2887,19 +2681,15 @@ pub fn get_analysis_table() -> AnalysisTable {
             NonTerminal::ExprNegNoIdentNoAccess,
             HashMap::from([
                 (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![Lexem::NonTerminal(NonTerminal::FactorNoIdent)],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![Lexem::NonTerminal(NonTerminal::FactorNoIdent)],
-                ),
-                (
-                    discriminant(&Token::True),
+                    discriminant(&Token::None),
                     vec![Lexem::NonTerminal(NonTerminal::FactorNoIdent)],
                 ),
                 (
                     discriminant(&Token::OpenParenthesis),
+                    vec![Lexem::NonTerminal(NonTerminal::FactorNoIdent)],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
                     vec![Lexem::NonTerminal(NonTerminal::FactorNoIdent)],
                 ),
                 (
@@ -2910,7 +2700,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                     ],
                 ),
                 (
-                    discriminant(&Token::OpenBracket),
+                    discriminant(&Token::True),
                     vec![Lexem::NonTerminal(NonTerminal::FactorNoIdent)],
                 ),
                 (
@@ -2918,193 +2708,26 @@ pub fn get_analysis_table() -> AnalysisTable {
                     vec![Lexem::NonTerminal(NonTerminal::FactorNoIdent)],
                 ),
                 (
-                    discriminant(&Token::None),
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![Lexem::NonTerminal(NonTerminal::FactorNoIdent)],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
                     vec![Lexem::NonTerminal(NonTerminal::FactorNoIdent)],
                 ),
             ]),
         ),
         (
-            NonTerminal::ExprCmpNoIdentNoAccess,
+            NonTerminal::ExprAccess2Eq,
             HashMap::from([
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
-                    ],
-                ),
+                (discriminant(&Token::Assign), vec![]),
                 (
                     discriminant(&Token::OpenBracket),
                     vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprAddNoIdentNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2NoAccess),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::ExprAndNoAccess,
-            HashMap::from([
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Not),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
-                    ],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![
-                        Lexem::NonTerminal(NonTerminal::ExprNotNoAccess),
-                        Lexem::NonTerminal(NonTerminal::ExprAnd2NoAccess),
-                    ],
-                ),
-            ]),
-        ),
-        (
-            NonTerminal::ExprNeg,
-            HashMap::from([
-                (
-                    discriminant(&Token::False),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprAccess)],
-                ),
-                (
-                    discriminant(&Token::Identifier(IdToken {
-                        id: 0,
-                        name: String::new(),
-                    })),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprAccess)],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprAccess)],
-                ),
-                (
-                    discriminant(&Token::OpenBracket),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprAccess)],
-                ),
-                (
-                    discriminant(&Token::OpenParenthesis),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprAccess)],
-                ),
-                (
-                    discriminant(&Token::True),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprAccess)],
-                ),
-                (
-                    discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprAccess)],
-                ),
-                (
-                    discriminant(&Token::None),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprAccess)],
-                ),
-                (
-                    discriminant(&Token::Sub),
-                    vec![
-                        Lexem::Terminal(Token::Sub),
-                        Lexem::NonTerminal(NonTerminal::ExprAccess),
+                        Lexem::Terminal(Token::OpenBracket),
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::Terminal(Token::CloseBracket),
+                        Lexem::NonTerminal(NonTerminal::ExprAccess2Eq),
                     ],
                 ),
             ]),
@@ -3112,25 +2735,6 @@ pub fn get_analysis_table() -> AnalysisTable {
         (
             NonTerminal::ExprCmp2,
             HashMap::from([
-                (discriminant(&Token::Or), vec![]),
-                (discriminant(&Token::Comma), vec![]),
-                (discriminant(&Token::Sep), vec![]),
-                (
-                    discriminant(&Token::NotEqual),
-                    vec![
-                        Lexem::Terminal(Token::NotEqual),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
-                    ],
-                ),
-                (
-                    discriminant(&Token::LessEq),
-                    vec![
-                        Lexem::Terminal(Token::LessEq),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
-                    ],
-                ),
                 (
                     discriminant(&Token::GreaterEq),
                     vec![
@@ -3139,23 +2743,7 @@ pub fn get_analysis_table() -> AnalysisTable {
                         Lexem::NonTerminal(NonTerminal::ExprCmp2),
                     ],
                 ),
-                (
-                    discriminant(&Token::Less),
-                    vec![
-                        Lexem::Terminal(Token::Less),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
-                    ],
-                ),
                 (discriminant(&Token::CloseBracket), vec![]),
-                (
-                    discriminant(&Token::Greater),
-                    vec![
-                        Lexem::Terminal(Token::Greater),
-                        Lexem::NonTerminal(NonTerminal::ExprAdd),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
-                    ],
-                ),
                 (
                     discriminant(&Token::Equal),
                     vec![
@@ -3164,31 +2752,120 @@ pub fn get_analysis_table() -> AnalysisTable {
                         Lexem::NonTerminal(NonTerminal::ExprCmp2),
                     ],
                 ),
-                (discriminant(&Token::Newline), vec![]),
-                (discriminant(&Token::And), vec![]),
                 (discriminant(&Token::CloseParenthesis), vec![]),
+                (
+                    discriminant(&Token::NotEqual),
+                    vec![
+                        Lexem::Terminal(Token::NotEqual),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
+                    ],
+                ),
+                (discriminant(&Token::Comma), vec![]),
+                (discriminant(&Token::And), vec![]),
+                (
+                    discriminant(&Token::LessEq),
+                    vec![
+                        Lexem::Terminal(Token::LessEq),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
+                    ],
+                ),
+                (discriminant(&Token::Newline), vec![]),
+                (
+                    discriminant(&Token::Less),
+                    vec![
+                        Lexem::Terminal(Token::Less),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Greater),
+                    vec![
+                        Lexem::Terminal(Token::Greater),
+                        Lexem::NonTerminal(NonTerminal::ExprAdd),
+                        Lexem::NonTerminal(NonTerminal::ExprCmp2),
+                    ],
+                ),
+                (discriminant(&Token::Sep), vec![]),
+                (discriminant(&Token::Or), vec![]),
             ]),
         ),
         (
-            NonTerminal::ExprNot,
+            NonTerminal::Suite,
             HashMap::from([
                 (
-                    discriminant(&Token::None),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmp)],
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
                 ),
                 (
                     discriminant(&Token::True),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmp)],
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
                 ),
                 (
-                    discriminant(&Token::Sub),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmp)],
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Return),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
                 ),
                 (
                     discriminant(&Token::Not),
                     vec![
-                        Lexem::Terminal(Token::Not),
-                        Lexem::NonTerminal(NonTerminal::ExprCmp),
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Newline),
+                    vec![
+                        Lexem::Terminal(Token::Newline),
+                        Lexem::Terminal(Token::Begin),
+                        Lexem::NonTerminal(NonTerminal::Stmt),
+                        Lexem::NonTerminal(NonTerminal::OptStmts),
+                        Lexem::Terminal(Token::End),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Println),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
                     ],
                 ),
                 (
@@ -3196,27 +2873,380 @@ pub fn get_analysis_table() -> AnalysisTable {
                         id: 0,
                         name: String::new(),
                     })),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmp)],
-                ),
-                (
-                    discriminant(&Token::False),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmp)],
-                ),
-                (
-                    discriminant(&Token::String(String::from(""))),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmp)],
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
                 ),
                 (
                     discriminant(&Token::Integer(NumToken { value: 0 })),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmp)],
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
                 ),
                 (
-                    discriminant(&Token::OpenBracket),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmp)],
+                    discriminant(&Token::Print),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
                 ),
                 (
                     discriminant(&Token::OpenParenthesis),
-                    vec![Lexem::NonTerminal(NonTerminal::ExprCmp)],
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::SimpleStmt),
+                        Lexem::Terminal(Token::Newline),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::FactorNoIdent,
+            HashMap::from([
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::Terminal(Token::OpenBracket),
+                        Lexem::NonTerminal(NonTerminal::ExprList),
+                        Lexem::Terminal(Token::CloseBracket),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![Lexem::NonTerminal(NonTerminal::Const)],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![Lexem::NonTerminal(NonTerminal::Const)],
+                ),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::Terminal(Token::OpenParenthesis),
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::Terminal(Token::CloseParenthesis),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![Lexem::NonTerminal(NonTerminal::Const)],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![Lexem::NonTerminal(NonTerminal::Const)],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![Lexem::NonTerminal(NonTerminal::Const)],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::Const,
+            HashMap::from([
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![Lexem::Terminal(Token::String(String::from("")))],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![Lexem::Terminal(Token::False)],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![Lexem::Terminal(Token::None)],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![Lexem::Terminal(Token::Integer(NumToken { value: 0 }))],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![Lexem::Terminal(Token::True)],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::ExprList,
+            HashMap::from([
+                (
+                    discriminant(&Token::Not),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+                (discriminant(&Token::CloseBracket), vec![]),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+                (discriminant(&Token::CloseParenthesis), vec![]),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Expr),
+                        Lexem::NonTerminal(NonTerminal::ExprListSuite),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::ExprAccess,
+            HashMap::from([
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Factor),
+                        Lexem::NonTerminal(NonTerminal::ExprAccess2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Factor),
+                        Lexem::NonTerminal(NonTerminal::ExprAccess2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Factor),
+                        Lexem::NonTerminal(NonTerminal::ExprAccess2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Factor),
+                        Lexem::NonTerminal(NonTerminal::ExprAccess2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Factor),
+                        Lexem::NonTerminal(NonTerminal::ExprAccess2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Factor),
+                        Lexem::NonTerminal(NonTerminal::ExprAccess2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Factor),
+                        Lexem::NonTerminal(NonTerminal::ExprAccess2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::Factor),
+                        Lexem::NonTerminal(NonTerminal::ExprAccess2),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::ExprMult,
+            HashMap::from([
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNeg),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNeg),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNeg),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNeg),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Identifier(IdToken {
+                        id: 0,
+                        name: String::new(),
+                    })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNeg),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNeg),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNeg),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNeg),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2),
+                    ],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprNeg),
+                        Lexem::NonTerminal(NonTerminal::ExprMult2),
+                    ],
+                ),
+            ]),
+        ),
+        (
+            NonTerminal::ExprNoIdentNoAccess,
+            HashMap::from([
+                (
+                    discriminant(&Token::None),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAndNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::False),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAndNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Sub),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAndNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::String(String::from(""))),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAndNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Not),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAndNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::True),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAndNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenParenthesis),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAndNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::Integer(NumToken { value: 0 })),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAndNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
+                    ],
+                ),
+                (
+                    discriminant(&Token::OpenBracket),
+                    vec![
+                        Lexem::NonTerminal(NonTerminal::ExprAndNoIdentNoAccess),
+                        Lexem::NonTerminal(NonTerminal::Expr2NoAccess),
+                    ],
                 ),
             ]),
         ),

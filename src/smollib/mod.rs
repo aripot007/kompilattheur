@@ -1,3 +1,4 @@
+mod input;
 mod int;
 mod len;
 mod list;
@@ -8,7 +9,6 @@ use std::usize;
 use crate::asm::codegen::CodeGen;
 use crate::asm::llvm::{user_function_prefix, user_function_prefix_format};
 use crate::asm::LLVMCodegenError;
-use crate::common::localizable::Localizable;
 use crate::common::symbol_table::{Symbol, SymbolTableElement, SymbolTableRef};
 use crate::common::types::{IdToken, Token};
 use crate::lexer::TokenTable;
@@ -43,6 +43,7 @@ fn get_all_smollib_functions() -> Vec<Box<dyn SmollibFunction>> {
         Box::new(range::SmolRange {}),
         Box::new(int::SmolInt {}),
         Box::new(type_::SmolType {}),
+        Box::new(input::SmolInput {}),
     ]
 }
 
@@ -53,6 +54,7 @@ pub enum SmollibFunctionNames {
     SmolRange,
     SmolInt,
     SmolType,
+    SmolInput,
 }
 
 impl ToString for SmollibFunctionNames {
@@ -70,6 +72,9 @@ impl ToString for SmollibFunctionNames {
             }
             SmollibFunctionNames::SmolType => {
                 user_function_prefix_format!(type_::SmolType {}.name())
+            }
+            SmollibFunctionNames::SmolInput => {
+                user_function_prefix_format!(input::SmolInput {}.name())
             }
         };
         String::from(s)

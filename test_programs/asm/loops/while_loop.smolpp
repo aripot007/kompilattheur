@@ -1,0 +1,7 @@
+
+a = 100
+while a > 0:
+    println(a)
+    a = a - 1
+
+println("Done !")

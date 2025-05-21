@@ -1,6 +1,6 @@
 use super::{
     llvm_compute_expr, llvm_from_assign, llvm_from_conditional, llvm_from_for_loop,
-    llvm_from_return,
+    llvm_from_return, llvm_from_while_loop,
 };
 use crate::{
     asm::{
@@ -21,7 +21,7 @@ use crate::{
 pub fn llvm_from_block<'ctx>(
     block: &Block,
     cg: &mut CodeGen<'ctx>,
-) -> Result<(), LLVMCodegenError> {
+) -> Result<bool, LLVMCodegenError> {
     let mut error = false;
 
     // Allocate memory on the stack for each variable
@@ -66,7 +66,9 @@ pub fn llvm_from_block<'ctx>(
     let old_symbol_table = cg.current_symbol_table.clone();
     cg.current_symbol_table = block.symbol_table.clone();
 
-    for stmt in &block.statements {
+    let mut returned = false;
+
+    for (i, stmt) in block.statements.iter().enumerate() {
         match stmt {
             Statement::Print(expr) => llvm_from_print(expr, cg)?,
             Statement::Println(expr) => {
@@ -84,7 +86,16 @@ pub fn llvm_from_block<'ctx>(
             Statement::Assign(assign) => llvm_from_assign(assign, cg)?,
             Statement::Conditional(cond) => llvm_from_conditional(cond, cg)?,
             Statement::For(for_loop) => llvm_from_for_loop(for_loop, cg)?,
-            Statement::Return(expr) => llvm_from_return(expr, cg)?,
+            Statement::While(while_loop) => llvm_from_while_loop(while_loop, cg)?,
+            Statement::Return(expr) => {
+                llvm_from_return(expr, cg)?;
+                if i != block.statements.len() - 1 {
+                    cg.warnings
+                        .push(Diagnostic::unreachable_code_after_return(&stmt));
+                }
+                returned = true;
+                break;
+            }
             Statement::Expr(expr) => {
                 llvm_compute_expr(expr, cg)?;
             }
@@ -102,7 +113,7 @@ pub fn llvm_from_block<'ctx>(
         return Err(LLVMCodegenError::Unimplemented(String::from("Block")));
     }
 
-    return Ok(());
+    return Ok(returned);
 }
 
 fn llvm_from_print<'ctx>(

@@ -1,8 +1,0 @@
-def a(i):
-    if i == 0:
-        return None
-    a()
-
-
-i = 10
-a()

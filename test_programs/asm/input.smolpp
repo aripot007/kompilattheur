@@ -1,0 +1,6 @@
+print("Enter your name : ")
+name = input()
+println("Your name is : " + name)
+print("It is ")
+print(len(name))
+println(" characters")

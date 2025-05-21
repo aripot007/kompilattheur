@@ -271,21 +271,6 @@ fn generate_from_block(
                     symbol_type: Type::Any,
                 };
                 loop_table.borrow_mut().insert_symbol(var_id, var_element);
-                let var_id = for_loop.var.element.id;
-                let var_name = for_loop.var.element.name.clone();
-
-                let loop_table = enter_scope(table.clone());
-                context.symbol_table = loop_table.clone();
-
-                let var_element = SymbolTableElement {
-                    symbol: Symbol::Variable {
-                        offset: 0,
-                        ptr_id: None,
-                    },
-                    name: var_name,
-                    symbol_type: Type::Any,
-                };
-                loop_table.borrow_mut().insert_symbol(var_id, var_element);
 
                 let _ = generate_from_block(&mut for_loop.block, loop_table.clone(), context);
 
@@ -305,6 +290,18 @@ fn generate_from_block(
                         }
                     }
                 };
+            }
+            Statement::While(ref mut for_loop) => {
+                // Parse condition type
+                let _ = for_loop.condition.parse_type(context);
+
+                let loop_table = enter_scope(table.clone());
+                context.symbol_table = loop_table.clone();
+
+                let _ = generate_from_block(&mut for_loop.block, loop_table.clone(), context);
+
+                table = exit_scope(loop_table);
+                context.symbol_table = table.clone();
             }
             Statement::Conditional(ref mut cond) => {
                 // Parse condition expression type

@@ -1,7 +1,0 @@
-a = [42, range(25)]
-
-println(a[0] - 25)
-println(a[0] + 25)
-println(range(12) + a[1])
-
-println(a[0] + a[1])

@@ -30,10 +30,6 @@ pub fn llvm_from_block<'ctx>(
         for (_, symbol) in symbol_table.table.iter_mut() {
             if let Symbol::Variable { offset, ptr_id } = symbol.symbol {
                 if ptr_id.is_some() {
-                    println!(
-                        "Variable pointer for symbol {} is not None at block start",
-                        symbol.name
-                    );
                     continue;
                 }
 

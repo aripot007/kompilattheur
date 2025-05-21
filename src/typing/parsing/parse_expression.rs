@@ -88,19 +88,16 @@ fn try_parse_binop(
 
     match op {
         BinOp::EQ | BinOp::NEQ => {
-            if t1 != t2
-                && !(t1 == Type::Int && t2 == Type::Bool)
-                && !(t1 == Type::Bool && t2 == Type::Int)
+            if !t1.is_compatible(t2.clone())
+                && !((t1.is_compatible(Type::Int) || t1.is_compatible(Type::Bool))
+                    && (t2.is_compatible(Type::Int) || t2.is_compatible(Type::Bool)))
             {
-                match (&t1, &t2) {
-                    (Type::Bool, Type::Int) | (Type::Int, Type::Bool) => (),
-                    _ => context.warnings.push(Diagnostic::dubious_comparison(
-                        &root_localization,
-                        &t1,
-                        &t2,
-                        false,
-                    )),
-                }
+                context.warnings.push(Diagnostic::dubious_comparison(
+                    &root_localization,
+                    &t1,
+                    &t2,
+                    false,
+                ));
             }
             return Ok(Type::Bool);
         }

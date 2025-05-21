@@ -278,7 +278,7 @@ fn generate_from_block(
                 context.symbol_table = table.clone();
 
                 // Parse iterator type
-                let t = match for_loop.iterator.parse_type(context) {
+                let _ = match for_loop.iterator.parse_type(context) {
                     Err(_) => continue,
                     Ok(t) => {
                         if !t.is_compatible(Type::List) && !t.is_compatible(Type::Range) {

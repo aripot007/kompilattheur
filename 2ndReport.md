@@ -1,5 +1,8 @@
 # Rapport PCL2
+
+
 ## Table des symboles
+
 La structure de la table des symboles suit ce schéma :
 
 |clé|nom|symbole|type|offset(octet)
@@ -32,7 +35,22 @@ Le type `Any` permet de representer n'importe quel type, il est nécéssaire pou
 Le type `Weak` permet de faire soit une intersection de types ou une union de types afin de pouvoir inférer un type à la compilation. Ex: deux variables faisant une opération "-" n'est possible qu'entre deux `Int`, le type final sera un `Int`. Si une fonction retourne soit un booléen soit un string `Weak(String, Bool)`, alors une opération "-" avec le retour de cette fonction donnera une erreur statique.
 Le type `Range` est un type interne. Il contient un `Int` et imite le fonctionnement d'un itérateur Python dans une boucle `for`et une fonction `list`.
 
+
+## Contrôles sémantiques
+
+### statiques
+
+À la compilation, nous pouvons détecter un certain nombre d'erreur sémantique. Notamment, nous essayons d'inférer tous les types de chaque identifieur. Si 2 types sont incompatibles sur un binop nous renvoyons une erreur.
+exemple : addition de `Int` et de `List`
+
+### dynamiques
+
+Pour certaine partie du programme, nous ne pouvons pas déviner à l'avance son comportement, nous avons donc ajouté un nombre certain de teste à l'éxécution.
+exemple : vérifier que les indices d'accès à une liste soit bien compris dans sa taille
+
+
 ## Schéma de traduction
+
 ```Python
 def fibonacci(n): # 🟥
     if n <= 0: # 0️⃣
@@ -107,6 +125,7 @@ merge8:                                           ; preds = %else7
 
 
 ## Gestion de Projet :
+
 ### Aristide
 **Typage** : typage statique (10h); typage dynamique (3h)
 **Controle sémantique statiques** : verification des types statiques (5h); 

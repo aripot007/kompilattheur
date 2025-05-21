@@ -212,7 +212,6 @@ fn compile(args: CompileArgs) {
 
     let context = Context::create();
     let target_triple = TargetMachine::get_default_triple();
-    println!("Target triple: {}", target_triple.to_string());
     let mut codegen = CodeGen::create(&context, &target_triple, &file_path).unwrap();
     codegen.generate_llvm(&ast);
     if let Err(e) = codegen.verify() {

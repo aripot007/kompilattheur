@@ -133,8 +133,6 @@ impl<'ctx> CodeGen<'ctx> {
 
     fn get_linker(&self) -> Result<String, String> {
         let dynamic_linker = get_dynamic_linker(&self.target_machine);
-        println!("Dynamic linker: {}", dynamic_linker);
-
         Ok(dynamic_linker)
     }
 
@@ -222,7 +220,7 @@ impl<'ctx> CodeGen<'ctx> {
 
             match self.try_link_with_command(&mut cmd) {
                 Ok(_) => return Ok(()),
-                Err(e) => println!("ld64.lld failed: {}", e),
+                Err(_) => (),
             }
         } else {
             // Try Linux lld first
@@ -238,22 +236,22 @@ impl<'ctx> CodeGen<'ctx> {
 
             match self.try_link_with_command(&mut cmd) {
                 Ok(_) => return Ok(()),
-                Err(e) => println!("ld.lld failed: {}", e),
+                Err(_) => (),
             }
         }
 
         // If lld failed, try clang
-        println!("Falling back to clang for linking");
+        // println!("Falling back to clang for linking");
         let mut cmd = std::process::Command::new("clang");
         cmd.arg(obj_path).arg("-o").arg(exe_path);
 
         match self.try_link_with_command(&mut cmd) {
             Ok(_) => return Ok(()),
-            Err(e) => println!("clang failed: {}", e),
+            Err(_) => (),
         }
 
         // If clang failed, try gcc as last resort
-        println!("Falling back to gcc for linking");
+        // println!("Falling back to gcc for linking");
         let mut cmd = std::process::Command::new("gcc");
         cmd.arg(obj_path).arg("-o").arg(exe_path);
 
@@ -275,7 +273,6 @@ impl<'ctx> CodeGen<'ctx> {
             eprintln!("{}", e.to_string());
             Err("Module verification failed".into())
         } else {
-            println!("Module verification succeeded!");
             Ok(())
         }
     }

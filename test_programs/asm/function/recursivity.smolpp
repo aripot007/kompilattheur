@@ -1,0 +1,14 @@
+def a(i):
+    if i == 0:
+        return None
+    print(i)
+    print(", ")
+    b(i-1)
+
+def b(i)
+    a(i)
+
+
+
+i = 10
+a()

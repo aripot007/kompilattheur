@@ -1,9 +1,0 @@
-# Printing factors (immediate expression value)
-print("Hello world !")
-print(None)
-print(True)
-print(False)
-print(42)
-
-# Not implemented yet
-print([12])

@@ -1,0 +1,39 @@
+println("Condition")
+
+if True:
+    println("✅ True")
+else:
+    println("❌ True")
+
+if True or False:
+    println("✅ True or False")
+else:
+    println("❌ True or False")
+
+if True and False:
+    println("❌ True and False")
+else:
+    println("✅ True and False")
+
+
+
+println("Condition List")
+
+if [0,1,2]:
+    println("✅ [0,1,2]")
+else:
+    println("❌ [0,1,2]")
+
+if []:
+    println("❌ []")
+else:
+    println("✅ []")
+
+
+
+println("Condition Strign")
+
+if "":
+    println("❌ \"\"")
+else:
+    println("✅ empty string")

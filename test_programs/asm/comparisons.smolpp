@@ -1,0 +1,164 @@
+println("Comparison between ints")
+
+print("1 == 1 : ")
+println(1==1)
+
+print("1 != 1 : ")
+println(1!=1)
+
+print("1 < 1 : ")
+println(1<1)
+
+print("1 > 1 : ")
+println(1>1)
+
+print("1 <= 1 : ")
+println(1<=1)
+
+print("1 >= 1 : ")
+println(1>=1)
+
+print("1 == 2 : ")
+println(1==2)
+
+print("1 != 2 : ")
+println(1!=2)
+
+print("1 < 2 : ")
+println(1<2)
+
+print("1 > 2 : ")
+println(1>2)
+
+print("1 <= 2 : ")
+println(1<=2)
+
+print("1 >= 2 : ")
+println(1>=2)
+
+print("2 == 1 : ")
+println(2==1)
+
+print("2 != 1 : ")
+println(2!=1)
+
+print("2 < 1 : ")
+println(2<1)
+
+print("2 > 1 : ")
+println(2>1)
+
+print("2 <= 1 : ")
+println(2<=1)
+
+print("2 >= 1 : ")
+println(2>=1)
+
+
+
+println(" ")
+println("Comparison between booleans")
+
+print("True == True : ")
+println(True==True)
+
+print("True != True : ")
+println(True!=True)
+
+print("True == False : ")
+println(True==False)
+
+print("True != False : ")
+println(True!=False)
+
+print("True < True : ")
+println(True<True)
+
+print("True > True : ")
+println(True>True)
+
+print("True <= True : ")
+println(True<=True)
+
+print("True >= True : ")
+println(True>=True)
+
+print("True < False : ")
+println(True<False)
+
+print("True > False : ")
+println(True>False)
+
+print("True <= False : ")
+println(True<=False)
+
+print("True >= False : ")
+println(True>=False)
+
+print("1 == True : ")
+println(1 == True)
+
+print("1 != True : ")
+println(1 != True)
+
+print("False == 1 : ")
+println(False == 1)
+
+print("False != 1 : ")
+println(False != 1)
+
+
+
+println(" ")
+print("Comparison between None")
+
+print("None == None : ")
+println(None==None)
+
+print("None != None : ")
+println(None!=None)
+
+print("1 == None : ")
+println(1 == None)
+
+print("1 != None : ")
+println(1 != None)
+
+
+
+println(" ")
+println("Comparison list")
+
+print("[0,1,2] == [0,1,2] : ")
+println([0,1,2] == [0,1,2])
+
+print("[1,1,2] < [0,1,2] : ")
+println([1,1,2] == [0,1,2])
+
+print("[0,1] < [0,1,2] : ")
+println([0,1] == [0,1,2])
+
+print("[0,[1,2],3] == [0,[1,2],3] : ")
+println([0,[1,2],3] == [0,[1,2],3])
+
+
+
+println(" ")
+println("Comparison string")
+
+print("'abc' == 1 : ")
+println("abc" == 1)
+
+print("'abc' != 1 : ")
+println("abc" != 1)
+
+print("'abc' == 'abc' : ")
+println("abc" == "abc")
+
+
+
+println(" ")
+println("Comparison range")
+
+print("range(10) == range(10) : ")
+println(range(10) == range(10))

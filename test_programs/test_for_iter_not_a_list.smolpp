@@ -1,6 +1,0 @@
-a = 1
-print(a)
-print("\n")
-for i in a:
-    print(i)
-    print("\n")

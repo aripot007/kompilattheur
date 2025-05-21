@@ -1,0 +1,2 @@
+a = [5, "hello"]
+println(a[3])

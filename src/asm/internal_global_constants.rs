@@ -179,6 +179,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         .as_str(),
         cg,
     );
+
     create_global_string(
         RuntimeErrorMsg::PanicNotImplemented,
         format!(
@@ -196,7 +197,25 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         .as_str(),
         cg,
     );
-    create_global_string(RuntimeErrorMsg::TypeError, "TypeError: %s\n", cg);
+
+    create_global_string(
+        RuntimeErrorMsg::TypeError,
+        format!(
+            "{} {}{}",
+            "TypeError:"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "%s".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
+        cg,
+    );
+
     create_global_string(
         RuntimeErrorMsg::IndexOutOfBound,
         format!(
@@ -273,7 +292,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         RuntimeErrorMsg::InvalidStringForIntFunction,
         format!(
             "{} {}{}",
-            "TypeError :"
+            "InvalidIntError :"
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
             "Invalid string for int function".truecolor(

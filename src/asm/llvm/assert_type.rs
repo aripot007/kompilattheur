@@ -23,7 +23,7 @@ where
 {
     let msg = match msg {
         Some(s) => s,
-        None => format!("Expected type {} ({})", valtype, valtype.get_bitmask()),
+        None => format!("Expected type {}", valtype),
     };
 
     let type_field = cg.get_variable_type(*value)?;

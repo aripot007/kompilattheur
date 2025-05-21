@@ -6,3 +6,8 @@ println(a)
 println(b)
 
 println(a + b)
+
+c = "Hello "
+d = "World !"
+
+println(c + d)

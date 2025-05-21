@@ -7,6 +7,7 @@ use crate::{
             lists::llvm_build_list_concat,
             panic::smolpp_panic_with_unreachable,
             smolvar::SmolVar,
+            strings::llvm_build_string_concat,
             LLVMCodegenError,
         },
         InternalFuctions, RuntimeErrorMsg,
@@ -143,9 +144,7 @@ pub fn compute_add_string<'ctx>(
     y: SmolVar<'ctx>,
     cg: &mut CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    // TODO: implement concat string
-    let res = cg.context.i64_type().const_int(0, false);
-    return cg.create_variable(Type::Int, res);
+    return llvm_build_string_concat(x, y, cg);
 }
 
 pub fn compute_add_generic<'ctx>(

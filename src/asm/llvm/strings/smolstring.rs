@@ -12,6 +12,9 @@ use inkwell::{
 
 pub type SmolString<'ctx> = StructValue<'ctx>;
 
+pub static STRING_STRUCT_LEN_INDEX: u32 = 0;
+pub static STRING_STRUCT_ARRAY_INDEX: u32 = 1;
+
 impl<'ctx> CodeGen<'ctx> {
     /// Initialize the LLVM struct to represent strings
     ///
@@ -101,11 +104,16 @@ impl<'ctx> CodeGen<'ctx> {
         let undef = self.smolpp_types.string_type.get_undef();
         let with_len = self
             .builder
-            .build_insert_value(undef, len, 0, "with_len")?
+            .build_insert_value(undef, len, STRING_STRUCT_LEN_INDEX, "with_len")?
             .into_struct_value();
         let full_struct = self
             .builder
-            .build_insert_value(with_len, array_ptr, 1, "full_struct")?
+            .build_insert_value(
+                with_len,
+                array_ptr,
+                STRING_STRUCT_ARRAY_INDEX,
+                "full_struct",
+            )?
             .into_struct_value();
 
         return Ok(full_struct);
@@ -227,7 +235,7 @@ impl<'ctx> CodeGen<'ctx> {
     ) -> Result<IntValue<'ctx>, LLVMCodegenError> {
         return Ok(self
             .builder
-            .build_extract_value(string, 0, "string_len")?
+            .build_extract_value(string, STRING_STRUCT_LEN_INDEX, "string_len")?
             .into_int_value());
     }
 
@@ -238,7 +246,7 @@ impl<'ctx> CodeGen<'ctx> {
     ) -> Result<SmolString<'ctx>, LLVMCodegenError> {
         return Ok(self
             .builder
-            .build_insert_value(string, len, 0, "set_string_len")?
+            .build_insert_value(string, len, STRING_STRUCT_LEN_INDEX, "set_string_len")?
             .into_struct_value());
     }
 
@@ -248,8 +256,9 @@ impl<'ctx> CodeGen<'ctx> {
     ) -> Result<PointerValue<'ctx>, LLVMCodegenError> {
         let ptr = self
             .builder
-            .build_extract_value(string, 1, "string_array_ptr")?
+            .build_extract_value(string, STRING_STRUCT_ARRAY_INDEX, "string_array_ptr")?
             .into_pointer_value();
+
         let ptr = self.builder.build_int_to_ptr(
             ptr,
             self.context.ptr_type(AddressSpace::default()),
@@ -265,7 +274,7 @@ impl<'ctx> CodeGen<'ctx> {
         let ptr_ptr = self.builder.build_struct_gep(
             self.smolpp_types.string_type,
             string_ptr,
-            1,
+            STRING_STRUCT_ARRAY_INDEX,
             "string_array_ptr",
         )?;
         let ptr = self.builder.build_load(
@@ -283,7 +292,12 @@ impl<'ctx> CodeGen<'ctx> {
     ) -> Result<SmolString<'ctx>, LLVMCodegenError> {
         return Ok(self
             .builder
-            .build_insert_value(string, ptr, 1, "set_string_array_ptr")?
+            .build_insert_value(
+                string,
+                ptr,
+                STRING_STRUCT_ARRAY_INDEX,
+                "set_string_array_ptr",
+            )?
             .into_struct_value());
     }
 }

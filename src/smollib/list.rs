@@ -18,8 +18,6 @@ use crate::{
 
 use super::SmollibFunction;
 
-use crate::common::localizable::Localizable;
-
 pub(super) struct SmolList {}
 
 impl SmollibFunction for SmolList {

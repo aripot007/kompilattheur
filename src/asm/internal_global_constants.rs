@@ -54,6 +54,9 @@ pub enum RuntimeErrorMsg {
     /// Used when try to add two different type
     PanicInvalidInternalTypeAddGeneric,
 
+    /// Used when getline fails
+    PanicGetlineError,
+
     /// Used when the type of a variable is not what was expected
     ///
     /// Takes a string message as an argument
@@ -81,7 +84,7 @@ macro_rules! internal_global_prefix {
 impl Into<&'static str> for InternalGlobalConst {
     fn into(self) -> &'static str {
         match self {
-            InternalGlobalConst::StdinFile => internal_global_prefix!("stdin"),
+            InternalGlobalConst::StdinFile => "stdin",
             InternalGlobalConst::NoneString => internal_global_prefix!("none_string"),
             InternalGlobalConst::TrueString => internal_global_prefix!("true_string"),
             InternalGlobalConst::FalseString => internal_global_prefix!("false_string"),
@@ -108,6 +111,7 @@ impl Into<&'static str> for RuntimeErrorMsg {
                 internal_global_prefix!("panic_invalid_type_fmt_string")
             }
             RuntimeErrorMsg::PanicNotImplemented => internal_global_prefix!("panic_unimplemented"),
+            RuntimeErrorMsg::PanicGetlineError => internal_global_prefix!("panic_getline_error"),
             RuntimeErrorMsg::TypeError => internal_global_prefix!("error_type"),
             RuntimeErrorMsg::IndexOutOfBound => internal_global_prefix!("error_out_of_bound"),
             RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric => {
@@ -200,6 +204,24 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
             "Not implemented yet".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
+        cg,
+    );
+
+    create_global_string(
+        RuntimeErrorMsg::PanicGetlineError,
+        format!(
+            "{} {}{}",
+            "PANIC :"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "Could not read from standard input".truecolor(
                 HIGHLIGHT_ERROR_COLOR.0,
                 HIGHLIGHT_ERROR_COLOR.1,
                 HIGHLIGHT_ERROR_COLOR.2

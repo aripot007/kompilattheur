@@ -172,16 +172,20 @@ while not game_over:
     print_board(board)
     col = 0
     if player == 1:
-        print("Player ")
-        print(player)
-        print(", choose a column (0-6): ")
-        col_str = input()
-        col = int(col_str)
-        if col < 0:
-            col = 0
-        else:
-            if col > 6:
-                col = 6
+        correct_choice = False
+        while not correct_choice:
+            print("Player ")
+            print(player)
+            print(", choose a column (0-6): ")
+            col_str = input()
+            if is_int(col_str):
+                col = int(col_str)
+                if col >= 0 and col <= 6:
+                    correct_choice = True
+                else:
+                    println("Please enter a number between 0 and 6 !")
+            else:
+                println("Please enter a valid number !")
     else:
         col = get_ai_move(board)
         print("AI chooses column ")

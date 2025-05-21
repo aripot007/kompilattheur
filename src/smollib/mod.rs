@@ -1,6 +1,7 @@
 #[cfg(feature = "smollib-input")]
 mod input;
 mod int;
+mod is_int;
 mod len;
 mod list;
 mod range;
@@ -43,6 +44,7 @@ fn get_all_smollib_functions() -> Vec<Box<dyn SmollibFunction>> {
         Box::new(list::SmolList {}),
         Box::new(range::SmolRange {}),
         Box::new(int::SmolInt {}),
+        Box::new(is_int::SmolIsInt {}),
         #[cfg(feature = "smollib-input")]
         Box::new(input::SmolInput {}),
         Box::new(type_::SmolType {}),
@@ -55,6 +57,7 @@ pub enum SmollibFunctionNames {
     SmolList,
     SmolRange,
     SmolInt,
+    SmolIsInt,
     #[cfg(feature = "smollib-input")]
     SmolInput,
     SmolType,
@@ -72,6 +75,9 @@ impl ToString for SmollibFunctionNames {
             }
             SmollibFunctionNames::SmolInt => {
                 user_function_prefix_format!(int::SmolInt {}.name())
+            }
+            SmollibFunctionNames::SmolIsInt => {
+                user_function_prefix_format!(is_int::SmolIsInt {}.name())
             }
             SmollibFunctionNames::SmolType => {
                 user_function_prefix_format!(type_::SmolType {}.name())

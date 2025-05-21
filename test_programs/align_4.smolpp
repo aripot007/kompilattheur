@@ -1,0 +1,193 @@
+def print_cell(cell):
+    if cell == 0:
+        print(".")
+    else:
+        if cell == 1:
+            print("X")
+        else:
+            print("O")
+
+def print_board(board):
+    for row in range(len(board)):
+        for col in range(len(board[0])):
+            print_cell(board[row][col])
+        println("")
+
+def make_board():
+    r0 = [0, 0, 0, 0, 0, 0, 0]
+    r1 = [0, 0, 0, 0, 0, 0, 0]
+    r2 = [0, 0, 0, 0, 0, 0, 0]
+    r3 = [0, 0, 0, 0, 0, 0, 0]
+    r4 = [0, 0, 0, 0, 0, 0, 0]
+    r5 = [0, 0, 0, 0, 0, 0, 0]
+    return [r0, r1, r2, r3, r4, r5]
+
+def copy_board(board):
+    b = []
+    y = 0
+    while y < len(board):
+        row = []
+        x = 0
+        while x < len(board[0]):
+            row = row + [board[y][x]]
+            x = x + 1
+        b = b + [row]
+        y = y + 1
+    return b
+
+def drop_disc(board, col, player):
+    placed = False
+    row = len(board) - 1
+    while row >= 0:
+        if board[row][col] == 0:
+            board[row][col] = player
+            placed = True
+            row = -1
+        else:
+            row = row - 1
+    return placed
+
+def check_line(a, b, c, d):
+    if a != 0:
+        if a == b:
+            if b == c:
+                if c == d:
+                    return True
+    return False
+
+def check_winner(board):
+    rows = len(board)
+    cols = len(board[0])
+    y = 0
+    while y < rows:
+        x = 0
+        while x < cols:
+            win = 0
+            if x + 3 < cols:
+                if check_line(board[y][x], board[y][x+1], board[y][x+2], board[y][x+3]):
+                    win = board[y][x]
+            if win == 0:
+                if y + 3 < rows:
+                    if check_line(board[y][x], board[y+1][x], board[y+2][x], board[y+3][x]):
+                        win = board[y][x]
+            if win == 0:
+                if x + 3 < cols:
+                    if y + 3 < rows:
+                        if check_line(board[y][x], board[y+1][x+1], board[y+2][x+2], board[y+3][x+3]):
+                            win = board[y][x]
+            if win == 0:
+                if x - 3 >= 0:
+                    if y + 3 < rows:
+                        if check_line(board[y][x], board[y+1][x-1], board[y+2][x-2], board[y+3][x-3]):
+                            win = board[y][x]
+            if win != 0:
+                return win
+            x = x + 1
+        y = y + 1
+    return 0
+
+def is_full(board):
+    y = 0
+    while y < len(board):
+        x = 0
+        while x < len(board[0]):
+            if board[y][x] == 0:
+                return False
+            x = x + 1
+        y = y + 1
+    return True
+
+def can_drop(board, col):
+    row = 0
+    while row < len(board):
+        if board[row][col] == 0:
+            return True
+        row = row + 1
+    return False
+
+def get_ai_move(board):
+    col = 0
+    best = -1
+
+    # Try winning move
+    while col < 7:
+        if can_drop(board, col):
+            temp = copy_board(board)
+            drop_disc(temp, col, 2)
+            if check_winner(temp) == 2:
+                best = col
+        col = col + 1
+
+    if best == -1:
+        col = 0
+        # Try blocking opponent
+        while col < 7:
+            if can_drop(board, col):
+                temp = copy_board(board)
+                drop_disc(temp, col, 1)
+                if check_winner(temp) == 1:
+                    best = col
+            col = col + 1
+
+    if best == -1:
+        # Center-out column preference
+        col_order = [3, 2, 4, 1, 5, 0, 6]
+        i = 0
+        while i < 7:
+            c = col_order[i]
+            if can_drop(board, c):
+                best = c
+                i = 7  # manually exit loop
+            else:
+                i = i + 1
+
+    return best
+
+
+# Game Setup
+board = make_board()
+player = 1
+game_over = False
+
+println("Player 1 is human. Player 2 is AI.")
+
+while not game_over:
+    print_board(board)
+    col = 0
+    if player == 1:
+        print("Player ")
+        print(player)
+        println(", choose a column (0-6):")
+        col_str = input()
+        col = int(col_str)
+        if col < 0:
+            col = 0
+        else:
+            if col > 6:
+                col = 6
+    else:
+        col = get_ai_move(board)
+        print("AI chooses column ")
+        println(col)
+
+    placed = drop_disc(board, col, player)
+    if placed:
+        winner = check_winner(board)
+        if winner != 0:
+            print_board(board)
+            print("Player ")
+            print(winner)
+            println(" wins!")
+            game_over = True
+        else:
+            if is_full(board):
+                print_board(board)
+                println("It's a draw!")
+                game_over = True
+            else:
+                if player == 1:
+                    player = 2
+                else:
+                    player = 1
+    else:
+        println("Column is full. Try again.")

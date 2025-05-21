@@ -73,6 +73,7 @@ impl From<Tree<FileElement<Lexem>>> for Statement {
                 return parse_simple(root.borrow().get_children()[0].clone())
             }
             Lexem::Terminal(Token::For) => return Statement::For(For::from(root)),
+            Lexem::Terminal(Token::While) => return Statement::While(While::from(root)),
             Lexem::Terminal(Token::If) => return Statement::Conditional(Conditional::from(root)),
             _ => return Statement::NotImplemented,
         }

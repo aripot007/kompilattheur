@@ -40,9 +40,11 @@ pub fn llvm_from_while_loop<'ctx>(
 
     cg.builder.position_at_end(loop_block);
 
-    llvm_from_block(&while_loop.block, cg)?;
+    let branched = llvm_from_block(&while_loop.block, cg)?;
 
-    cg.builder.build_unconditional_branch(header_block)?;
+    if !branched {
+        cg.builder.build_unconditional_branch(header_block)?;
+    }
 
     cg.builder.position_at_end(exit_block);
 

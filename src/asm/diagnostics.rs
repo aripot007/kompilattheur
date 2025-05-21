@@ -1,7 +1,7 @@
 use colored::{Color, Colorize};
 
 use crate::{
-    ast::nodes::{Assign, AstNode},
+    ast::nodes::{Assign, AstNode, Statement},
     common::diagnostic::{Diagnostic, DiagnosticGravity},
 };
 
@@ -42,6 +42,16 @@ impl Diagnostic {
                 "The result of this assignation is discarded, as '{}' is not a destination",
                 assign.destination.get_string_repr().color(Color::Yellow)
             ),
+        )
+    }
+
+    /// Return in middle of block
+    pub(super) fn unreachable_code_after_return(return_stmt: &Statement) -> Self {
+        Diagnostic::from_localizable_ref(
+            return_stmt,
+            DiagnosticGravity::Warning,
+            String::from("UnreachableCode"),
+            format!("The code after this return statement will never be executed",),
         )
     }
 }

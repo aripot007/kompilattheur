@@ -245,7 +245,10 @@ fn for_loop_list<'ctx>(
 
     cg.builder.build_store(var_ptr, iterator_i)?;
 
-    llvm_from_block(&for_loop.block, cg)?;
+    let branched = llvm_from_block(&for_loop.block, cg)?;
+    if branched {
+        return Ok(());
+    }
 
     // Increment the internal index variable
     let increment_one = cg.builder.build_int_add(
@@ -309,7 +312,10 @@ fn for_loop_range<'ctx>(
     let smol_int = cg.create_variable(Type::Int, internal_index_int_load)?;
     cg.builder.build_store(var_ptr, smol_int)?;
 
-    llvm_from_block(&for_loop.block, cg)?;
+    let branched = llvm_from_block(&for_loop.block, cg)?;
+    if branched {
+        return Ok(());
+    }
 
     // Increment the internal index variable
     let increment_one = cg.builder.build_int_add(

@@ -58,14 +58,20 @@ pub fn llvm_from_conditional<'ctx>(
     }
 
     cg.builder.position_at_end(then_block);
-    llvm_from_block(&cond.if_block, cg)?;
-    cg.builder.build_unconditional_branch(merge_block)?;
+    let branched = llvm_from_block(&cond.if_block, cg)?;
+
+    if !branched {
+        cg.builder.build_unconditional_branch(merge_block)?;
+    }
 
     cg.builder.position_at_end(else_block);
     if let Some(else_block_node) = &cond.else_block {
-        llvm_from_block(else_block_node, cg)?;
+        if !llvm_from_block(else_block_node, cg)? {
+            cg.builder.build_unconditional_branch(merge_block)?;
+        }
+    } else {
+        cg.builder.build_unconditional_branch(merge_block)?;
     }
-    cg.builder.build_unconditional_branch(merge_block)?;
 
     cg.builder.position_at_end(merge_block);
 

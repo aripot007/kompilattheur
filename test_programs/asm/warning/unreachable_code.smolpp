@@ -1,0 +1,7 @@
+
+def foo():
+    println("Hello there !")
+    return True
+    println("I will not be printed :(")
+    
+foo()

@@ -330,6 +330,7 @@ impl Lexer {
                         Some('"') => text.push('"'),
                         Some('\\') => text.push('\\'),
                         Some('n') => text.push('\n'),
+                        Some('e') => text.push('\x1b'),
                         other => {
                             let diag = Diagnostic::new(
                                 DiagnosticGravity::Error,

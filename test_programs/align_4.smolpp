@@ -1,3 +1,6 @@
+def clear_screen():
+    print("\e[2J")
+
 def print_cell(cell, bold_border):
     if bold_border:
         print("┃")
@@ -7,11 +10,12 @@ def print_cell(cell, bold_border):
         print("  ")
     else:
         if cell == 1:
-            print("🔴")
+            print("\e[38;5;196m⬤ \e[0m")
         else:
-            print("🟡")
+            print("\e[38;5;226m⬤ \e[0m")
 
 def print_board(board):
+    clear_screen()
     for col in range(len(board[0])):
         print("  ")
         print(col)

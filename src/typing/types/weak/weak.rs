@@ -74,7 +74,13 @@ impl Weak {
         }
         match typ {
             Type::Weak(other) => return self.union(&other),
-            Type::None | Type::Bool | Type::Int | Type::String | Type::List => {
+            Type::None
+            | Type::Bool
+            | Type::Int
+            | Type::String
+            | Type::List
+            | Type::Range
+            | Type::Any => {
                 let mut weak_types = WEAK_TYPES.lock().unwrap();
                 let current_types = weak_types.find_elt_mut(self.id);
                 current_types.insert(typ);

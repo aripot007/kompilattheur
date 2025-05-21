@@ -31,20 +31,20 @@ Cela nous permet d'utiliser des types Any et Weak, afin de typer dynamiquement n
 ### Aristide
 **Typage** : typage statique (); typage dynamique ()
 **Controle sémantique statiques** : verification des types statiques (); 
-**Assembleur** : structure base (); hello world POC (); Variables (); Pointeurs (); Strings (); Lists (); 
+**Assembleur** : structure base (); print de base (); print générique (); Variables (); Pointeurs (); Strings (); Lists (); arithmétique générique (); type Weak (); changement des strings pour les representer par des listes ();
 
 ### Baptiste
 **Controles sémantiques statiques** : verification des acces de liste ();
 **Config LLVM** : configuration des librairies et recherches (); config du linker LLVM pour Linux (); 
-**Assembleur** : expression (); loops (); "and", "or", "not" (); 
+**Assembleur** : expression (); loops (); "and", "or", "not" (); comparaison générique (); fonction "len", "list", "range" (); creation d'une librairie standard ();
 
 ### Luca 
 **TDS** : remplissage de la TDS depuis l'AST (10h); gestion des offsets (5h)
 **Contrôle sémantiques statiques** : portée des variables (5h); 
 **Configuration LLVM** : adaptation config linker LLVM pour macOS en préservant config Linux (4h)
-**Assembleur** : opérations binaire (4h); compairaison statiques (4h); fonctions internes : range et list (4h)
+**Assembleur** : opérations binaire (4h); compairaison statiques (4h); fonctions internes : range et list (5h); affichage des erreurs pendant l'éxecution (2h); localisation des erreurs d'execution (5h); 
 
 ### Romain
 **TDS** : affinage des structures de données ();
 **Contrôles sémantiques statiques** : verification des arguments et retours de fonctions (); 
-**Assembleur** :  typage dynamique des fonctions (); branching if else (); comparaison generique ();
+**Assembleur** :  typage dynamique des fonctions (); appel de fonctions ();  branching if else (); comparaison generique (); comparaison liste (); appels fonctions récursifs entre fonctions (); 

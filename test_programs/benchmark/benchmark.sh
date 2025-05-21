@@ -6,13 +6,14 @@ ITERATIONS=100
 
 # Function to display usage information
 display_usage() {
-    echo "Usage: $0 [options]"
+    echo "Usage: $0 [options] <program1> <program2>"
     echo "Options:"
     echo "  -v LEVEL   Set verbose level (0=minimal, 1=normal, 2=detailed) [default: 1]"
     echo "  -i NUMBER  Set number of iterations for each benchmark [default: 100]"
     echo "  -h         Display this help message"
     echo ""
-    echo "Example: $0 -v 2 -i 50"
+    echo "Example: $0 -v 2 -i 50 program1.py program2.out"
+    echo "You must specify exactly two programs to benchmark."
 }
 
 # Function to print based on verbose level
@@ -82,11 +83,28 @@ while getopts "v:i:h" opt; do
     esac
 done
 
+# Shift away the processed options
+shift $((OPTIND-1))
+
 # Main script
 print_verbose 1 "Starting benchmark..."
 
-# Run measurements with specified iterations
-measure_time "benchmark.py" $ITERATIONS
-measure_time "benchmark.out" $ITERATIONS
+# Check if exactly two programs are provided
+if [ $# -ne 2 ]; then
+    echo "Error: You must specify exactly two programs to benchmark." >&2
+    display_usage
+    exit 1
+fi
+
+# Store the two programs
+PROGRAM1="$1"
+PROGRAM2="$2"
+
+# Run measurements with specified iterations for each program
+print_verbose 1 "Running benchmark for first program..."
+measure_time "$PROGRAM1" $ITERATIONS
+
+print_verbose 1 "Running benchmark for second program..."
+measure_time "$PROGRAM2" $ITERATIONS
 
 print_verbose 1 "Benchmark complete."

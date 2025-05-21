@@ -39,19 +39,6 @@ def make_board():
     r5 = [0, 0, 0, 0, 0, 0, 0]
     return [r0, r1, r2, r3, r4, r5]
 
-def copy_board(board):
-    b = []
-    y = 0
-    while y < len(board):
-        row = []
-        x = 0
-        while x < len(board[0]):
-            row = row + [board[y][x]]
-            x = x + 1
-        b = b + [row]
-        y = y + 1
-    return b
-
 def drop_disc(board, col, player):
     placed = False
     row = len(board) - 1

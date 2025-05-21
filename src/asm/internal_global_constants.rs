@@ -271,7 +271,19 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
 
     create_global_string(
         RuntimeErrorMsg::InvalidStringForIntFunction,
-        format!("{} {}{}", "TypeError:".bold(), " Invalid string for int function".bold(), "\x1b[0m\n").as_str(),
+        format!(
+            "{} {}{}",
+            "TypeError :"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "Invalid string for int function".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
         cg,
     );
 

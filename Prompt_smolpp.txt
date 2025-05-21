@@ -1,0 +1,45 @@
+You will need to create a program in python, but with restricted features and the following rules :
+- The available types are int, string, bool, list and none
+- Strings are immutable, but you can concatenate them
+- The only standard functions are range, len, print, println, input and int
+- the input function takes no argument, reads a line from the standard input and returns a string
+- the int function takes a string representing a positive decimal number, and returns the parsed number.
+- print should only take a single argument, and does not return to a newline
+- println is the same as print, but returns to a newline
+- you have access to the "and", "or" and "not" operators
+- you can only use arithmetic operators on integers
+- you can use the + operator to concatenate lists or strings, but it only works for operands of the same type
+- every function definition should be at the start of the file, and you cannot define a function in another function
+- There is also no list comprehension, and you cannot use the '\' to make multiple lines
+- a list should be declared in a single line, if you want to create a matrix, either do it in one line, or with other variables, like this :
+```
+# Do not do this :
+mat = [[1,2,3],
+               [4,5,6]]
+
+# Do this instead :
+mat = [[1,2,3], [4,5,6]]
+
+# Or :
+l1 = [1, 2, 3]
+l2 = [4, 5, 6]
+mat = [l1,l2]
+```
+- You can use "for" loops and range() instead of while loops if necessary. range only takes one argument, and range(n) evaluates to [0,1,2,...,n-1].
+- you cannot use the "break" or "continue" keyword to exit a loop
+- you cannot use the "elif" keyword
+There are now a few more rules :
+- The range function only takes one argument, which is the end of the range (excluded)
+- There is no str function, if you want to print a formatted string, do this instead :
+```
+# Do not do this :
+println("Player " + str(player) + ", choose a column (0-6):")
+
+# Do this instead :
+print("Player ")
+print(player)
+println(", choose a column (0-6):")
+```
+- avoid list concatenation as it is expensive, you can use recursion if it helps
+
+Using the previously described rules, create ...

@@ -2,6 +2,7 @@ use inkwell::{basic_block::BasicBlock, values::IntValue, AddressSpace, IntPredic
 
 use crate::{
     asm::{codegen::CodeGen, internal_global_constants::RuntimeErrorMsg},
+    common::localizable::Localizable,
     typing::Type,
 };
 
@@ -10,15 +11,19 @@ use super::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenE
 /// Generate LLVM to assert the type of a variable at runtime
 /// The runtime type must be exactly `valtype`, weak types will not match
 /// if they have other possible types.
-pub fn assert_type<'ctx>(
+pub fn assert_type<'ctx, T>(
     valtype: Type,
     value: &SmolVar<'ctx>,
     cg: &CodeGen<'ctx>,
     msg: Option<String>,
-) -> Result<BasicBlock<'ctx>, LLVMCodegenError> {
+    localizable: Option<T>,
+) -> Result<BasicBlock<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
     let msg = match msg {
         Some(s) => s,
-        None => format!("Expected type {} ({})", valtype, valtype.get_bitmask()),
+        None => format!("Expected type {}", valtype),
     };
 
     let type_field = cg.get_variable_type(*value)?;
@@ -34,17 +39,21 @@ pub fn assert_type<'ctx>(
         format!("assert_type_{}", valtype).as_str(),
     )?;
 
-    return create_assert_type_branch(cdt, cg, msg);
+    return create_assert_type_branch(cdt, cg, msg, localizable);
 }
 
 /// Generate LLVM to assert the type of a variable at runtime
 /// The runtime type must be one of the types in `types`.
-pub fn assert_type_oneof<'ctx>(
+pub fn assert_type_oneof<'ctx, T>(
     types: &[Type],
     value: &SmolVar<'ctx>,
     cg: &CodeGen<'ctx>,
     msg: Option<String>,
-) -> Result<BasicBlock<'ctx>, LLVMCodegenError> {
+    localizable: Option<T>,
+) -> Result<BasicBlock<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
     let expected_bitmask: u8 = types
         .iter()
         .map(Type::get_bitmask)
@@ -88,18 +97,22 @@ pub fn assert_type_oneof<'ctx>(
         "convert_to_bool",
     )?;
 
-    return create_assert_type_branch(cdt, cg, msg);
+    return create_assert_type_branch(cdt, cg, msg, localizable);
 }
 
 /// Create the conditional branch for type assertion.
 /// If `cdt` is true, the type check is considered successful.
 /// If its false, the programs print an error message and exits.
 /// Returns the basic block after the branch
-fn create_assert_type_branch<'ctx>(
+fn create_assert_type_branch<'ctx, T>(
     cdt: IntValue<'ctx>,
     cg: &CodeGen<'ctx>,
     msg: String,
-) -> Result<BasicBlock<'ctx>, LLVMCodegenError> {
+    localizable: Option<T>,
+) -> Result<BasicBlock<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
     let string_value = cg.context.const_string(msg.as_str().as_bytes(), true);
 
     // Declare it as a global variable
@@ -126,6 +139,7 @@ fn create_assert_type_branch<'ctx>(
         cg,
         RuntimeErrorMsg::TypeError,
         &[global_var.as_pointer_value().into()],
+        localizable,
     )?;
 
     // "Then" block : type is ok
@@ -138,11 +152,15 @@ fn create_assert_type_branch<'ctx>(
 /// compatible with its destination at runtime
 /// This will stop the program if the runtime type of `value` is not
 /// compatible with the runtime type of `destination`
-pub fn assert_assignation_type<'ctx>(
+pub fn assert_assignation_type<'ctx, T>(
     destination: &SmolVar<'ctx>,
     value: &SmolVar<'ctx>,
     cg: &CodeGen<'ctx>,
-) -> Result<BasicBlock<'ctx>, LLVMCodegenError> {
+    localizable: Option<T>,
+) -> Result<BasicBlock<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
     let value_type_field = cg.get_variable_type(*value)?;
     let dest_type_field = cg.get_variable_type(*destination)?;
 
@@ -160,18 +178,28 @@ pub fn assert_assignation_type<'ctx>(
         cdt,
         cg,
         String::from("Incompatible types during assignation"),
+        localizable,
     );
 }
 
-pub fn assert_dyn_type<'ctx>(
+pub fn assert_dyn_type<'ctx, T>(
     value1: &SmolVar<'ctx>,
     value2: &SmolVar<'ctx>,
     cg: &CodeGen<'ctx>,
-) -> Result<BasicBlock<'ctx>, LLVMCodegenError> {
+    localizable: Option<T>,
+) -> Result<BasicBlock<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
     let t1 = cg.get_variable_type(*value1)?;
     let t2 = cg.get_variable_type(*value2)?;
     let cdt = cg
         .builder
         .build_int_compare(IntPredicate::EQ, t1, t2, "assert_dyn_type")?;
-    return create_assert_type_branch(cdt, cg, String::from("Runtime type mismatch in comparison"));
+    return create_assert_type_branch(
+        cdt,
+        cg,
+        String::from("Runtime type mismatch in comparison"),
+        localizable,
+    );
 }

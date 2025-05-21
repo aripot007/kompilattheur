@@ -2,6 +2,7 @@ use inkwell::{types::FunctionType, values::FunctionValue, AddressSpace};
 
 use crate::{
     asm::{codegen::CodeGen, llvm::assert_type_oneof, LLVMCodegenError},
+    common::localizable::{Localizable, LocalizationInfo},
     typing::{Function, Type, Weak},
 };
 
@@ -42,7 +43,7 @@ impl SmollibFunction for SmolLen {
             .unwrap()
             .into_struct_value();
 
-        assert_type_oneof(&[Type::List, Type::String], &var1, cg, None)?;
+        assert_type_oneof::<LocalizationInfo>(&[Type::List, Type::String], &var1, cg, None, None)?;
 
         let var1_value = cg.get_variable_value(var1)?.into_int_value();
         // Get the length of the list or string

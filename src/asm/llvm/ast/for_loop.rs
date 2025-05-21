@@ -106,7 +106,13 @@ pub fn llvm_from_for_loop<'ctx>(
         }
         _ => {
             // Check if the iterator_value is a list
-            assert_type_oneof(&[Type::List, Type::Range], &iterator_variable, cg, None)?;
+            assert_type_oneof(
+                &[Type::List, Type::Range],
+                &iterator_variable,
+                cg,
+                None,
+                Some(for_loop),
+            )?;
             // Check if the iterator is a list or a range at compilation time
 
             let for_loop_body_range_block = cg

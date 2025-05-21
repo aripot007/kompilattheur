@@ -8,16 +8,22 @@ use crate::{
         },
         InternalFuctions, RuntimeErrorMsg,
     },
+    common::localizable::{Localizable, LocalizationInfo},
     typing::Type,
 };
 
-pub fn compute_mult<'ctx>(
+pub fn compute_mult<'ctx, T>(
     x: SmolVar<'ctx>,
     y: SmolVar<'ctx>,
     cg: &mut CodeGen<'ctx>,
-) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    assert_type(Type::Int, &x, cg, None)?;
-    assert_type(Type::Int, &y, cg, None)?;
+    loc1: Option<T>,
+    loc2: Option<T>,
+) -> Result<SmolVar<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
+    assert_type(Type::Int, &x, cg, None, loc1)?;
+    assert_type(Type::Int, &y, cg, None, loc2)?;
     return compute_mult_unchecked(x, y, cg);
 }
 
@@ -32,13 +38,18 @@ pub fn compute_mult_unchecked<'ctx>(
     return cg.create_variable(Type::Int, res);
 }
 
-pub fn compute_div<'ctx>(
+pub fn compute_div<'ctx, T>(
     x: SmolVar<'ctx>,
     y: SmolVar<'ctx>,
     cg: &mut CodeGen<'ctx>,
-) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    assert_type(Type::Int, &x, cg, None)?;
-    assert_type(Type::Int, &y, cg, None)?;
+    loc1: Option<T>,
+    loc2: Option<T>,
+) -> Result<SmolVar<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
+    assert_type(Type::Int, &x, cg, None, loc1)?;
+    assert_type(Type::Int, &y, cg, None, loc2)?;
     return compute_div_unchecked(x, y, cg);
 }
 
@@ -53,13 +64,18 @@ pub fn compute_div_unchecked<'ctx>(
     return cg.create_variable(Type::Int, res);
 }
 
-pub fn compute_mod<'ctx>(
+pub fn compute_mod<'ctx, T>(
     x: SmolVar<'ctx>,
     y: SmolVar<'ctx>,
     cg: &mut CodeGen<'ctx>,
-) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    assert_type(Type::Int, &x, cg, None)?;
-    assert_type(Type::Int, &y, cg, None)?;
+    loc1: Option<T>,
+    loc2: Option<T>,
+) -> Result<SmolVar<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
+    assert_type(Type::Int, &x, cg, None, loc1)?;
+    assert_type(Type::Int, &y, cg, None, loc2)?;
     return compute_mod_unchecked(x, y, cg);
 }
 
@@ -74,13 +90,18 @@ pub fn compute_mod_unchecked<'ctx>(
     return cg.create_variable(Type::Int, res);
 }
 
-pub fn compute_sub<'ctx>(
+pub fn compute_sub<'ctx, T>(
     x: SmolVar<'ctx>,
     y: SmolVar<'ctx>,
     cg: &mut CodeGen<'ctx>,
-) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    assert_type(Type::Int, &x, cg, None)?;
-    assert_type(Type::Int, &y, cg, None)?;
+    loc1: Option<T>,
+    loc2: Option<T>,
+) -> Result<SmolVar<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
+    assert_type(Type::Int, &x, cg, None, loc1)?;
+    assert_type(Type::Int, &y, cg, None, loc2)?;
     return compute_sub_unchecked(x, y, cg);
 }
 
@@ -95,13 +116,18 @@ pub fn compute_sub_unchecked<'ctx>(
     return cg.create_variable(Type::Int, res);
 }
 
-pub fn compute_add<'ctx>(
+pub fn compute_add<'ctx, T>(
     x: SmolVar<'ctx>,
     y: SmolVar<'ctx>,
     cg: &mut CodeGen<'ctx>,
-) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    assert_type(Type::Int, &x, cg, None)?;
-    assert_type(Type::Int, &y, cg, None)?;
+    loc1: Option<T>,
+    loc2: Option<T>,
+) -> Result<SmolVar<'ctx>, LLVMCodegenError>
+where
+    T: Localizable,
+{
+    assert_type(Type::Int, &x, cg, None, loc1)?;
+    assert_type(Type::Int, &y, cg, None, loc2)?;
     return compute_add_unchecked(x, y, cg);
 }
 
@@ -193,7 +219,7 @@ pub fn init_internal_add_generic_function<'ctx>(
         .into_struct_value();
 
     // Assert they are the same type
-    assert_dyn_type(&value1, &value2, cg)?;
+    assert_dyn_type::<LocalizationInfo>(&value1, &value2, cg, None)?; //FIXME: potentially add localization info, but i don't know how I am supposed to do that with generic functions
 
     // Load runtime type tags
     let typ = cg.get_variable_type(value1)?;
@@ -258,10 +284,11 @@ pub fn init_internal_add_generic_function<'ctx>(
     // Default case, print error message
     cg.builder.position_at_end(default_block);
 
-    smolpp_panic_with_unreachable(
+    smolpp_panic_with_unreachable::<LocalizationInfo>(
         cg,
         RuntimeErrorMsg::PanicInvalidInternalTypeAddGeneric,
         &[typ.into()],
+        None, //FIXME: potentially add localization info, but i don't know how I am supposed to do that with generic functions
     )?;
 
     // Return builder to main block because it's init function

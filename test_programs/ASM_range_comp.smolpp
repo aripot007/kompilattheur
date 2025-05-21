@@ -1,0 +1,24 @@
+println("range(5) == range(5)")
+println(range(5) == range(5))
+
+println("range(5) == range(6)")
+println(range(5) == range(6))
+
+println("range(5) != range(5)")
+println(range(5) != range(5))
+
+println("range(5) != range(6)")
+println(range(5) != range(6))
+
+println("range(5) <= range(5)")
+println(range(5) <= range(5))
+
+println("range(5) >= range(6)")
+println(range(6) >= range(5))
+
+println("range(5) < range(6)")
+println(range(5) < range(6))
+
+println("range(5) > range(4)")
+println(range(5) > range(4))
+

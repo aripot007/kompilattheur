@@ -7,6 +7,7 @@ use std::usize;
 use crate::asm::codegen::CodeGen;
 use crate::asm::llvm::{user_function_prefix, user_function_prefix_format};
 use crate::asm::LLVMCodegenError;
+use crate::common::localizable::Localizable;
 use crate::common::symbol_table::{Symbol, SymbolTableElement, SymbolTableRef};
 use crate::common::types::{IdToken, Token};
 use crate::lexer::TokenTable;

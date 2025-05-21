@@ -206,6 +206,28 @@ impl Into<Tree<String>> for &Expression {
 
 impl Localizable for Expression {
     fn get_len(&self) -> usize {
+        (&self).get_len()
+    }
+
+    fn get_start_line(&self) -> usize {
+        (&self).get_start_line()
+    }
+
+    fn get_end_line(&self) -> usize {
+        (&self).get_end_line()
+    }
+
+    fn get_start_char(&self) -> usize {
+        (&self).get_start_char()
+    }
+
+    fn get_end_char(&self) -> usize {
+        (&self).get_end_char()
+    }
+}
+
+impl Localizable for &Expression {
+    fn get_len(&self) -> usize {
         match &self.kind {
             ExpressionKind::BINOP(e1, _bin_op, e2) => e1.get_len() + e2.get_len(),
             ExpressionKind::UNOP(_un_op, expression) => expression.get_len(),

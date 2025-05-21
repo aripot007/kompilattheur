@@ -10,7 +10,8 @@ use crate::{
         },
         InternalGlobalConst,
     },
-    ast::nodes::BinOp,
+    ast::nodes::{BinOp, Expression},
+    common::localizable::{Localizable, LocalizationInfo},
     typing::Type,
 };
 use inkwell::AddressSpace;
@@ -20,7 +21,7 @@ use inkwell::{
 };
 
 /// Compare two Integer with the given operation
-pub fn compare_int_bool_values<'ctx>(
+pub fn compare_int_bool_range_values<'ctx>(
     value1: SmolVar<'ctx>,
     value2: SmolVar<'ctx>,
     operation: BinOp,
@@ -440,7 +441,7 @@ pub fn init_internal_compare_generic_function<'ctx>(
     )?;
 
     cg.builder.position_at_end(then_bool_or_int_block);
-    let result = compare_int_bool_values(value1, value2, operation, cg)?;
+    let result = compare_int_bool_range_values(value1, value2, operation, cg)?;
     cg.builder.build_return(Some(&result))?;
 
     cg.builder.position_at_end(else_bool_or_int_block);
@@ -455,10 +456,11 @@ pub fn init_internal_compare_generic_function<'ctx>(
             cg.builder.build_return(Some(&res))?;
         }
         _ => {
-            smolpp_panic_with_unreachable(
+            smolpp_panic_with_unreachable::<LocalizationInfo>(
                 cg,
                 RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric,
                 &[t1.into()],
+                None, //FIXME: potentially add localization info, but i don't know how I am supposed to do that with generic functions
             )?;
         }
     }
@@ -483,9 +485,9 @@ fn build_switch_compare_generic_same_type<'ctx>(
     let case_none = cg
         .context
         .append_basic_block(function, "generic_compare_case_none");
-    let case_int_bool = cg
+    let case_int_bool_range = cg
         .context
-        .append_basic_block(function, "generic_compare_case_int");
+        .append_basic_block(function, "generic_compare_case_int_bool_range");
     let case_string = cg
         .context
         .append_basic_block(function, "generic_compare_case_string");
@@ -508,11 +510,11 @@ fn build_switch_compare_generic_same_type<'ctx>(
             ),
             (
                 i8_type.const_int(Type::Bool.get_bitmask().into(), false),
-                case_int_bool,
+                case_int_bool_range,
             ),
             (
                 i8_type.const_int(Type::Int.get_bitmask().into(), false),
-                case_int_bool,
+                case_int_bool_range,
             ),
             (
                 i8_type.const_int(Type::String.get_bitmask().into(), false),
@@ -521,6 +523,10 @@ fn build_switch_compare_generic_same_type<'ctx>(
             (
                 i8_type.const_int(Type::List.get_bitmask().into(), false),
                 case_list,
+            ),
+            (
+                i8_type.const_int(Type::Range.get_bitmask().into(), false),
+                case_int_bool_range,
             ),
         ],
     )?;
@@ -534,16 +540,17 @@ fn build_switch_compare_generic_same_type<'ctx>(
             cg.builder.build_return(Some(&result))?;
         }
         _ => {
-            smolpp_panic_with_unreachable(
+            smolpp_panic_with_unreachable::<LocalizationInfo>(
                 cg,
                 RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric,
                 &[t1.into()],
+                None, //FIXME: potentially add localization info, but i don't know how I am supposed to do that with generic functions
             )?;
         }
     }
 
-    cg.builder.position_at_end(case_int_bool);
-    let result = compare_int_bool_values(value1, value2, operation, cg)?;
+    cg.builder.position_at_end(case_int_bool_range);
+    let result = compare_int_bool_range_values(value1, value2, operation, cg)?;
     cg.builder.build_return(Some(&result))?;
 
     cg.builder.position_at_end(case_string);
@@ -557,10 +564,11 @@ fn build_switch_compare_generic_same_type<'ctx>(
     // Default case, print error message
     cg.builder.position_at_end(default_block);
 
-    smolpp_panic_with_unreachable(
+    smolpp_panic_with_unreachable::<LocalizationInfo>(
         cg,
         RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric,
         &[t1.into()],
+        None, //FIXME: potentially add localization info, but i don't know how I am supposed to do that with generic functions
     )?;
 
     return Ok(());

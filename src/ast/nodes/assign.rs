@@ -61,6 +61,28 @@ impl Into<Tree<String>> for Assign {
     }
 }
 
+impl Localizable for &Assign {
+    fn get_len(&self) -> usize {
+        self.localization.get_len()
+    }
+
+    fn get_start_line(&self) -> usize {
+        self.localization.get_start_line()
+    }
+
+    fn get_end_line(&self) -> usize {
+        self.localization.get_end_line()
+    }
+
+    fn get_start_char(&self) -> usize {
+        self.localization.get_start_char()
+    }
+
+    fn get_end_char(&self) -> usize {
+        self.localization.get_end_char()
+    }
+}
+
 impl Localizable for Assign {
     fn get_len(&self) -> usize {
         self.localization.get_len()

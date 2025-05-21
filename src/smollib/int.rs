@@ -6,6 +6,7 @@ use crate::{
         llvm::{assert_type_oneof, panic::smolpp_panic_with_unreachable},
         LLVMCodegenError, RuntimeErrorMsg,
     },
+    common::localizable::LocalizationInfo,
     typing::{Function, Type, Weak},
 };
 
@@ -46,7 +47,13 @@ impl SmollibFunction for SmolInt {
             .unwrap()
             .into_struct_value();
 
-        assert_type_oneof(&[Type::String, Type::Int, Type::Bool], &var1, cg, None)?;
+        assert_type_oneof::<LocalizationInfo>(
+            &[Type::String, Type::Int, Type::Bool],
+            &var1,
+            cg,
+            None,
+            None,
+        )?;
 
         // ---
 
@@ -271,10 +278,11 @@ impl SmollibFunction for SmolInt {
         // Error handling
         cg.builder.position_at_end(error_block);
 
-        smolpp_panic_with_unreachable(
+        smolpp_panic_with_unreachable::<LocalizationInfo>(
             cg,
             RuntimeErrorMsg::InvalidStringForIntFunction,
             &[type_field.into()],
+            None,
         )?;
 
         // Return builder to main block because it's init function

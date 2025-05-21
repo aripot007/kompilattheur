@@ -1,6 +1,9 @@
+use colored::Colorize;
 use inkwell::AddressSpace;
 
 use super::codegen::CodeGen;
+
+use crate::common::diagnostic::{ERROR_COLOR, HIGHLIGHT_ERROR_COLOR};
 
 /// Internal global constants
 pub enum InternalGlobalConst {
@@ -61,6 +64,9 @@ pub enum RuntimeErrorMsg {
 
     //
     InvalidStringForIntFunction,
+
+    // Used for error messages that gives the line and column of the error
+    LocalizeError,
 }
 
 macro_rules! internal_global_prefix {
@@ -112,6 +118,7 @@ impl Into<&'static str> for RuntimeErrorMsg {
             RuntimeErrorMsg::InvalidStringForIntFunction => {
                 internal_global_prefix!("invalid_string_value_int_function")
             }
+            RuntimeErrorMsg::LocalizeError => internal_global_prefix!("localize_error"),
         }
     }
 }
@@ -157,42 +164,151 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
     // Error messages
     create_global_string(
         RuntimeErrorMsg::PanicInvalidInternalTypeValueFormatString,
-        "Error: Invalid internal type value %d\n",
+        format!(
+            "{} {}{}",
+            "PANIC :"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "Invalid internal type value %d".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
         cg,
     );
+
     create_global_string(
         RuntimeErrorMsg::PanicNotImplemented,
-        "Error: LLVM not implemented yet\n",
+        format!(
+            "{} {}{}",
+            "PANIC :"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "Not implemented yet".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
         cg,
     );
-    create_global_string(RuntimeErrorMsg::TypeError, "TypeError: %s\n", cg);
+
+    create_global_string(
+        RuntimeErrorMsg::TypeError,
+        format!(
+            "{} {}{}",
+            "TypeError:"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "%s".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
+        cg,
+    );
+
     create_global_string(
         RuntimeErrorMsg::IndexOutOfBound,
-        "Error: index %d out of bounds for list of length %d\n",
+        format!(
+            "{} {}{}",
+            "IndexError :"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "index %d out of bounds for list of length %d".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
         cg,
     );
 
     create_global_string(
         RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric,
-        "Error: Invalid internal type value for generic comparison\n",
+        format!(
+            "{} {}{}",
+            "PANIC :"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "Invalid internal type value for generic comparison".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
         cg,
     );
 
     create_global_string(
         RuntimeErrorMsg::PanicInvalidInternalTypeAddGeneric,
-        "Error: Invalid internal type value for generic add\n",
+        format!(
+            "{} {}{}",
+            "PANIC :"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "Invalid internal type value for generic addition".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
         cg,
     );
 
     create_global_string(
         RuntimeErrorMsg::InvalidTypeListFunction,
-        "Error: Invalid type for list function\n",
+        format!(
+            "{} {}{}",
+            "PANIC :"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "Invalid type for list function".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
         cg,
     );
 
     create_global_string(
         RuntimeErrorMsg::InvalidStringForIntFunction,
-        "Error: Invalid string for int function\n",
+        format!(
+            "{} {}{}",
+            "InvalidIntError :"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "Invalid string for int function".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
+        cg,
+    );
+
+    create_global_string(
+        RuntimeErrorMsg::LocalizeError,
+        format!("{} {}{}", "At line :".bold(), " %d:%d", "\x1b[0m\n").as_str(),
         cg,
     );
 }

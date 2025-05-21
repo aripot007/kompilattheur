@@ -2,6 +2,7 @@ use inkwell::{types::FunctionType, values::FunctionValue};
 
 use crate::{
     asm::{codegen::CodeGen, llvm::assert_type, LLVMCodegenError},
+    common::localizable::{Localizable, LocalizationInfo},
     typing::{Function, Type},
 };
 
@@ -41,7 +42,7 @@ impl SmollibFunction for SmolRange {
             .unwrap()
             .into_struct_value();
 
-        assert_type(Type::Int, &var1, cg, None)?;
+        assert_type::<LocalizationInfo>(Type::Int, &var1, cg, None, None)?;
 
         let var1_value = cg.get_variable_value(var1)?.into_int_value();
 

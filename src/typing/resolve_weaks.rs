@@ -12,7 +12,7 @@ fn resolve_type(typ: &Type) -> Type {
             let possible = weak.get_possible();
             match possible.len() {
                 1 => possible[0].clone(),
-                0 => panic!("Unresolvable weak in symbol table"),
+                0 => Type::None,
                 _ => typ.clone(),
             }
         }
@@ -76,6 +76,20 @@ pub fn resolve_weaks(node: Ast, symbol_table: &SymbolTableRef) -> Ast {
             Ast::Conditional(cdt)
         }
         Ast::Def(mut def) => {
+            // Resolve function weak type
+            let func_id = def.identifier.element.id;
+            let mut func_symbol = get_symbol(symbol_table, &func_id).unwrap();
+            let mut func_type = match func_symbol.symbol_type {
+                Type::Function(function) => function,
+                _ => panic!(),
+            };
+            func_type.returns = resolve_type(&func_type.returns);
+            func_symbol.symbol_type = Type::Function(func_type);
+
+            symbol_table
+                .borrow_mut()
+                .insert_symbol(func_id, func_symbol);
+
             def.block = resolve_weaks(Ast::Block(def.block), symbol_table).into();
             Ast::Def(def)
         }

@@ -1,6 +1,6 @@
 use super::{
     llvm_compute_expr, llvm_from_assign, llvm_from_conditional, llvm_from_for_loop,
-    llvm_from_return,
+    llvm_from_return, llvm_from_while_loop,
 };
 use crate::{
     asm::{
@@ -84,11 +84,12 @@ pub fn llvm_from_block<'ctx>(
             Statement::Assign(assign) => llvm_from_assign(assign, cg)?,
             Statement::Conditional(cond) => llvm_from_conditional(cond, cg)?,
             Statement::For(for_loop) => llvm_from_for_loop(for_loop, cg)?,
+            Statement::While(while_loop) => llvm_from_while_loop(while_loop, cg)?,
             Statement::Return(expr) => llvm_from_return(expr, cg)?,
             Statement::Expr(expr) => {
                 llvm_compute_expr(expr, cg)?;
             }
-            Statement::NotImplemented | Statement::While(_) => {
+            Statement::NotImplemented => {
                 cg.errors.push(Diagnostic::unimplemented_llvm(stmt));
                 error = true;
             }

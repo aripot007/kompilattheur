@@ -9,9 +9,10 @@ use crate::{
 };
 
 use super::{
-    compare_generic_values, compare_int_bool_range_values, compare_list_values, compare_none_values,
-    compare_string_values, compute_add_unchecked, compute_div_unchecked, compute_mod_unchecked,
-    compute_mult_unchecked, compute_sub_unchecked, llvm_compute_and_or, llvm_compute_expr,
+    compare_generic_values, compare_int_bool_range_values, compare_list_values,
+    compare_none_values, compare_string_values, compute_add_unchecked, compute_div_unchecked,
+    compute_mod_unchecked, compute_mult_unchecked, compute_sub_unchecked, llvm_compute_and_or,
+    llvm_compute_expr,
 };
 
 use super::super::access::MemoryPtr;

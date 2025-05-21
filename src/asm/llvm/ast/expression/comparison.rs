@@ -476,7 +476,6 @@ fn build_switch_compare_generic_same_type<'ctx>(
                 i8_type.const_int(Type::Range.get_bitmask().into(), false),
                 case_int_bool_range,
             ),
-
         ],
     )?;
 

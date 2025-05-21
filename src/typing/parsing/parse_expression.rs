@@ -300,8 +300,16 @@ fn try_parse_comparison(
                 return Ok(Type::Bool);
             }
         }
-        (Type::Int, t) | (Type::Bool, t) | (Type::Range, t) | (t, Type::Int) | (t, Type::Bool) | (t, Type::Range)  => {
-            if t.is_compatible(Type::Int) || t.is_compatible(Type::Bool) || t.is_compatible(Type::Range) {
+        (Type::Int, t)
+        | (Type::Bool, t)
+        | (Type::Range, t)
+        | (t, Type::Int)
+        | (t, Type::Bool)
+        | (t, Type::Range) => {
+            if t.is_compatible(Type::Int)
+                || t.is_compatible(Type::Bool)
+                || t.is_compatible(Type::Range)
+            {
                 if let Type::Weak(weak) = t {
                     weak.restrict(&[Type::Int, Type::Bool, Type::Range])
                         .expect("Restriction should not fail since weak is compatible");

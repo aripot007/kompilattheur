@@ -3,7 +3,7 @@ use inkwell::{types::FunctionType, values::FunctionValue, AddressSpace};
 use crate::{
     asm::{
         codegen::CodeGen,
-        llvm::{assert_type_oneof, panic::smolpp_panic_with_unreachable},
+        llvm::{assert_type::assert_type_oneof, panic::smolpp_panic_with_unreachable},
         LLVMCodegenError, RuntimeErrorMsg,
     },
     typing::{Function, Type, Weak},

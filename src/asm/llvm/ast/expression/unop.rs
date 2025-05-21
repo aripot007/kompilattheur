@@ -68,7 +68,7 @@ fn llvm_compute_neg<'ctx>(
     val: SmolVar<'ctx>,
     cg: &mut CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    assert_type(Type::Int, &val, cg, None)?;
+    assert_type::assert_type(Type::Int, &val, cg, None)?;
     return llvm_compute_neg_unchecked(val, cg);
 }
 

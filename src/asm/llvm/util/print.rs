@@ -3,12 +3,14 @@ use inkwell::{basic_block::BasicBlock, values::BasicValue, AddressSpace, IntPred
 use crate::{
     asm::{
         codegen::CodeGen, get_internal_func, get_internal_global_const, internal_function_prefix,
-        internal_global_constants::RuntimeErrorMsg, InternalFuctions, InternalGlobalConst,
+        internal_global_constants::RuntimeErrorMsg, llvm::smolvar::SmolVar, InternalFuctions,
+        InternalGlobalConst,
     },
     typing::Type,
 };
 
-use super::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError};
+use super::panic::smolpp_panic_with_unreachable;
+use crate::asm::LLVMCodegenError;
 
 macro_rules! llvm_printf {
     ($cg: expr, $value: expr, $name: literal) => {
@@ -22,6 +24,7 @@ macro_rules! llvm_printf {
     };
 }
 
+#[allow(unused)]
 macro_rules! llvm_printf_custom {
     ($cg: expr, $str: expr, $($args: expr),*) => {
         let __s = $cg.builder.build_global_string_ptr($str, "printf_str")?;
@@ -36,6 +39,7 @@ macro_rules! llvm_printf_custom {
         )?;
     };
 }
+#[allow(unused)]
 pub(crate) use llvm_printf_custom;
 
 /// Generate LLVM to print a None value

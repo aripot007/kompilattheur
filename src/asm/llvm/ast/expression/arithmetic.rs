@@ -3,7 +3,9 @@ use crate::{
         codegen::CodeGen,
         get_internal_func,
         llvm::{
-            assert_dyn_type, assert_type, panic::smolpp_panic_with_unreachable, smolvar::SmolVar,
+            assert_type::{assert_dyn_type, assert_type},
+            panic::smolpp_panic_with_unreachable,
+            smolvar::SmolVar,
             LLVMCodegenError,
         },
         InternalFuctions, RuntimeErrorMsg,

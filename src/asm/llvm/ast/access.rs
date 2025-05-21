@@ -116,7 +116,7 @@ pub fn access_to_ptr<'ctx>(
         .into_struct_value();
 
     // TODO: optimize if not Weak
-    assert_type(
+    assert_type::assert_type(
         Type::List,
         &base_value,
         cg,

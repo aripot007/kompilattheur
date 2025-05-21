@@ -1,8 +1,4 @@
-use crate::asm::{
-    codegen::CodeGen,
-    internal_functions::InternalFuctions,
-    llvm::{llvm_printf_custom, LLVMCodegenError},
-};
+use crate::asm::{codegen::CodeGen, internal_functions::InternalFuctions, llvm::LLVMCodegenError};
 use inkwell::{values::FunctionValue, IntPredicate};
 
 pub fn register_internal_str_cmp_function<'ctx>(cg: &mut CodeGen<'ctx>) -> FunctionValue<'ctx> {

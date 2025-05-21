@@ -1,14 +1,10 @@
 use crate::{
     asm::{
         codegen::CodeGen,
-        get_internal_func, get_internal_global_const,
+        get_internal_func,
         internal_functions::InternalFuctions,
         internal_global_constants::RuntimeErrorMsg,
-        llvm::{
-            llvm_printf_custom, panic::smolpp_panic_with_unreachable, smolvar::SmolVar,
-            LLVMCodegenError,
-        },
-        InternalGlobalConst,
+        llvm::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError},
     },
     ast::nodes::BinOp,
     typing::Type,

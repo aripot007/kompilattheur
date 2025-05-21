@@ -1,7 +1,7 @@
 use inkwell::{types::FunctionType, values::FunctionValue, AddressSpace};
 
 use crate::{
-    asm::{codegen::CodeGen, llvm::assert_type_oneof, LLVMCodegenError},
+    asm::{codegen::CodeGen, llvm::assert_type::assert_type_oneof, LLVMCodegenError},
     typing::{Function, Type, Weak},
 };
 

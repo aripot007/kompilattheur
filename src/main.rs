@@ -18,7 +18,7 @@ use common::types::{FileElement, Tree};
 use inkwell::context::Context;
 use inkwell::targets::FileType::{Assembly, Object};
 use inkwell::targets::TargetMachine;
-use inkwell::OptimizationLevel;
+use inkwell::OptimizationLevel as InkwellOptLevel;
 use lexer::Lexer;
 use parser::{generate_tree, Lexem};
 use std::fs::File;
@@ -212,7 +212,8 @@ fn compile(args: CompileArgs) {
 
     let context = Context::create();
     let target_triple = TargetMachine::get_default_triple();
-    let mut codegen = CodeGen::create(&context, &target_triple, &file_path).unwrap();
+    let mut codegen =
+        CodeGen::create(&context, &target_triple, &file_path, args.optimization).unwrap();
     codegen.generate_llvm(&ast);
     if let Err(e) = codegen.verify() {
         eprintln!("LLVM codegen ended with errors: {}", e);
@@ -228,9 +229,17 @@ fn compile(args: CompileArgs) {
     }
 
     if args.jit {
+        // Convert CLI optimization level to LLVM optimization level
+        let opt_level = match args.optimization {
+            cli::OptimizationLevel::None => InkwellOptLevel::None,
+            cli::OptimizationLevel::Less => InkwellOptLevel::Less,
+            cli::OptimizationLevel::Default => InkwellOptLevel::Default,
+            cli::OptimizationLevel::Aggressive => InkwellOptLevel::Aggressive,
+        };
+
         let execution_engine = codegen
             .module
-            .create_jit_execution_engine(OptimizationLevel::None)
+            .create_jit_execution_engine(opt_level)
             .map_err(|e| format!("Failed to create JIT execution engine: {}", e));
         match execution_engine {
             Ok(engine) => {

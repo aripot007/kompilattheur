@@ -6,12 +6,13 @@ use inkwell::targets::{CodeModel, InitializationConfig, RelocMode, Target, Targe
 use inkwell::targets::{FileType, TargetTriple};
 use inkwell::types::StructType;
 use inkwell::values::{FunctionValue, PointerValue};
-use inkwell::OptimizationLevel;
+use inkwell::OptimizationLevel as InkwellOptLevel;
 use tempfile::NamedTempFile;
 
 use std::path::{Path, PathBuf};
 
 use crate::ast::nodes::Root;
+use crate::cli::OptimizationLevel;
 use crate::common::diagnostic::Diagnostic;
 use crate::common::symbol_table::SymbolTableRef;
 
@@ -45,6 +46,7 @@ impl<'ctx> CodeGen<'ctx> {
         context: &'ctx Context,
         target_triple: &TargetTriple,
         source_file: &PathBuf,
+        optimization_level: OptimizationLevel,
     ) -> Result<Self, String> {
         let config = InitializationConfig {
             asm_parser: true,
@@ -65,7 +67,7 @@ impl<'ctx> CodeGen<'ctx> {
                 target_triple,
                 &TargetMachine::get_host_cpu_name().to_string(),
                 &TargetMachine::get_host_cpu_features().to_string(),
-                OptimizationLevel::None,
+                Self::convert_optimization_level(optimization_level),
                 RelocMode::PIC,
                 CodeModel::Default,
             )
@@ -129,6 +131,15 @@ impl<'ctx> CodeGen<'ctx> {
         self.init_dynamic_type();
         self.init_list_type();
         self.init_string_type();
+    }
+
+    fn convert_optimization_level(level: OptimizationLevel) -> InkwellOptLevel {
+        match level {
+            OptimizationLevel::None => InkwellOptLevel::None,
+            OptimizationLevel::Less => InkwellOptLevel::Less,
+            OptimizationLevel::Default => InkwellOptLevel::Default,
+            OptimizationLevel::Aggressive => InkwellOptLevel::Aggressive,
+        }
     }
 
     fn get_linker(&self) -> Result<String, String> {

@@ -1,4 +1,5 @@
 use colored::Colorize;
+use libc::IW_AUTH_CIPHER_WEP104;
 
 use super::lexem::Lexem;
 use crate::analysis_table::AnalysisTable;
@@ -64,8 +65,8 @@ pub fn generate_tree(
                                 "No Newline at the end of the file".to_string(),
                             )
                             .display();
-                            error = false;
                             accept = true;
+                            error = false;
                             break;
                         } else if token.is_same_type(&input.element) {
                             //println!("Input: {:?}", input);
@@ -146,8 +147,30 @@ pub fn generate_tree(
                                     //input = lexer.next().unwrap_or(file_element::EOF);
                                     continue;
                                 }
-                                error = true;
                                 let expected_tokens = analysis_table.get_expected_tokens(&id);
+                                if input.element == Token::EOF
+                                    && expected_tokens.contains(&&Token::Newline)
+                                {
+                                    //println!("Error: {} Stack: {}", input.element, Lexem::NonTerminal(id));
+                                    Diagnostic::new(
+                                        DiagnosticGravity::Warning,
+                                        "ParserEndOfFileWarning :".to_string(),
+                                        input.start_line,
+                                        input.start_line,
+                                        input.start_char,
+                                        if input.len > 0 {
+                                            input.start_char + (input.len - 1)
+                                        } else {
+                                            input.start_char
+                                        },
+                                        "No Newline at the end of the file".to_string(),
+                                    )
+                                    .display();
+                                    error = false;
+                                    accept = true;
+                                    break;
+                                }
+                                error = true;
                                 let expected_tokens = expected_tokens
                                     .iter()
                                     .map(|x| match x {

@@ -251,3 +251,4 @@ while not game_over:
                     player = 1
     else:
         println("Column is full. Try again.")
+        

@@ -9,7 +9,7 @@ use crate::{
 };
 
 use super::{
-    compare_generic_values, compare_int_bool_values, compare_list_values, compare_none_values,
+    compare_generic_values, compare_int_bool_range_values, compare_list_values, compare_none_values,
     compare_string_values, compute_add_unchecked, compute_div_unchecked, compute_mod_unchecked,
     compute_mult_unchecked, compute_sub_unchecked, llvm_compute_and_or, llvm_compute_expr,
 };
@@ -102,13 +102,14 @@ fn llvm_compute_comparison<'ctx>(
     let val2 = llvm_compute_expr(e2, cg)?;
 
     match (e1.get_type(), e2.get_type()) {
-        (Type::Int, Type::Int) => compare_int_bool_values(val1, val2, op.clone(), cg),
+        (Type::Int, Type::Int) => compare_int_bool_range_values(val1, val2, op.clone(), cg),
         (Type::String, Type::String) => compare_string_values(val1, val2, op.clone(), cg),
         (Type::None, Type::None) => compare_none_values(val1, val2, op.clone(), cg),
-        (Type::Bool, Type::Bool) => compare_int_bool_values(val1, val2, op.clone(), cg),
+        (Type::Bool, Type::Bool) => compare_int_bool_range_values(val1, val2, op.clone(), cg),
         (Type::List, Type::List) => compare_list_values(val1, val2, op.clone(), cg),
-        (Type::Bool, Type::Int) => compare_int_bool_values(val1, val2, op.clone(), cg),
-        (Type::Int, Type::Bool) => compare_int_bool_values(val1, val2, op.clone(), cg),
+        (Type::Bool, Type::Int) => compare_int_bool_range_values(val1, val2, op.clone(), cg),
+        (Type::Int, Type::Bool) => compare_int_bool_range_values(val1, val2, op.clone(), cg),
+        (Type::Range, Type::Range) => compare_int_bool_range_values(val1, val2, op.clone(), cg),
         _ => compare_generic_values(val1, val2, op.clone(), cg),
     }
 }

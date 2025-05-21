@@ -1,5 +1,3 @@
-use core::panic;
-
 use colored::Colorize;
 use inkwell::AddressSpace;
 

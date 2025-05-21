@@ -16,28 +16,6 @@ pub static LIST_STRUCT_LEN_INDEX: u32 = 0;
 pub static LIST_STRUCT_CAPA_INDEX: u32 = 1;
 pub static LIST_STRUCT_ARRAY_INDEX: u32 = 2;
 
-macro_rules! printf_list_ptr {
-    ($cg: expr, $list_ptr: expr) => {{
-        use crate::asm::llvm::print::llvm_printf_custom;
-        use crate::asm::InternalFuctions;
-        let __list_struct = $cg
-            .builder
-            .build_load($cg.smolpp_types.list_type, $list_ptr, "__list_struct")?
-            .into_struct_value();
-        let __list_len = $cg.build_get_list_length(__list_struct)?;
-        let __list_cap = $cg.build_get_list_capacity(__list_struct)?;
-        let __list_ptr = $cg.build_get_list_array_ptr(__list_struct)?;
-        llvm_printf_custom!(
-            $cg,
-            "List {len=%d, capa=%d, array=%p}",
-            __list_len,
-            __list_cap,
-            __list_ptr
-        );
-    }};
-}
-pub(crate) use printf_list_ptr;
-
 impl<'ctx> CodeGen<'ctx> {
     /// Initialize the LLVM struct to represent lists
     ///
@@ -176,6 +154,7 @@ impl<'ctx> CodeGen<'ctx> {
     /// Free a list variable stored in the heap
     /// This function MUST ONLY be used on list variables stored ON THE HEAP,
     /// ie created with `create_list_variable` with the `heap` parameter to `true`.
+    #[allow(unused)]
     pub fn build_free_list_variable(&self, list: SmolVar<'ctx>) -> Result<(), LLVMCodegenError> {
         let list_ptr = self.get_variable_value(list)?;
         return self.build_free_list(list_ptr.into_pointer_value());
@@ -214,38 +193,6 @@ impl<'ctx> CodeGen<'ctx> {
             .into_int_value());
     }
 
-    pub fn build_set_list_length(
-        &self,
-        list: SmolList<'ctx>,
-        len: IntValue<'ctx>,
-    ) -> Result<SmolList<'ctx>, LLVMCodegenError> {
-        return Ok(self
-            .builder
-            .build_insert_value(list, len, LIST_STRUCT_LEN_INDEX, "set_list_len")?
-            .into_struct_value());
-    }
-
-    pub fn build_get_list_capacity(
-        &self,
-        list: SmolList<'ctx>,
-    ) -> Result<IntValue<'ctx>, LLVMCodegenError> {
-        return Ok(self
-            .builder
-            .build_extract_value(list, LIST_STRUCT_CAPA_INDEX, "list_cap")?
-            .into_int_value());
-    }
-
-    fn build_set_list_capacity(
-        &self,
-        list: SmolList<'ctx>,
-        capacity: IntValue<'ctx>,
-    ) -> Result<SmolList<'ctx>, LLVMCodegenError> {
-        return Ok(self
-            .builder
-            .build_insert_value(list, capacity, LIST_STRUCT_CAPA_INDEX, "set_list_cap")?
-            .into_struct_value());
-    }
-
     pub fn build_get_list_array_ptr(
         &self,
         list: SmolList<'ctx>,
@@ -275,16 +222,5 @@ impl<'ctx> CodeGen<'ctx> {
             )?
             .into_pointer_value();
         return Ok(ptr);
-    }
-
-    fn build_set_list_array_ptr(
-        &self,
-        list: SmolList<'ctx>,
-        ptr: PointerValue<'ctx>,
-    ) -> Result<SmolList<'ctx>, LLVMCodegenError> {
-        return Ok(self
-            .builder
-            .build_insert_value(list, ptr, LIST_STRUCT_ARRAY_INDEX, "set_list_array_ptr")?
-            .into_struct_value());
     }
 }

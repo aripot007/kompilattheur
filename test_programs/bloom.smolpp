@@ -1,0 +1,75 @@
+def initialize_filter():
+    return [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+
+def print_filter(filter):
+    for i in range(70):
+        print(filter[i])
+    println("")
+
+def hash1(number):
+    if type(number) == "Int":
+        result = number
+        result = result * 31
+        result = result * 17
+        return result % 70
+    return 0
+
+def hash2(number):
+    if type(number) == "Int":
+        result = number
+        result = result * 13
+        result = result * 23
+        return result % 70
+    return 0
+
+def add_number(filter, number):
+    if type(number) == "Int":
+        pos1 = hash1(number)
+        pos2 = hash2(number)
+        filter[pos1] = 1
+        filter[pos2] = 1
+
+def check_number(filter, number):
+    if type(number) == "Int":
+        pos1 = hash1(number)
+        pos2 = hash2(number)
+        if filter[pos1] == 1:
+            if filter[pos2] == 1:
+                return True
+    return False
+
+# Programme principal
+filter = initialize_filter()
+println("État initial du filtre:")
+print_filter(filter)
+running = True
+
+while running:
+    println("1. Ajouter un nombre")
+    println("2. Vérifier un nombre")
+    println("3. Quitter")
+    print("Votre choix: ")
+    
+    choice = int(input())
+    if type(choice) == "Int":
+        if choice == 1:
+            print("Entrez le nombre à ajouter: ")
+            num = int(input())
+            if type(num) == "Int":
+                add_number(filter, num)
+                println("Nombre ajouté! État du filtre:")
+                print_filter(filter)
+        else:
+            if choice == 2:
+                print("Entrez le nombre à vérifier: ")
+                num = int(input())
+                if type(num) == "Int":
+                    if check_number(filter, num):
+                        println("Le nombre est probablement dans le filtre")
+                    else:
+                        println("Le nombre n'est pas dans le filtre")
+            else:
+                if choice == 3:
+                    running = False
+                else:
+                    println("Choix invalide!")

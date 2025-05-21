@@ -3,7 +3,7 @@ use inkwell::{basic_block::BasicBlock, values::PointerValue, AddressSpace};
 use crate::{
     asm::{
         codegen::CodeGen,
-        llvm::{assert_type_oneof, smolvar::SmolVar, LLVMCodegenError},
+        llvm::{assert_type::assert_type_oneof, smolvar::SmolVar, LLVMCodegenError},
     },
     ast::nodes::For,
     common::symbol_table::{get_symbol, Symbol},

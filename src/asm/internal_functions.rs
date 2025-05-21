@@ -6,9 +6,10 @@ use crate::{
 use super::{
     codegen::CodeGen,
     llvm::{
-        init_internal_add_generic_function, init_internal_bool_cast_function,
-        init_internal_compare_generic_function, init_internal_generic_print_function,
-        init_internal_list_cmp_function, pre_init_internal_list_cmp_function,
+        cast::init_internal_bool_cast_function,
+        init_internal_add_generic_function, init_internal_compare_generic_function,
+        lists::{init_internal_list_cmp_function, pre_init_internal_list_cmp_function},
+        print::init_internal_generic_print_function,
         strings::{init_internal_str_cmp_function, register_internal_str_cmp_function},
         LLVMCodegenError,
     },

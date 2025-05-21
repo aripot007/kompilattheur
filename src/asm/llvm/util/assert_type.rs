@@ -1,12 +1,13 @@
 use inkwell::{basic_block::BasicBlock, values::IntValue, AddressSpace, IntPredicate};
 
 use crate::{
-    asm::{codegen::CodeGen, internal_global_constants::RuntimeErrorMsg},
+    asm::{codegen::CodeGen, internal_global_constants::RuntimeErrorMsg, llvm::smolvar::SmolVar},
     common::localizable::Localizable,
     typing::Type,
 };
 
-use super::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError};
+use super::panic::smolpp_panic_with_unreachable;
+use crate::asm::LLVMCodegenError;
 
 /// Generate LLVM to assert the type of a variable at runtime
 /// The runtime type must be exactly `valtype`, weak types will not match

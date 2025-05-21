@@ -1,7 +1,7 @@
 use crate::{
     asm::{
         codegen::CodeGen,
-        llvm::{assert_assignation_type, smolvar::SmolVar, LLVMCodegenError},
+        llvm::{assert_type::assert_assignation_type, smolvar::SmolVar, LLVMCodegenError},
     },
     ast::nodes::Assign,
     common::diagnostic::Diagnostic,

@@ -7,7 +7,9 @@ use inkwell::{
 use crate::{
     asm::{
         codegen::CodeGen,
-        llvm::{assert_type_oneof, panic::smolpp_panic_with_unreachable, smolvar::SmolVar},
+        llvm::{
+            assert_type::assert_type_oneof, panic::smolpp_panic_with_unreachable, smolvar::SmolVar,
+        },
         LLVMCodegenError, RuntimeErrorMsg,
     },
     common::localizable::LocalizationInfo,

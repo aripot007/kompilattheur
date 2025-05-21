@@ -2,15 +2,15 @@ use inkwell::IntPredicate;
 
 use crate::{
     asm::{
-        codegen::CodeGen,
-        internal_global_constants::RuntimeErrorMsg,
-        llvm::{panic::smolpp_panic_with_unreachable, LLVMCodegenError},
+        codegen::CodeGen, internal_global_constants::RuntimeErrorMsg, llvm::LLVMCodegenError,
         InternalFuctions,
     },
     common::localizable::LocalizationInfo,
     smollib::{get_smollib_func, SmollibFunctionNames},
     typing::Type,
 };
+
+use super::panic::smolpp_panic_with_unreachable;
 
 pub fn init_internal_bool_cast_function(cg: &mut CodeGen) -> Result<(), LLVMCodegenError> {
     // Create the function

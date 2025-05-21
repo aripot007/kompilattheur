@@ -271,8 +271,8 @@ impl<'ctx> CodeGen<'ctx> {
         // Verify the module
         if let Err(e) = self.module.verify() {
             eprintln!("Module verification failed!");
-            eprintln!("{}", e.to_string());
             eprintln!("{}", self.module.print_to_string().to_string());
+            eprintln!("{}", e.to_string());
             Err("Module verification failed".into())
         } else {
             println!("Module verification succeeded!");

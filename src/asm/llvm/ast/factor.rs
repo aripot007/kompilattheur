@@ -78,7 +78,7 @@ fn llvm_compute_list_value<'ctx>(
     cg: &mut CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
     let capa = cg.context.i64_type().const_int(values.len() as u64, false);
-    let (val, list_struct_ptr) = cg.build_list_variable(capa, false)?;
+    let (val, list_struct_ptr) = cg.build_list_variable(capa, true)?;
 
     // Update len
     let len_ptr =

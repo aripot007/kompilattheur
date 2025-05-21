@@ -167,6 +167,7 @@ impl Grammar {
             "if" => terminal!("if", Token::If),
             "else" => terminal!("else", Token::Else),
             "for" => terminal!("for", Token::For),
+            "while" => terminal!("while", Token::While),
             "in" => terminal!("in", Token::In),
             "def" => terminal!("def", Token::Def),
             "return" => terminal!("return", Token::Return),

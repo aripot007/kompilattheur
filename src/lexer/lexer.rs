@@ -76,6 +76,7 @@ fn init_token_table() -> TokenTable {
     table.reserve_word("if", Token::If);
     table.reserve_word("else", Token::Else);
     table.reserve_word("for", Token::For);
+    table.reserve_word("while", Token::While);
     table.reserve_word("in", Token::In);
     table.reserve_word("def", Token::Def);
     table.reserve_word("return", Token::Return);

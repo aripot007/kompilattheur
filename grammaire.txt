@@ -43,6 +43,7 @@
 
 "<stmt>"          : "<simple_stmt>" "NEWLINE"
                   | "if" "<expr>" ":" "<suite>" "<stmt_if>"
+                  | "while" "<expr>" ":" "<suite>"
                   | "for" "<ident>" "in" "<expr>" ":" "<suite>";
 
 "<stmt_if>"       : "else" ":" "<suite>"

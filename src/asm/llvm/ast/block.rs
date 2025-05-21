@@ -88,7 +88,7 @@ pub fn llvm_from_block<'ctx>(
             Statement::Expr(expr) => {
                 llvm_compute_expr(expr, cg)?;
             }
-            Statement::NotImplemented => {
+            Statement::NotImplemented | Statement::While(_) => {
                 cg.errors.push(Diagnostic::unimplemented_llvm(stmt));
                 error = true;
             }

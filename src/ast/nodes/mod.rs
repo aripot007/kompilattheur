@@ -18,6 +18,8 @@ mod expression;
 pub use expression::*;
 mod for_loop;
 pub use for_loop::For;
+mod while_loop;
+pub use while_loop::While;
 mod conditional;
 pub use conditional::Conditional;
 mod assign;
@@ -129,6 +131,7 @@ pub enum Ast {
     Defs(Defs),
     Factor(Factor),
     For(For),
+    While(While),
     Param(Param),
     Root(Root),
     Statement(Statement),
@@ -145,6 +148,7 @@ impl Display for Ast {
             Ast::Defs(e) => e.get_string_repr(),
             Ast::Factor(e) => e.get_string_repr(),
             Ast::For(e) => e.get_string_repr(),
+            Ast::While(e) => e.get_string_repr(),
             Ast::Param(e) => e.get_string_repr(),
             Ast::Root(e) => e.get_string_repr(),
             Ast::Statement(e) => e.get_string_repr(),

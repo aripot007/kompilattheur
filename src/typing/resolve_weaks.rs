@@ -126,6 +126,12 @@ pub fn resolve_weaks(node: Ast, symbol_table: &SymbolTableRef) -> Ast {
             for_loop.block = resolve_weaks(Ast::Block(for_loop.block), symbol_table).into();
             Ast::For(for_loop)
         }
+        Ast::While(mut while_loop) => {
+            while_loop.condition =
+                resolve_weaks(Ast::Expression(while_loop.condition), symbol_table).into();
+            while_loop.block = resolve_weaks(Ast::Block(while_loop.block), symbol_table).into();
+            Ast::While(while_loop)
+        }
         Ast::Param(_) => node,
         Ast::Root(mut root) => {
             root.block = resolve_weaks(Ast::Block(root.block), symbol_table).into();
@@ -148,6 +154,9 @@ pub fn resolve_weaks(node: Ast, symbol_table: &SymbolTableRef) -> Ast {
                 }
                 Statement::For(for_loop) => {
                     Statement::For(resolve_weaks(Ast::For(for_loop), symbol_table).into())
+                }
+                Statement::While(while_loop) => {
+                    Statement::While(resolve_weaks(Ast::While(while_loop), symbol_table).into())
                 }
                 Statement::Conditional(conditional) => Statement::Conditional(
                     resolve_weaks(Ast::Conditional(conditional), symbol_table).into(),

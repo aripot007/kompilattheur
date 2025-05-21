@@ -2,6 +2,7 @@ mod int;
 mod len;
 mod list;
 mod range;
+mod type_;
 use std::usize;
 
 use crate::asm::codegen::CodeGen;
@@ -41,6 +42,7 @@ fn get_all_smollib_functions() -> Vec<Box<dyn SmollibFunction>> {
         Box::new(list::SmolList {}),
         Box::new(range::SmolRange {}),
         Box::new(int::SmolInt {}),
+        Box::new(type_::SmolType {}),
     ]
 }
 
@@ -50,6 +52,7 @@ pub enum SmollibFunctionNames {
     SmolList,
     SmolRange,
     SmolInt,
+    SmolType,
 }
 
 impl ToString for SmollibFunctionNames {
@@ -64,6 +67,9 @@ impl ToString for SmollibFunctionNames {
             }
             SmollibFunctionNames::SmolInt => {
                 user_function_prefix_format!(int::SmolInt {}.name())
+            }
+            SmollibFunctionNames::SmolType => {
+                user_function_prefix_format!(type_::SmolType {}.name())
             }
         };
         String::from(s)

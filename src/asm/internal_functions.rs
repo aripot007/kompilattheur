@@ -43,7 +43,7 @@ macro_rules! get_internal_func {
         $cg.module.get_function($name.into()).unwrap()
     };
 }
-pub(super) use get_internal_func;
+pub(crate) use get_internal_func;
 
 macro_rules! internal_function_prefix {
     ($name: expr) => {

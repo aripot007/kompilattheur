@@ -6,6 +6,7 @@ use crate::{
         InternalFuctions,
     },
     common::localizable::Localizable,
+    smollib::{get_smollib_func, SmollibFunctionNames},
     typing::Type,
 };
 
@@ -142,17 +143,27 @@ where
 
     // Value
     let call_type_value = cg.builder.build_call(
-        get_internal_func!(cg, InternalFuctions::Type),
+        get_smollib_func!(cg, SmollibFunctionNames::SmolType),
         &[value.into()],
         "type_call",
     )?;
 
     // La fonction Type retourne directement un pointeur
-    let actual_type_ptr = call_type_value
+    let smol_var = call_type_value
         .try_as_basic_value()
         .left()
         .unwrap()
-        .into_pointer_value();
+        .into_struct_value();
+
+    let smol_var_value = cg.get_variable_value(smol_var)?.into_int_value();
+
+    let ptr_type = cg.context.ptr_type(AddressSpace::default());
+
+    let smol_var_ptr = cg
+        .builder
+        .build_int_to_ptr(smol_var_value, ptr_type, "smol_var_ptr")?;
+
+    let actual_type_ptr = cg.build_get_string_array_ptr_from_ptr(smol_var_ptr)?;
 
     smolpp_panic_with_unreachable(
         cg,

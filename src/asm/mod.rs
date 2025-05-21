@@ -6,6 +6,8 @@ pub use internal_functions::*;
 mod diagnostics;
 pub mod execute;
 mod internal_global_constants;
+pub(crate) use internal_functions::get_internal_func;
 pub(crate) use internal_functions::internal_function_prefix;
+pub(crate) use internal_global_constants::get_internal_global_const;
 pub use internal_global_constants::*;
 pub use llvm::LLVMCodegenError;

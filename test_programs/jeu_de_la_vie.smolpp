@@ -1,0 +1,75 @@
+def print_cell(cell):
+    if cell:
+        print("#")
+    else:
+        print(" ")
+
+def print_board(board):
+    for y in range(len(board)):
+        row = board[y]
+        for x in range(len(row)):
+            print_cell(row[x])
+        println("")
+
+def count_neighbors(board, row, col):
+    d1 = [-1, -1]
+    d2 = [-1, 0]
+    d3 = [-1, 1]
+    d4 = [0, -1]
+    d5 = [0, 1]
+    d6 = [1, -1]
+    d7 = [1, 0]
+    d8 = [1, 1]
+    deltas = [d1, d2, d3, d4, d5, d6, d7, d8]
+
+    count = 0
+    for delta in deltas:
+        dy = delta[0]
+        dx = delta[1]
+        ny = row + dy
+        nx = col + dx
+        if ny >= 0:
+            if ny < len(board):
+                if nx >= 0:
+                    if nx < len(board[0]):
+                        if board[ny][nx]:
+                            count = count + 1
+    return count
+
+def next_gen(board):
+    height = len(board)
+    width = len(board[0])
+    new_board = []
+    for y in range(height):
+        new_row = []
+        for x in range(width):
+            alive = board[y][x]
+            neighbors = count_neighbors(board, y, x)
+            new_cell = False
+            if alive:
+                if neighbors == 2 or neighbors == 3:
+                    new_cell = True
+            else:
+                if neighbors == 3:
+                    new_cell = True
+            new_row = new_row + [new_cell]
+        new_board = new_board + [new_row]
+    return new_board
+
+# Initial glider (3x3) + padding to make 5x5
+r1 = [False, True, False]
+r2 = [False, False, True]
+r3 = [True, True, True]
+empty = [False, False, False, False, False]
+p1 = [False] + r1 + [False]
+p2 = [False] + r2 + [False]
+p3 = [False] + r3 + [False]
+board = [empty, p1, p2, p3, empty]
+
+# Run the simulation
+for gen in range(10):
+    print("Generation ")
+    print(gen)
+    println(" :")
+    print_board(board)
+    board = next_gen(board)

@@ -129,7 +129,7 @@ pub fn access_to_ptr<'ctx>(
 
     // Check if the index is an integer
     if let Some(index_type) = &expr2.expr_type {
-        if *index_type != Type::Int {
+        if !index_type.is_compatible(Type::Int) {
             cg.errors.push(Diagnostic::invalid_destination_expr(expr2));
             return Err(LLVMCodegenError::InvalidDestination(format!(
                 "List index must be an integer, got {}",

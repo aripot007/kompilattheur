@@ -174,6 +174,7 @@ impl InternalGlobalConst {
             InternalGlobalConst::ListType => "List",
             InternalGlobalConst::RangeType => "Range",
             InternalGlobalConst::NoneType => "None",
+            #[cfg(feature = "smollib-input")]
             InternalGlobalConst::StdinFile => panic!("stdin value should not be used"),
         }
     }

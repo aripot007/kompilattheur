@@ -1,5 +1,5 @@
 def clear_screen():
-    print("\e[2J")
+    print("\e[2J\e[H")
 
 def print_cell(cell, bold_border):
     if bold_border:
@@ -204,7 +204,7 @@ def get_ai_move(board):
         row = get_next_open_row(board, col)
         if row != -1:
             board[row][col] = 2
-            score = minimax(board, 3, -100000, 100000, False)
+            score = minimax(board, 4, -100000, 100000, False)
             undo_move(board, row, col)
             if score > best_score:
                 best_score = score
@@ -226,9 +226,9 @@ while not game_over:
     if player == 1:
         correct_choice = False
         while not correct_choice:
-            print("Player ")
+            print("\e[38;5;196mPlayer ")
             print(player)
-            print(", choose a column (0-6): ")
+            print("\e[0m, choose a column (0-6): ")
             col_str = input()
             if is_int(col_str):
                 col = int(col_str)

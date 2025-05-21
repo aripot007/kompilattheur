@@ -33,7 +33,78 @@ Le type `Weak` permet de faire soit une intersection de types ou une union de ty
 Le type `Range` est un type interne. Il contient un `Int` et imite le fonctionnement d'un itérateur Python dans une boucle `for`et une fonction `list`.
 
 ## Schéma de traduction
-<!-- TODO: là je peux pas vraiment aider 💀, ce que j'ai fait est basique : "Il faut présenter les chémas de traduction (source smollpp vers LLVM-IR pour les structures intéréssantes : appel fonction, conditionnelles imbriquées, appels récursifs ?, ...)"-->
+```Python
+def fibonacci(n): # 🟥
+    if n <= 0: # 0️⃣
+        return 0 # 🔺
+    if n == 1: # 1️⃣
+        return 1 # 🔻
+    return fibonacci(n-1) + fibonacci(n-2)
+
+fibonacci(5) # 🟩
+```
+
+```LLVM
+define i32 @main() {
+entry:
+  %function_call_fibonacci = call %dynamic_type_struct @__smolpp_user_f_fibonacci(%dynamic_type_struct { i8 4, i64 5 }) ; 🟩
+  ret i32 0
+}
+
+define %dynamic_type_struct @__smolpp_user_f_fibonacci(%dynamic_type_struct %0) { ; 🟥
+function_entry:
+  %alloca_param_n = alloca %dynamic_type_struct, align 8
+  store %dynamic_type_struct %0, ptr %alloca_param_n, align 4
+  %load_n = load %dynamic_type_struct, ptr %alloca_param_n, align 4
+  %value_field = extractvalue %dynamic_type_struct %load_n, 1
+  %lte = icmp sle i64 %value_field, 0
+  %int_cast = sext i1 %lte to i64
+  %with_value = insertvalue %dynamic_type_struct { i8 2, i64 undef }, i64 %int_cast, 1
+  %value_field1 = extractvalue %dynamic_type_struct %with_value, 1
+  %bool_if = trunc i64 %value_field1 to i1
+  br i1 %bool_if, label %then, label %else ; 0️⃣
+
+then:                                             ; preds = %function_entry
+  ret %dynamic_type_struct { i8 4, i64 0 } ; 🔺
+
+else:                                             ; preds = %function_entry
+  br label %merge
+
+merge:                                            ; preds = %else
+  %load_n2 = load %dynamic_type_struct, ptr %alloca_param_n, align 4
+  %value_field3 = extractvalue %dynamic_type_struct %load_n2, 1
+  %eq = icmp eq i64 %value_field3, 1
+  %int_cast4 = sext i1 %eq to i64
+  %with_value5 = insertvalue %dynamic_type_struct { i8 2, i64 undef }, i64 %int_cast4, 1
+  %value_field9 = extractvalue %dynamic_type_struct %with_value5, 1
+  %bool_if10 = trunc i64 %value_field9 to i1
+  br i1 %bool_if10, label %then6, label %else7 ; 1️⃣
+
+then6:                                            ; preds = %merge
+  ret %dynamic_type_struct { i8 4, i64 1 } ; 🔻
+
+else7:                                            ; preds = %merge
+  br label %merge8
+
+merge8:                                           ; preds = %else7
+  %load_n11 = load %dynamic_type_struct, ptr %alloca_param_n, align 4
+  %value_field12 = extractvalue %dynamic_type_struct %load_n11, 1
+  %sub = sub i64 %value_field12, 1
+  %with_value13 = insertvalue %dynamic_type_struct { i8 4, i64 undef }, i64 %sub, 1
+  %function_call_fibonacci = call %dynamic_type_struct @__smolpp_user_f_fibonacci(%dynamic_type_struct %with_value13)
+  %load_n14 = load %dynamic_type_struct, ptr %alloca_param_n, align 4
+  %value_field15 = extractvalue %dynamic_type_struct %load_n14, 1
+  %sub16 = sub i64 %value_field15, 2
+  %with_value17 = insertvalue %dynamic_type_struct { i8 4, i64 undef }, i64 %sub16, 1
+  %function_call_fibonacci18 = call %dynamic_type_struct @__smolpp_user_f_fibonacci(%dynamic_type_struct %with_value17)
+  %value_field19 = extractvalue %dynamic_type_struct %function_call_fibonacci, 1
+  %value_field20 = extractvalue %dynamic_type_struct %function_call_fibonacci18, 1
+  %add = add i64 %value_field19, %value_field20 ; ➕
+  %with_value21 = insertvalue %dynamic_type_struct { i8 4, i64 undef }, i64 %add, 1
+  ret %dynamic_type_struct %with_value21
+}
+```
+
 
 ## Gestion de Projet :
 ### Aristide
@@ -56,4 +127,4 @@ Le type `Range` est un type interne. Il contient un `Int` et imite le fonctionne
 ### Romain
 **TDS** : affinage des structures de données (2h);
 **Contrôles sémantiques statiques** : verification des arguments et retours de fonctions (3h); 
-**Assembleur** :  typage dynamique des fonctions (4h); appel de fonctions (2h);  branching if else (2h); accès et assignation de liste (3h); comparaison liste (6h); appels de fonction mutuellement récursif (1h); fonction interne int (3h); fonction interne surchage plus (4h) 
+**Assembleur** :  typage dynamique des fonctions (4h); appel de fonctions (2h);  branching if else (2h); accès et assignation de liste (3h); comparaison liste (6h); appels de fonction mutuellement récursif (1h); fonction interne int (3h); fonction interne surchage plus (4h)

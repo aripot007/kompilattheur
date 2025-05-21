@@ -132,11 +132,11 @@ pub(super) fn init_internal_functions<'ctx>(
     init_internal_str_cmp_function(function_str_cmp, cg)?;
 
     // This function is using len should be initialized after the len function
+    init_internal_type_function(cg)?;
+
     init_internal_bool_cast_function(cg)?;
 
     init_internal_add_generic_function(cg)?;
-
-    init_internal_type_function(cg)?;
 
     // smollib user functions
     build_smollib_llvm(cg)?; //FIXME: potentially add localization info, but i don't know how I am supposed to do that with generic functions

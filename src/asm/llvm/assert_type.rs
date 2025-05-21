@@ -137,6 +137,9 @@ where
     cg.builder
         .build_conditional_branch(cdt, ok_block, panic_block)?;
 
+    // "Panic" block : type is not the same
+    cg.builder.position_at_end(panic_block);
+
     // Value
     let call_type_value = cg.builder.build_call(
         get_internal_func!(cg, InternalFuctions::Type),
@@ -145,10 +148,12 @@ where
     )?;
 
     // La fonction Type retourne directement un pointeur
-    let actual_type_ptr = call_type_value.try_as_basic_value().unwrap_left();
+    let actual_type_ptr = call_type_value
+        .try_as_basic_value()
+        .left()
+        .unwrap()
+        .into_pointer_value();
 
-    // "Panic" block : type is not the same
-    cg.builder.position_at_end(panic_block);
     smolpp_panic_with_unreachable(
         cg,
         RuntimeErrorMsg::TypeError,

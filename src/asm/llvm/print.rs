@@ -22,6 +22,22 @@ macro_rules! llvm_printf {
     };
 }
 
+macro_rules! llvm_printf_custom {
+    ($cg: expr, $str: expr, $($args: expr),*) => {
+        let __s = $cg.builder.build_global_string_ptr($str, "printf_str")?;
+        let mut __args_vec: Vec<inkwell::values::BasicMetadataValueEnum> = vec![__s.as_pointer_value().into()];
+        $( __args_vec.push($args.into()); )*
+        $cg.builder.build_call(
+            $cg.module
+                .get_function(InternalFuctions::Printf.into())
+                .unwrap(),
+            &__args_vec,
+            "printf_debug",
+        )?;
+    };
+}
+pub(crate) use llvm_printf_custom;
+
 /// Generate LLVM to print a None value
 pub fn print_none_value<'ctx>(
     _value: &SmolVar<'ctx>,
@@ -88,14 +104,16 @@ pub fn print_string_value<'ctx>(
 
     let value_generic = cg.get_variable_value(*variable)?;
 
-    let value = match value_generic.is_int_value() {
+    let struct_ptr = match value_generic.is_int_value() {
         true => cg
             .builder
             .build_int_to_ptr(value_generic.into_int_value(), ptr_type, "str_ptr")?,
         false => value_generic.into_pointer_value(),
     };
 
-    llvm_printf!(cg, value, "printf_string");
+    let str_array_ptr = cg.build_get_string_array_ptr_from_ptr(struct_ptr)?;
+
+    llvm_printf!(cg, str_array_ptr, "printf_string");
 
     return Ok(());
 }

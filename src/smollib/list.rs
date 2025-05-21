@@ -1,6 +1,6 @@
 use inkwell::{
     types::FunctionType,
-    values::{BasicValue, BasicValueEnum, FunctionValue, IntValue, PointerValue},
+    values::{BasicValue, FunctionValue, IntValue, PointerValue},
     AddressSpace,
 };
 

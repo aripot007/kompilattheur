@@ -58,6 +58,9 @@ pub enum RuntimeErrorMsg {
 
     //
     InvalidTypeListFunction,
+
+    //
+    InvalidStringForIntFunction,
 }
 
 macro_rules! internal_global_prefix {
@@ -106,6 +109,9 @@ impl Into<&'static str> for RuntimeErrorMsg {
             RuntimeErrorMsg::InvalidTypeListFunction => {
                 internal_global_prefix!("invalid_type_list_function")
             }
+            RuntimeErrorMsg::InvalidStringForIntFunction => {
+                internal_global_prefix!("invalid_string_value_int_function")
+            }
         }
     }
 }
@@ -151,36 +157,42 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
     // Error messages
     create_global_string(
         RuntimeErrorMsg::PanicInvalidInternalTypeValueFormatString,
-        "PANIC: Invalid internal type value %d\n",
+        "Error: Invalid internal type value %d\n",
         cg,
     );
     create_global_string(
         RuntimeErrorMsg::PanicNotImplemented,
-        "PANIC: LLVM not implemented yet\n",
+        "Error: LLVM not implemented yet\n",
         cg,
     );
     create_global_string(RuntimeErrorMsg::TypeError, "TypeError: %s\n", cg);
     create_global_string(
         RuntimeErrorMsg::IndexOutOfBound,
-        "IndexError: index %d out of bounds for list of length %d\n",
+        "Error: index %d out of bounds for list of length %d\n",
         cg,
     );
 
     create_global_string(
         RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric,
-        "PANIC: Invalid internal type value for generic comparison\n",
+        "Error: Invalid internal type value for generic comparison\n",
         cg,
     );
 
     create_global_string(
         RuntimeErrorMsg::PanicInvalidInternalTypeAddGeneric,
-        "PANIC: Invalid internal type value for generic add\n",
+        "Error: Invalid internal type value for generic add\n",
         cg,
     );
 
     create_global_string(
         RuntimeErrorMsg::InvalidTypeListFunction,
-        "PANIC: Invalid type for list function\n",
+        "Error: Invalid type for list function\n",
         cg,
-    )
+    );
+
+    create_global_string(
+        RuntimeErrorMsg::InvalidStringForIntFunction,
+        "Error: Invalid string for int function\n",
+        cg,
+    );
 }

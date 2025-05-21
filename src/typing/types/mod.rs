@@ -85,8 +85,8 @@ impl Type {
 impl Type {
     pub fn is_compatible(&self, other: Type) -> bool {
         match (self, &other) {
-            (Type::Weak(w), t) | (t, Type::Weak(w)) => w.is_compatible(t.clone()),
             (Type::Any, _) | (_, Type::Any) => true,
+            (Type::Weak(w), t) | (t, Type::Weak(w)) => w.is_compatible(t.clone()),
             (t1, t2) => return t1 == t2,
         }
     }

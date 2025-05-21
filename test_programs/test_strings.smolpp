@@ -1,0 +1,20 @@
+
+println("Hello World !")
+
+a = "Bonjour !"
+
+println(a)
+
+l = ["Hello", "The", "World !"]
+
+for s in l:
+    print(s)
+    print(" ")
+println("")
+
+println("abc" < "def")
+println("abc" < "abc")
+println("abc" < "abcd")
+println("abc" <= "abc")
+println("" == "")
+println("" != "")

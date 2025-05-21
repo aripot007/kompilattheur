@@ -15,6 +15,7 @@ pub(crate) use ast::{user_function_prefix, user_function_prefix_format};
 pub use cast::init_internal_bool_cast_function;
 
 pub mod lists;
+pub mod strings;
 
 #[derive(Error, Debug, PartialEq, Eq)]
 pub enum LLVMCodegenError {

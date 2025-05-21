@@ -28,6 +28,7 @@ Les fonctions sont typées par leur type de retour, les paramètres et variables
 Chaque type est représenté sur 9 octets, dont 8 pour stocker la donnée et 1 pour stocker le type.
 Cela nous permet d'utiliser des types `Any` et `Weak`, afin de typer dynamiquement nos variables. 
 Le type `Any` permet de representer n'importe quel type, il est nécéssaire pour le contenu des listes. Un acces à une liste donne un type `Any`, les controles sémantiques seront fait dynamiquement plus tard à l'éxécution.
+
 Le type `Weak` permet de faire soit une intersection de types ou une union de types afin de pouvoir inférer un type à la compilation. Ex: deux variables faisant une opération "-" n'est possible qu'entre deux `Int`, le type final sera un `Int`. Si une fonction retourne soit un booléen soit un string `Weak(String, Bool)`, alors une opération "-" avec le retour de cette fonction donnera une erreur statique.
 Le type `Range` est un type interne. Il contient un `Int` et imite le fonctionnement d'un itérateur Python dans une boucle `for`et une fonction `list`.
 
@@ -36,9 +37,10 @@ Le type `Range` est un type interne. Il contient un `Int` et imite le fonctionne
 
 ## Gestion de Projet :
 ### Aristide
-**Typage** : typage statique (); typage dynamique ()
-**Controle sémantique statiques** : verification des types statiques (); 
-**Assembleur** : print de base (); print générique (); Variables (); Pointeurs (); Strings (); Lists (); arithmétique générique (); type Weak (); changement des strings pour les representer par des listes ();
+**Typage** : typage statique (10h); typage dynamique (3h)
+**Controle sémantique statiques** : verification des types statiques (5h); 
+**Controle sémantique statiques** : assertion des types pour les opérations (3h);
+**Assembleur** : print de base (1h); print générique (1h); Variables (4h); Strings (3h); Listes (5h); arithmétique générique (2h); type Weak (17h); boucle while (1h); fonctions de la librairie standard (input) (2h); concaténation des strings et des listes (5h); comparaison des strings (1h);
 
 ### Baptiste
 **Controles sémantiques dynamique** : comparaison generique (10h); "and", "or", "not", "if" -> cast n'importe quel type en booléen (2h); verif boucle for : list ou range (4h)

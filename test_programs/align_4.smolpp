@@ -122,43 +122,95 @@ def can_drop(board, col):
         row = row + 1
     return False
 
-def get_ai_move(board):
-    col = 0
-    best = -1
+def get_next_open_row(board, col):
+    row = len(board) - 1
+    found = -1
+    while row >= 0:
+        if board[row][col] == 0:
+            found = row
+            row = -1
+        else:
+            row = row - 1
+    return found
 
-    # Try winning move
-    while col < 7:
-        if can_drop(board, col):
-            temp = copy_board(board)
-            drop_disc(temp, col, 2)
-            if check_winner(temp) == 2:
-                best = col
-        col = col + 1
+def undo_move(board, row, col):
+    board[row][col] = 0
 
-    if best == -1:
+def evaluate(board):
+    winner = check_winner(board)
+    if winner == 2:
+        return 1000
+    else:
+        if winner == 1:
+            return -1000
+    return 0
+
+def minimax(board, depth, alpha, beta, maximizing):
+    if False:
+        return 0
+    winner = check_winner(board)
+    if winner != 0 or depth == 0 or is_full(board):
+        return evaluate(board)
+
+    if maximizing:
+        value = -100000
         col = 0
-        # Try blocking opponent
         while col < 7:
-            if can_drop(board, col):
-                temp = copy_board(board)
-                drop_disc(temp, col, 1)
-                if check_winner(temp) == 1:
-                    best = col
-            col = col + 1
-
-    if best == -1:
-        # Center-out column preference
-        col_order = [3, 2, 4, 1, 5, 0, 6]
-        i = 0
-        while i < 7:
-            c = col_order[i]
-            if can_drop(board, c):
-                best = c
-                i = 7  # manually exit loop
+            row = get_next_open_row(board, col)
+            if row != -1:
+                board[row][col] = 2
+                score = minimax(board, depth - 1, alpha, beta, False)
+                undo_move(board, row, col)
+                if score > value:
+                    value = score
+                if value > alpha:
+                    alpha = value
+                if beta <= alpha:
+                    col = 7
+                else:
+                    col = col + 1
             else:
-                i = i + 1
+                col = col + 1
+        return value
+    else:
+        value = 100000
+        col = 0
+        while col < 7:
+            row = get_next_open_row(board, col)
+            if row != -1:
+                board[row][col] = 1
+                score = minimax(board, depth - 1, alpha, beta, True)
+                undo_move(board, row, col)
+                if score < value:
+                    value = score
+                if value < beta:
+                    beta = value
+                if beta <= alpha:
+                    col = 7
+                else:
+                    col = col + 1
+            else:
+                col = col + 1
+        return value
 
-    return best
+
+def get_ai_move(board):
+    best_score = -100000
+    best_col = 3
+    col_order = [3, 2, 4, 1, 5, 0, 6]
+    i = 0
+    while i < 7:
+        col = col_order[i]
+        row = get_next_open_row(board, col)
+        if row != -1:
+            board[row][col] = 2
+            score = minimax(board, 3, -100000, 100000, False)
+            undo_move(board, row, col)
+            if score > best_score:
+                best_score = score
+                best_col = col
+        i = i + 1
+    return best_col
 
 
 # Game Setup

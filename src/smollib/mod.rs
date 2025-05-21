@@ -1,3 +1,4 @@
+mod int;
 mod len;
 mod list;
 mod range;
@@ -39,6 +40,7 @@ fn get_all_smollib_functions() -> Vec<Box<dyn SmollibFunction>> {
         Box::new(len::SmolLen {}),
         Box::new(list::SmolList {}),
         Box::new(range::SmolRange {}),
+        Box::new(int::SmolInt {}),
     ]
 }
 
@@ -47,6 +49,7 @@ pub enum SmollibFunctionNames {
     SmolLen,
     SmolList,
     SmolRange,
+    SmolInt,
 }
 
 impl ToString for SmollibFunctionNames {
@@ -58,6 +61,9 @@ impl ToString for SmollibFunctionNames {
             }
             SmollibFunctionNames::SmolRange => {
                 user_function_prefix_format!(range::SmolRange {}.name())
+            }
+            SmollibFunctionNames::SmolInt => {
+                user_function_prefix_format!(int::SmolInt {}.name())
             }
         };
         String::from(s)

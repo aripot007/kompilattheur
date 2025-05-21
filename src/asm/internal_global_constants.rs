@@ -62,6 +62,9 @@ pub enum RuntimeErrorMsg {
     //
     InvalidTypeListFunction,
 
+    //
+    InvalidStringForIntFunction,
+
     // Used for error messages that gives the line and column of the error
     LocalizeError,
 }
@@ -111,6 +114,9 @@ impl Into<&'static str> for RuntimeErrorMsg {
             }
             RuntimeErrorMsg::InvalidTypeListFunction => {
                 internal_global_prefix!("invalid_type_list_function")
+            }
+            RuntimeErrorMsg::InvalidStringForIntFunction => {
+                internal_global_prefix!("invalid_string_value_int_function")
             }
             RuntimeErrorMsg::LocalizeError => internal_global_prefix!("localize_error"),
         }
@@ -260,6 +266,12 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
             "\x1b[0m\n"
         )
         .as_str(),
+        cg,
+    );
+
+    create_global_string(
+        RuntimeErrorMsg::InvalidStringForIntFunction,
+        format!("{} {}{}", "TypeError:".bold(), " Invalid string for int function".bold(), "\x1b[0m\n").as_str(),
         cg,
     );
 

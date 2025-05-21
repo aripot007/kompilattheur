@@ -1,10 +1,14 @@
 use crate::{
     asm::{
         codegen::CodeGen,
-        get_internal_func,
+        get_internal_func, get_internal_global_const,
         internal_functions::InternalFuctions,
         internal_global_constants::RuntimeErrorMsg,
-        llvm::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError},
+        llvm::{
+            llvm_printf_custom, panic::smolpp_panic_with_unreachable, smolvar::SmolVar,
+            LLVMCodegenError,
+        },
+        InternalGlobalConst,
     },
     ast::nodes::{BinOp, Expression},
     common::localizable::{Localizable, LocalizationInfo},
@@ -17,7 +21,7 @@ use inkwell::{
 };
 
 /// Compare two Integer with the given operation
-pub fn compare_int_bool_values<'ctx>(
+pub fn compare_int_bool_range_values<'ctx>(
     value1: SmolVar<'ctx>,
     value2: SmolVar<'ctx>,
     operation: BinOp,
@@ -53,16 +57,62 @@ pub fn compare_int_bool_values<'ctx>(
 }
 
 /// Compare two String with the given operation
-#[allow(unused)]
 pub fn compare_string_values<'ctx>(
     value1: SmolVar<'ctx>,
     value2: SmolVar<'ctx>,
     operation: BinOp,
     cg: &CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    // TODO : Implement string compare
-    // smolpp_panic_with_unreachable(cg, RuntimeErrorMsg::PanicNotImplemented, &[])?;
-    return cg.create_variable(Type::Bool, cg.context.i64_type().const_int(0, false));
+    let ptr_type = cg.context.ptr_type(AddressSpace::default());
+
+    let str1_struct_ptr = cg.get_variable_value(value1)?.into_int_value();
+    let str1_struct_ptr =
+        cg.builder
+            .build_int_to_ptr(str1_struct_ptr, ptr_type, "str1_struct_ptr")?;
+    let str2_struct_ptr = cg.get_variable_value(value2)?.into_int_value();
+    let str2_struct_ptr =
+        cg.builder
+            .build_int_to_ptr(str2_struct_ptr, ptr_type, "str2_struct_ptr")?;
+
+    let str1_struct =
+        cg.builder
+            .build_load(cg.smolpp_types.string_type, str1_struct_ptr, "str1_stuct")?;
+    let str2_struct =
+        cg.builder
+            .build_load(cg.smolpp_types.string_type, str2_struct_ptr, "str2_stuct")?;
+
+    let cmp_val_callsite = cg.builder.build_call(
+        get_internal_func!(cg, InternalFuctions::StrCmp),
+        &[str1_struct.into(), str2_struct.into()],
+        "cmp_val_callsite",
+    )?;
+
+    let cmp_val = cmp_val_callsite
+        .try_as_basic_value()
+        .unwrap_left()
+        .into_int_value();
+
+    let predicate = match operation {
+        BinOp::LESS => IntPredicate::SLT,
+        BinOp::LESSEQ => IntPredicate::SLE,
+        BinOp::GREATER => IntPredicate::SGT,
+        BinOp::GREATEREQ => IntPredicate::SGE,
+        BinOp::EQ => IntPredicate::EQ,
+        BinOp::NEQ => IntPredicate::NE,
+        _ => panic!("No associated predicate for operation {}", operation),
+    };
+
+    let res = cg.builder.build_int_compare(
+        predicate,
+        cmp_val,
+        cg.context.i64_type().const_zero(),
+        "cmp_res",
+    )?;
+    let res = cg
+        .builder
+        .build_int_cast(res, cg.context.i64_type(), "cmp_res_int")?;
+
+    return cg.create_variable(Type::Bool, res);
 }
 
 /// Compare two None with the given operation
@@ -391,7 +441,7 @@ pub fn init_internal_compare_generic_function<'ctx>(
     )?;
 
     cg.builder.position_at_end(then_bool_or_int_block);
-    let result = compare_int_bool_values(value1, value2, operation, cg)?;
+    let result = compare_int_bool_range_values(value1, value2, operation, cg)?;
     cg.builder.build_return(Some(&result))?;
 
     cg.builder.position_at_end(else_bool_or_int_block);
@@ -435,9 +485,9 @@ fn build_switch_compare_generic_same_type<'ctx>(
     let case_none = cg
         .context
         .append_basic_block(function, "generic_compare_case_none");
-    let case_int_bool = cg
+    let case_int_bool_range = cg
         .context
-        .append_basic_block(function, "generic_compare_case_int");
+        .append_basic_block(function, "generic_compare_case_int_bool_range");
     let case_string = cg
         .context
         .append_basic_block(function, "generic_compare_case_string");
@@ -460,11 +510,11 @@ fn build_switch_compare_generic_same_type<'ctx>(
             ),
             (
                 i8_type.const_int(Type::Bool.get_bitmask().into(), false),
-                case_int_bool,
+                case_int_bool_range,
             ),
             (
                 i8_type.const_int(Type::Int.get_bitmask().into(), false),
-                case_int_bool,
+                case_int_bool_range,
             ),
             (
                 i8_type.const_int(Type::String.get_bitmask().into(), false),
@@ -473,6 +523,10 @@ fn build_switch_compare_generic_same_type<'ctx>(
             (
                 i8_type.const_int(Type::List.get_bitmask().into(), false),
                 case_list,
+            ),
+            (
+                i8_type.const_int(Type::Range.get_bitmask().into(), false),
+                case_int_bool_range,
             ),
         ],
     )?;
@@ -495,8 +549,8 @@ fn build_switch_compare_generic_same_type<'ctx>(
         }
     }
 
-    cg.builder.position_at_end(case_int_bool);
-    let result = compare_int_bool_values(value1, value2, operation, cg)?;
+    cg.builder.position_at_end(case_int_bool_range);
+    let result = compare_int_bool_range_values(value1, value2, operation, cg)?;
     cg.builder.build_return(Some(&result))?;
 
     cg.builder.position_at_end(case_string);

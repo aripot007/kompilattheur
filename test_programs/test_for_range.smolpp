@@ -1,0 +1,6 @@
+a = [range(5), [1,2,3]]
+
+b = a[1]
+
+for i in b:
+    println(i)

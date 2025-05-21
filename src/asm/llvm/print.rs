@@ -23,6 +23,22 @@ macro_rules! llvm_printf {
     };
 }
 
+macro_rules! llvm_printf_custom {
+    ($cg: expr, $str: expr, $($args: expr),*) => {
+        let __s = $cg.builder.build_global_string_ptr($str, "printf_str")?;
+        let mut __args_vec: Vec<inkwell::values::BasicMetadataValueEnum> = vec![__s.as_pointer_value().into()];
+        $( __args_vec.push($args.into()); )*
+        $cg.builder.build_call(
+            $cg.module
+                .get_function(InternalFuctions::Printf.into())
+                .unwrap(),
+            &__args_vec,
+            "printf_debug",
+        )?;
+    };
+}
+pub(crate) use llvm_printf_custom;
+
 /// Generate LLVM to print a None value
 pub fn print_none_value<'ctx>(
     _value: &SmolVar<'ctx>,

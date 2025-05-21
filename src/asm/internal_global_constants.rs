@@ -33,6 +33,14 @@ pub enum InternalGlobalConst {
 
     // \n string
     LineReturn,
+
+    // Types
+    IntType,
+    StringType,
+    BoolType,
+    ListType,
+    RangeType,
+    NoneType,
 }
 
 /// Internal global string constants used for runtime error printing
@@ -65,6 +73,9 @@ pub enum RuntimeErrorMsg {
     //
     InvalidStringForIntFunction,
 
+    //
+    PanicInvalidInternalTypeInTypeFunction,
+
     // Used for error messages that gives the line and column of the error
     LocalizeError,
 }
@@ -93,6 +104,12 @@ impl Into<&'static str> for InternalGlobalConst {
             InternalGlobalConst::IntFormatString => internal_global_prefix!("int_fmt_string"),
             InternalGlobalConst::RangeFormatString => internal_global_prefix!("range_fmt_string"),
             InternalGlobalConst::LineReturn => internal_global_prefix!("line_return"),
+            InternalGlobalConst::IntType => internal_global_prefix!("int_type"),
+            InternalGlobalConst::StringType => internal_global_prefix!("string_type"),
+            InternalGlobalConst::BoolType => internal_global_prefix!("bool_type"),
+            InternalGlobalConst::ListType => internal_global_prefix!("list_type"),
+            InternalGlobalConst::RangeType => internal_global_prefix!("range_type"),
+            InternalGlobalConst::NoneType => internal_global_prefix!("none_type"),
         }
     }
 }
@@ -117,6 +134,9 @@ impl Into<&'static str> for RuntimeErrorMsg {
             }
             RuntimeErrorMsg::InvalidStringForIntFunction => {
                 internal_global_prefix!("invalid_string_value_int_function")
+            }
+            RuntimeErrorMsg::PanicInvalidInternalTypeInTypeFunction => {
+                internal_global_prefix!("panic_invalid_type_in_type_function")
             }
             RuntimeErrorMsg::LocalizeError => internal_global_prefix!("localize_error"),
         }
@@ -160,6 +180,14 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
     create_global_string(InternalGlobalConst::IntFormatString, "%d", cg);
     create_global_string(InternalGlobalConst::RangeFormatString, "range(%d)", cg);
     create_global_string(InternalGlobalConst::LineReturn, "\n", cg);
+
+    // Types
+    create_global_string(InternalGlobalConst::IntType, "int", cg);
+    create_global_string(InternalGlobalConst::StringType, "string", cg);
+    create_global_string(InternalGlobalConst::BoolType, "bool", cg);
+    create_global_string(InternalGlobalConst::ListType, "list", cg);
+    create_global_string(InternalGlobalConst::RangeType, "range", cg);
+    create_global_string(InternalGlobalConst::NoneType, "None", cg);
 
     // Error messages
     create_global_string(
@@ -205,7 +233,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
             "TypeError:"
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
-            "%s".truecolor(
+            "%s but got %s".truecolor(
                 HIGHLIGHT_ERROR_COLOR.0,
                 HIGHLIGHT_ERROR_COLOR.1,
                 HIGHLIGHT_ERROR_COLOR.2
@@ -296,6 +324,24 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
             "Invalid string for int function".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
+        cg,
+    );
+
+    create_global_string(
+        RuntimeErrorMsg::PanicInvalidInternalTypeInTypeFunction,
+        format!(
+            "{} {}{}",
+            "PANIC :"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "Invalid internal type value for type function".truecolor(
                 HIGHLIGHT_ERROR_COLOR.0,
                 HIGHLIGHT_ERROR_COLOR.1,
                 HIGHLIGHT_ERROR_COLOR.2

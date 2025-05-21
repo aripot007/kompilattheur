@@ -19,7 +19,7 @@ impl SmollibFunction for SmolInt {
     }
 
     fn func_type(&self) -> Function {
-        let arg_type = Weak::new_with_possible(&[Type::String, Type::Int]).locked();
+        let arg_type = Weak::new_with_possible(&[Type::String, Type::Int, Type::Bool]).locked();
         Function {
             args: vec![Type::Weak(arg_type)],
             returns: Type::Int,
@@ -46,11 +46,15 @@ impl SmollibFunction for SmolInt {
             .unwrap()
             .into_struct_value();
 
-        assert_type_oneof(&[Type::String, Type::Int], &var1, cg, None)?;
+        assert_type_oneof(&[Type::String, Type::Int, Type::Bool], &var1, cg, None)?;
 
         // ---
 
         // def int(n):
+        //   if typeof(n) == bool:
+        //     if n:
+        //       return 1
+        //     return 0
         //   if typeof(n) == int:
         //     return n
         //   if typeof(n) == string:
@@ -61,8 +65,9 @@ impl SmollibFunction for SmolInt {
         //       res = res * 10 + i
         //     return res
 
-        // Check if input is already an int
+        // Create basic blocks for each type
         let int_block = cg.context.append_basic_block(function, "int_block");
+        let bool_block = cg.context.append_basic_block(function, "bool_block");
         let string_block = cg.context.append_basic_block(function, "string_block");
         let error_block = cg.context.append_basic_block(function, "error_block");
 
@@ -79,20 +84,40 @@ impl SmollibFunction for SmolInt {
             "is_int",
         )?;
 
-        // Branch based on type
-        cg.builder
-            .build_conditional_branch(is_int, int_block, string_block)?;
+        let not_int_block = cg.context.append_basic_block(function, "not_int_block");
 
-        // If int, just return the value
+        cg.builder
+            .build_conditional_branch(is_int, int_block, not_int_block)?;
+
         cg.builder.position_at_end(int_block);
         let int_value = cg.get_variable_value(var1)?;
         let return_int_value = cg.create_variable(Type::Int, int_value.into_int_value())?;
         cg.builder.build_return(Some(&return_int_value))?;
 
-        // If string, convert to int
-        cg.builder.position_at_end(string_block);
+        // Check if type is BOOL
+        cg.builder.position_at_end(not_int_block);
+
+        let is_bool = cg.builder.build_int_compare(
+            inkwell::IntPredicate::EQ,
+            type_field,
+            cg.context
+                .i8_type()
+                .const_int(Type::Bool.get_bitmask() as u64, false),
+            "is_bool",
+        )?;
+
+        let not_bool_block = cg.context.append_basic_block(function, "not_bool_block");
+
+        cg.builder
+            .build_conditional_branch(is_bool, bool_block, not_bool_block)?;
+
+        cg.builder.position_at_end(bool_block);
+        let bool_value = cg.get_variable_value(var1)?;
+        let return_bool_value = cg.create_variable(Type::Int, bool_value)?;
+        cg.builder.build_return(Some(&return_bool_value))?;
 
         // Check if type is STRING
+        cg.builder.position_at_end(not_bool_block);
         let is_string = cg.builder.build_int_compare(
             inkwell::IntPredicate::EQ,
             type_field,
@@ -102,15 +127,11 @@ impl SmollibFunction for SmolInt {
             "is_string",
         )?;
 
-        // Branch to string conversion or error
-        let string_convert_block = cg.context.append_basic_block(function, "string_convert");
-
-        // Branch to error if not a string
         cg.builder
-            .build_conditional_branch(is_string, string_convert_block, error_block)?;
+            .build_conditional_branch(is_string, string_block, error_block)?;
 
         // String conversion code
-        cg.builder.position_at_end(string_convert_block);
+        cg.builder.position_at_end(string_block);
 
         // Extract the string from the var
         let string_ptr = cg.get_variable_value(var1)?.into_int_value();

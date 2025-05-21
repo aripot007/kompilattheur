@@ -1,5 +1,5 @@
 
 
-println(int("55"))
-println(int(5)+2)
-int("gfxchv")
+println(int(False))
+println(int(9))
+println(int("19"))

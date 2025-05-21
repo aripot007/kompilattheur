@@ -1,17 +1,30 @@
-def print_cell(cell):
+def print_cell(cell, bold_border):
+    if bold_border:
+        print("┃")
+    else:
+        print("│")
     if cell == 0:
-        print(".")
+        print("  ")
     else:
         if cell == 1:
-            print("X")
+            print("🔴")
         else:
-            print("O")
+            print("🟡")
 
 def print_board(board):
+    for col in range(len(board[0])):
+        print("  ")
+        print(col)
+    println("")
+
     for row in range(len(board)):
         for col in range(len(board[0])):
-            print_cell(board[row][col])
-        println("")
+            print_cell(board[row][col], col == 0)
+        println("┃")
+    print("┗━━")
+    for col in range(len(board[0]) - 1):
+        print("┷━━")
+    println("┛")
 
 def make_board():
     r0 = [0, 0, 0, 0, 0, 0, 0]
@@ -157,7 +170,7 @@ while not game_over:
     if player == 1:
         print("Player ")
         print(player)
-        println(", choose a column (0-6):")
+        print(", choose a column (0-6): ")
         col_str = input()
         col = int(col_str)
         if col < 0:

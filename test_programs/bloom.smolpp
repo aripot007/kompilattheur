@@ -1,0 +1,83 @@
+def initialize_filter():
+    return [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+
+def print_filter(filter):
+    i = 0
+    while i < 70:
+        print(filter[i])
+        print(" ")
+        if i == 34:
+            println("")
+        i = i + 1
+    println("")
+
+def hash1(word):
+    if type(word) == "String":
+        result = len(word)
+        result = result * 31
+        result = result * 17
+        if type(result % 70) == "Int":
+            return result % 70
+    return 0
+
+def hash2(word):
+    if type(word) == "String":
+        result = len(word)
+        result = result * 13
+        result = result * 23
+        if type(result % 70) == "Int":
+            return result % 70
+    return 0
+
+def add_word(filter, word):
+    if type(word) == "String":
+        pos1 = hash1(word)
+        pos2 = hash2(word)
+        filter[pos1] = 1
+        filter[pos2] = 1
+
+def check_word(filter, word):
+    if type(word) == "String":
+        pos1 = hash1(word)
+        pos2 = hash2(word)
+        if filter[pos1] == 1:
+            if filter[pos2] == 1:
+                return True
+    return False
+
+# Programme principal
+filter = initialize_filter()
+println("État initial du filtre:")
+print_filter(filter)
+running = True
+
+while running:
+    println("1. Ajouter un mot")
+    println("2. Vérifier un mot")
+    println("3. Quitter")
+    print("Votre choix: ")
+    
+    choice_str = input()
+    if type(choice_str) == "String":
+        choice = int(choice_str)
+        if choice == 1:
+            print("Entrez le mot à ajouter: ")
+            word = input()
+            if type(word) == "String":
+                add_word(filter, word)
+                println("Mot ajouté! État du filtre:")
+                print_filter(filter)
+        else:
+            if choice == 2:
+                print("Entrez le mot à vérifier: ")
+                word = input()
+                if type(word) == "String":
+                    if check_word(filter, word):
+                        println("Le mot est probablement dans le filtre")
+                    else:
+                        println("Le mot n'est pas dans le filtre")
+            else:
+                if choice == 3:
+                    running = False
+                else:
+                    println("Choix invalide!")

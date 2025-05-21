@@ -1,3 +1,5 @@
+use core::panic;
+
 use colored::Colorize;
 use inkwell::AddressSpace;
 
@@ -6,6 +8,7 @@ use super::codegen::CodeGen;
 use crate::common::diagnostic::{ERROR_COLOR, HIGHLIGHT_ERROR_COLOR};
 
 /// Internal global constants
+#[derive(Clone)]
 pub enum InternalGlobalConst {
     /// stdin FILE*
     #[cfg(feature = "smollib-input")]
@@ -37,6 +40,14 @@ pub enum InternalGlobalConst {
 
     // \n string
     LineReturn,
+
+    // Types
+    IntType,
+    StringType,
+    BoolType,
+    ListType,
+    RangeType,
+    NoneType,
 }
 
 /// Internal global string constants used for runtime error printing
@@ -72,6 +83,9 @@ pub enum RuntimeErrorMsg {
     //
     InvalidStringForIntFunction,
 
+    //
+    PanicInvalidInternalTypeInTypeFunction,
+
     // Used for error messages that gives the line and column of the error
     LocalizeError,
 }
@@ -102,6 +116,12 @@ impl Into<&'static str> for InternalGlobalConst {
             InternalGlobalConst::IntFormatString => internal_global_prefix!("int_fmt_string"),
             InternalGlobalConst::RangeFormatString => internal_global_prefix!("range_fmt_string"),
             InternalGlobalConst::LineReturn => internal_global_prefix!("line_return"),
+            InternalGlobalConst::IntType => internal_global_prefix!("int_type"),
+            InternalGlobalConst::StringType => internal_global_prefix!("string_type"),
+            InternalGlobalConst::BoolType => internal_global_prefix!("bool_type"),
+            InternalGlobalConst::ListType => internal_global_prefix!("list_type"),
+            InternalGlobalConst::RangeType => internal_global_prefix!("range_type"),
+            InternalGlobalConst::NoneType => internal_global_prefix!("none_type"),
         }
     }
 }
@@ -128,12 +148,52 @@ impl Into<&'static str> for RuntimeErrorMsg {
             RuntimeErrorMsg::InvalidStringForIntFunction => {
                 internal_global_prefix!("invalid_string_value_int_function")
             }
+            RuntimeErrorMsg::PanicInvalidInternalTypeInTypeFunction => {
+                internal_global_prefix!("panic_invalid_type_in_type_function")
+            }
             RuntimeErrorMsg::LocalizeError => internal_global_prefix!("localize_error"),
         }
     }
 }
 
-pub fn create_global_string<'ctx, T: Into<&'static str>>(name: T, value: &str, cg: &CodeGen<'ctx>) {
+impl InternalGlobalConst {
+    pub fn get_value(&self) -> &'static str {
+        match self {
+            InternalGlobalConst::NoneString => "None",
+            InternalGlobalConst::TrueString => "True",
+            InternalGlobalConst::FalseString => "False",
+            InternalGlobalConst::ListOpeningStr => "[",
+            InternalGlobalConst::ListClosingStr => "]",
+            InternalGlobalConst::ListSeparatorStr => ", ",
+            InternalGlobalConst::IntFormatString => "%d",
+            InternalGlobalConst::RangeFormatString => "range(%d)",
+            InternalGlobalConst::LineReturn => "\n",
+            InternalGlobalConst::IntType => "Int",
+            InternalGlobalConst::StringType => "String",
+            InternalGlobalConst::BoolType => "Bool",
+            InternalGlobalConst::ListType => "List",
+            InternalGlobalConst::RangeType => "Range",
+            InternalGlobalConst::NoneType => "None",
+            #[cfg(feature = "smollib-input")]
+            InternalGlobalConst::StdinFile => panic!("stdin value should not be used"),
+        }
+    }
+}
+
+fn create_global_string<'ctx>(name: InternalGlobalConst, cg: &CodeGen<'ctx>) {
+    let string_value = cg.context.const_string(name.get_value().as_bytes(), true);
+
+    // Declare it as a global variable
+    let global_var = cg.module.add_global(
+        string_value.get_type(),
+        Some(AddressSpace::default()),
+        name.into(),
+    );
+    global_var.set_initializer(&string_value);
+    global_var.set_constant(true);
+}
+
+fn create_global_error_string<'ctx>(name: RuntimeErrorMsg, value: &str, cg: &CodeGen<'ctx>) {
     let string_value = cg.context.const_string(value.as_bytes(), true);
 
     // Declare it as a global variable
@@ -153,7 +213,7 @@ macro_rules! get_internal_global_const {
         $cg.module.get_global($name.into()).unwrap()
     };
 }
-pub(super) use get_internal_global_const;
+pub(crate) use get_internal_global_const;
 
 /// Initialize internal global constants used by smolpp (eg. error strings)
 pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
@@ -169,21 +229,29 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
     }
 
     // Printing strings
-    create_global_string(InternalGlobalConst::NoneString, "None", cg);
-    create_global_string(InternalGlobalConst::TrueString, "True", cg);
-    create_global_string(InternalGlobalConst::FalseString, "False", cg);
+    create_global_string(InternalGlobalConst::NoneString, cg);
+    create_global_string(InternalGlobalConst::TrueString, cg);
+    create_global_string(InternalGlobalConst::FalseString, cg);
 
-    create_global_string(InternalGlobalConst::ListOpeningStr, "[", cg);
-    create_global_string(InternalGlobalConst::ListClosingStr, "]", cg);
-    create_global_string(InternalGlobalConst::ListSeparatorStr, ", ", cg);
+    create_global_string(InternalGlobalConst::ListOpeningStr, cg);
+    create_global_string(InternalGlobalConst::ListClosingStr, cg);
+    create_global_string(InternalGlobalConst::ListSeparatorStr, cg);
 
     // Format strings
-    create_global_string(InternalGlobalConst::IntFormatString, "%d", cg);
-    create_global_string(InternalGlobalConst::RangeFormatString, "range(%d)", cg);
-    create_global_string(InternalGlobalConst::LineReturn, "\n", cg);
+    create_global_string(InternalGlobalConst::IntFormatString, cg);
+    create_global_string(InternalGlobalConst::RangeFormatString, cg);
+    create_global_string(InternalGlobalConst::LineReturn, cg);
+
+    // Types
+    create_global_string(InternalGlobalConst::IntType, cg);
+    create_global_string(InternalGlobalConst::StringType, cg);
+    create_global_string(InternalGlobalConst::BoolType, cg);
+    create_global_string(InternalGlobalConst::ListType, cg);
+    create_global_string(InternalGlobalConst::RangeType, cg);
+    create_global_string(InternalGlobalConst::NoneType, cg);
 
     // Error messages
-    create_global_string(
+    create_global_error_string(
         RuntimeErrorMsg::PanicInvalidInternalTypeValueFormatString,
         format!(
             "{} {}{}",
@@ -201,7 +269,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         cg,
     );
 
-    create_global_string(
+    create_global_error_string(
         RuntimeErrorMsg::PanicNotImplemented,
         format!(
             "{} {}{}",
@@ -219,7 +287,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         cg,
     );
 
-    create_global_string(
+    create_global_error_string(
         RuntimeErrorMsg::PanicGetlineError,
         format!(
             "{} {}{}",
@@ -237,14 +305,14 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         cg,
     );
 
-    create_global_string(
-        RuntimeErrorMsg::TypeError,
+    create_global_error_string(
+        RuntimeErrorMsg::PanicGetlineError,
         format!(
             "{} {}{}",
-            "TypeError:"
+            "PANIC :"
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
-            "%s".truecolor(
+            "Could not read from standard input".truecolor(
                 HIGHLIGHT_ERROR_COLOR.0,
                 HIGHLIGHT_ERROR_COLOR.1,
                 HIGHLIGHT_ERROR_COLOR.2
@@ -255,7 +323,25 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         cg,
     );
 
-    create_global_string(
+    create_global_error_string(
+        RuntimeErrorMsg::TypeError,
+        format!(
+            "{} {}{}",
+            "TypeError:"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "%s but got %s".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
+        cg,
+    );
+
+    create_global_error_string(
         RuntimeErrorMsg::IndexOutOfBound,
         format!(
             "{} {}{}",
@@ -273,7 +359,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         cg,
     );
 
-    create_global_string(
+    create_global_error_string(
         RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric,
         format!(
             "{} {}{}",
@@ -291,7 +377,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         cg,
     );
 
-    create_global_string(
+    create_global_error_string(
         RuntimeErrorMsg::PanicInvalidInternalTypeAddGeneric,
         format!(
             "{} {}{}",
@@ -309,7 +395,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         cg,
     );
 
-    create_global_string(
+    create_global_error_string(
         RuntimeErrorMsg::InvalidTypeListFunction,
         format!(
             "{} {}{}",
@@ -327,7 +413,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         cg,
     );
 
-    create_global_string(
+    create_global_error_string(
         RuntimeErrorMsg::InvalidStringForIntFunction,
         format!(
             "{} {}{}",
@@ -345,7 +431,25 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         cg,
     );
 
-    create_global_string(
+    create_global_error_string(
+        RuntimeErrorMsg::PanicInvalidInternalTypeInTypeFunction,
+        format!(
+            "{} {}{}",
+            "PANIC :"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "Invalid internal type value for type function".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
+        cg,
+    );
+
+    create_global_error_string(
         RuntimeErrorMsg::LocalizeError,
         format!("{} {}{}", "At line :".bold(), " %d:%d", "\x1b[0m\n").as_str(),
         cg,

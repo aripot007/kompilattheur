@@ -1,12 +1,15 @@
-use inkwell::{builder::BuilderError, values::BasicMetadataValueEnum};
+use inkwell::{builder::BuilderError, values::BasicMetadataValueEnum, AddressSpace};
 
 use crate::{
     asm::{
-        codegen::CodeGen, get_internal_func, get_internal_global_const,
-        internal_global_constants::RuntimeErrorMsg, InternalFuctions,
+        codegen::CodeGen, get_internal_func, get_internal_global_const, internal_function_prefix,
+        internal_global_constants::RuntimeErrorMsg, InternalFuctions, InternalGlobalConst,
     },
-    common::localizable::Localizable,
+    common::localizable::{Localizable, LocalizationInfo},
+    typing::Type,
 };
+
+use super::super::LLVMCodegenError;
 
 /// Generate llvm to exit the program after printing an error message
 pub fn smolpp_panic<'ctx, T>(

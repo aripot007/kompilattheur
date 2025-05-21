@@ -1,0 +1,97 @@
+# Merge Sort implementation in smolpp
+
+def merge(left, right):
+    # Merge two sorted arrays into one sorted array
+    result = []
+    i = 0
+    j = 0
+
+    # Compare elements from both arrays and merge them in sorted order
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            result = result + [left[i]]
+            i = i + 1
+        else:
+            result = result + [right[j]]
+            j = j + 1
+
+    # Add any remaining elements
+    while i < len(left):
+        result = result + [left[i]]
+        i = i + 1
+
+    while j < len(right):
+        result = result + [right[j]]
+        j = j + 1
+
+    return result
+
+def merge_sort(arr):
+    # Sort an array using the merge sort algorithm
+    # Base case: arrays with 0 or 1 elements are already sorted
+    if len(arr) <= 1:
+        return arr
+
+    # Divide the array into two halves
+    mid = len(arr) / 2
+
+    # Sort each half
+    left = []
+    right = []
+
+    i = 0
+    while i < mid:
+        left = left + [arr[i]]
+        i = i + 1
+
+    while i < len(arr):
+        right = right + [arr[i]]
+        i = i + 1
+
+    left = merge_sort(left)
+    right = merge_sort(right)
+
+    # Merge the sorted halves
+    return merge(left, right)
+
+# Test with some examples
+unsorted1 = [38, 27, 43, 3, 9, 82, 10]
+print("Original array: ")
+println(unsorted1)
+
+sorted1 = merge_sort(unsorted1)
+print("Sorted array: ")
+println(sorted1)
+
+println()
+
+# Test with already sorted array
+unsorted2 = [1, 2, 3, 4, 5]
+print("Already sorted array: ")
+println(unsorted2)
+
+sorted2 = merge_sort(unsorted2)
+print("After merge sort: ")
+println(sorted2)
+
+println()
+
+# Test with reversed array
+unsorted3 = [5, 4, 3, 2, 1]
+print("\nReversed array: ")
+println(unsorted3)
+
+sorted3 = merge_sort(unsorted3)
+print("After merge sort: ")
+println(sorted3)
+
+println()
+
+# Test with empty array
+unsorted4 = []
+print("Empty array: ")
+println(unsorted4)
+
+sorted4 = merge_sort(unsorted4)
+print("After merge sort: ")
+println(sorted4)

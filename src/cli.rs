@@ -108,6 +108,10 @@ pub struct CompileArgs {
     #[arg(long, short, num_args = 0..=1, value_enum, default_value_t=TargetLanguage::Binary)]
     pub target: TargetLanguage,
 
+    /// Niveau d'optimisation à utiliser lors de la compilation
+    #[arg(long, short = 'O', num_args = 0..=1, value_enum, default_value_t=OptimizationLevel::Default)]
+    pub optimization: OptimizationLevel,
+
     /// Lance le programme compilé (ou ouvre le fichier résultant en fonction de l'étape de compilation)
     #[arg(long, short, action)]
     pub run: bool,
@@ -165,4 +169,24 @@ pub enum TargetStep {
     // Compile
     #[value()]
     Compile,
+}
+
+/// Niveaux d'optimisation pour la génération de code
+#[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
+pub enum OptimizationLevel {
+    /// Pas d'optimisation
+    #[value(alias("0"))]
+    None,
+
+    /// Optimisations légères
+    #[value(alias("1"))]
+    Less,
+
+    /// Niveau d'optimisation par défaut
+    #[value(alias("2"))]
+    Default,
+
+    /// Optimisations agressives
+    #[value(alias("3"))]
+    Aggressive,
 }

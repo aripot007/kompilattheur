@@ -15,7 +15,7 @@ justify: true,
 
 #set document(
 title: "Projet compilation partie 2",
-author: "URLI Aristide & PONSON--LISSALDE Romain & Luca MANDRELLI & JULLIEN Baptiste",
+author: "URLI Aristide & PONSON--LISSALDE Romain & MANDRELLI Luca & JULLIEN Baptiste",
 date: auto,
 )
 
@@ -28,7 +28,7 @@ Projet compilation partie 2
 ])
 #align(center, text(12pt)[
 URLI Aristide & PONSON--LISSALDE Romain #linebreak()
-Luca MANDRELLI & JULLIEN Baptiste
+MANDRELLI Luca & JULLIEN Baptiste
 ])
 #v(1fr)
 
@@ -48,6 +48,9 @@ footer: context [
   strong(it)
 }
 
+#pagebreak()
+#pagebreak()
+
 #outline(
   title: "Sommaire",
 )
@@ -65,30 +68,37 @@ footer: context [
 
 = Table des symboles
 
-La structure de la table des symboles suit ce schéma :
+La table des symboles est structurée sous forme d'arbre de tableaux. Chaque tableau représente un bloc, et la portée peut être déterminée en examinant les parents dans l'arbre.
 
-Par exemple, pour le code suivant :
+Voici un exemple avec le code suivant :
 ```python
-def f(i):
-    return i
-foo = [1, 2, 3]
-toto = "toto"
+def fibonacci(n):
+    if n <= 0:
+        return 0
+    if n == 1:
+        return 1
+    return fibonacci(n-1) + fibonacci(n-2)
+
+fibonacci(5)
 ```
-Nous aurons la table des symboles suivante :
 
+La table des symboles correspondante est représentée ci-dessous :
 
+#figure(
+  image("symbol_table.png", height: 64%, fit: "contain", scaling: "smooth"),
+  caption: [Table des symboles pour le code fibonacci],
+)
 
-TODO: Expliquer la structure de données de la table des symboles avec un image d'exemple pour le code ci-dessus
+Dans les tableaux, les données sont stockées dans une HashMap, utilisant comme clé un entier identifiant la variable, fourni par la table des identifiants.
 
-Les données sont enregistrées dans une Hashmap, avec en clé un entier représentatif de la variable, donné par la table des identifier.
-Les types de symboles sont : 
+Les types de symboles disponibles sont :
 - Paramètre
-- Fonction
+- Fonction 
 - Variable
 
-Les fonctions sont typées par leur type de retour, les paramètres et variables sont définies selon les types : 
-- None 
-- Bool
+Les fonctions sont typées par leur type de retour. Les paramètres et variables peuvent avoir les types suivants :
+- None
+- Bool  
 - Int
 - String
 - List
@@ -96,29 +106,34 @@ Les fonctions sont typées par leur type de retour, les paramètres et variables
 - Weak
 - Range (Itérateur pour la fonction range)
 
-Chaque type est représenté sur 9 octets, dont 8 pour stocker la donnée et 1 pour stocker le type.
-Cela nous permet d'utiliser des types `Any` et `Weak`, afin de typer dynamiquement nos variables.
-Le type `Any` permet de representer n'importe quel type, il est nécéssaire pour le contenu des listes. Un acces à une liste donne un type `Any`, les controles sémantiques seront fait dynamiquement plus tard à l'éxécution.
+Chaque type est représenté sur 9 octets : 8 octets pour stocker la donnée et 1 octet pour identifier le type.
+Cette structure nous permet d'implémenter les types `Any` et `Weak` pour le typage dynamique des variables.
 
-Le type `Weak` permet de faire soit une intersection de types ou une union de types afin de pouvoir inférer un type à la compilation. Ex: deux variables faisant une opération "-" n'est possible qu'entre deux `Int`, le type final sera un `Int`. Si une fonction retourne soit un booléen soit un string `Weak(String, Bool)`, alors une opération "-" avec le retour de cette fonction donnera une erreur statique.
-Le type `Range` est un type interne. Il contient un `Int` et imite le fonctionnement d'un itérateur Python dans une boucle `for`et une fonction `list`.
+Le type `Any` peut représenter n'importe quel type. Il est notamment utilisé pour le contenu des listes. Un accès à une liste retourne un type `Any`, les contrôles sémantiques étant effectués dynamiquement à l'exécution.
 
-#linebreak()
-#linebreak()
+Le type `Weak` permet de réaliser des intersections ou des unions de types pour l'inférence de types à la compilation. Par exemple :
+- Une opération "-" entre deux variables n'est possible qu'entre deux `Int`, le type résultant sera donc un `Int`
+- Si une fonction retourne soit un booléen soit une chaîne de caractères `Weak(String, Bool)`, une opération "-" avec ce retour générera une erreur statique
+
+Le type `Range` est un type interne contenant un `Int`. Il reproduit le comportement d'un itérateur Python dans une boucle `for` et la fonction `list`.
+
+Lors de la compilation, les pointeurs des variables et paramètres sont intégrés dans la table des symboles. Ces pointeurs représentent la position dans la pile.
+
+#pagebreak()
 = Contrôles sémantiques
 
 #linebreak()
-== statiques
+== Statiques
 
-À la compilation, nous pouvons détecter un certain nombre d'erreur sémantique. Notamment, nous essayons d'inférer tous les types de chaque identifieur. Si 2 types sont incompatibles sur un binop nous renvoyons une erreur.
+À la compilation, nous pouvons détecter plusieurs types d'erreurs sémantiques. En particulier, nous inférons les types de chaque identifiant et vérifions la compatibilité des types lors des opérations binaires.
 
-Exemple : addition de `Int` et de `List`
+Exemple : Addition impossibe entre un `Int` et une `List`
 
 ```python
 0 + [1, 2, 3] # Erreur
 ```
 
-Exemple : addition de `Int` et de `Weak(String, List)`
+Exemple : Addition impossible entre un `Int` et un `Weak(String, List)`
 
 ```python
 def f():
@@ -132,10 +147,10 @@ def f():
 ```
 
 #linebreak()
-== dynamiques
+== Dynamiques
 
-Pour certaine partie du programme, nous ne pouvons pas déviner à l'avance son comportement, nous avons donc ajouté un nombre certain de teste à l'éxécution.
-exemple : vérifier que les indices d'accès à une liste soit bien compris dans sa taille
+Certains aspects du programme ne peuvent être vérifiés qu'à l'exécution. Nous avons donc implémenté plusieurs contrôles dynamiques.
+Par exemple, la vérification que les indices d'accès à une liste sont compris dans sa taille.
 
 Exemple d'erreur dynamique :
 
@@ -145,9 +160,11 @@ a = ["test"]
 a[0] + 1 # Erreur Dynamique String + Int
 ```
 
-#linebreak()
-#linebreak()
+#pagebreak()
+
 = Schéma de traduction
+
+Voici un exemple de code en mini-python, implémentant la fonction fibonacci récursive :
 
 ```python
 def fibonacci(n): # 🟥
@@ -226,31 +243,93 @@ merge8:                                           ; preds = %else7
 ```
 
 #linebreak()
+#line(length: 100%)
 #linebreak()
+
+Voici un autre exemple de code en mini-python illustrant les opérateurs logiques :
+
+```python
+println(1 or [1,3])
+println(1 and [1,3])
+println(1 or True and [1] or "A")
+```
+Sortie :
+```python
+1
+[1, 3]
+1
+```
+Les opérateurs `and` et `or` sont évalués paresseusement : si le premier opérande est suffisant pour déterminer le résultat, le second n'est pas évalué.
+Ils retournent la dernière valeur qui a permis de déterminer le résultat.
+
+Voici un extrait de l'assembleur LLVM correspondant :
+```llvm
+define i32 @main() {
+entry:
+  %and_or_bool_cast_call = call i1 @__smolpp_f_bool_cast(%dynamic_type_struct { i8 4, i64 1 })
+  br i1 %and_or_bool_cast_call, label %finish_block, label %compute_right_block
+
+compute_right_block:                              ; preds = %entry
+  %0 = trunc i64 2 to i32
+  %mallocsize = mul i32 %0, ptrtoint (ptr getelementptr (%dynamic_type_struct, ptr null, i32 1) to i32)
+  %list_heap_array = tail call ptr @malloc(i32 %mallocsize)
+  %list = tail call ptr @malloc(i32 ptrtoint (ptr getelementptr (%list_struct, ptr null, i32 1) to i32))
+  %struct_len_ptr = getelementptr inbounds %list_struct, ptr %list, i32 0, i32 0
+  %struct_capa_ptr = getelementptr inbounds %list_struct, ptr %list, i32 0, i32 1
+  %struct_array_ptr = getelementptr inbounds %list_struct, ptr %list, i32 0, i32 2
+  store i64 0, ptr %struct_len_ptr, align 4
+  store i64 2, ptr %struct_capa_ptr, align 4
+  store ptr %list_heap_array, ptr %struct_array_ptr, align 8
+  %list_ptr = ptrtoint ptr %list to i64
+  %with_value = insertvalue %dynamic_type_struct { i8 16, i64 undef }, i64 %list_ptr, 1
+  %len_ptr = getelementptr inbounds %list_struct, ptr %list, i32 0, i32 0
+  store i64 2, ptr %len_ptr, align 4
+  %array_ptr_ptr = getelementptr inbounds %list_struct, ptr %list, i32 0, i32 2
+  %array_ptr = load ptr, ptr %array_ptr_ptr, align 8
+  %elt_ptr = getelementptr %dynamic_type_struct, ptr %array_ptr, i32 0
+  store %dynamic_type_struct { i8 4, i64 1 }, ptr %elt_ptr, align 4
+  %elt_ptr1 = getelementptr %dynamic_type_struct, ptr %array_ptr, i32 1
+  store %dynamic_type_struct { i8 4, i64 3 }, ptr %elt_ptr1, align 4
+  br label %finish_block
+
+finish_block:                                     ; preds = %compute_right_block, %entry
+  %llvm_compute_and_or_phi = phi %dynamic_type_struct [ { i8 4, i64 1 }, %entry ], [ %with_value, %compute_right_block ]
+  call void @__smolpp_f_generic_print(%dynamic_type_struct %llvm_compute_and_or_phi)
+  %line_return = call i32 (ptr, ...) @printf(ptr @__smolpp_g_line_return)
+  %and_or_bool_cast_call2 = call i1 @__smolpp_f_bool_cast(%dynamic_type_struct { i8 4, i64 1 })
+  br i1 %and_or_bool_cast_call2, label %compute_right_block3, label %finish_block4
+```
+
+L'instruction phi sélectionne la valeur en fonction du bloc prédécesseur :
+- Si le bloc prédécesseur est `entry`, la valeur est `{ i8 4, i64 1 }`
+- Sinon, la valeur est celle de `with_value`, soit `{ i8 16, i64 undef }`
+
+Les opérateurs `and` et `or` peuvent retourner n'importe quel type. Ils sont donc typés `Any` et nécessitent des contrôles sémantiques dynamiques.
+
+#pagebreak()
 = Gestion de Projet
 
 #linebreak()
 == Aristide
-*Typage* : typage statique (10h); typage dynamique (3h)\
-*Controle sémantique statiques* : verification des types statiques (5h);\
-*Controle sémantique statiques* : assertion des types pour les opérations (3h);\
-*Assembleur* : print de base (1h); print générique (1h); Variables (4h); Strings (3h); Listes (5h); arithmétique générique (2h); type Weak (17h); boucle while (1h); fonctions de la librairie standard (input) (2h); concaténation des strings et des listes (5h); comparaison des strings (1h);
+*Typage* : typage statique (10h) ; typage dynamique (3h)\
+*Contrôles sémantiques statiques* : vérification des types statiques (5h) ;\
+*Contrôles sémantiques statiques* : assertions des types pour les opérations (3h) ;\
+*Assembleur* : print de base (1h) ; print générique (1h) ; Variables (4h) ; Strings (3h) ; Listes (5h) ; arithmétique générique (2h) ; type Weak (17h) ; boucle while (1h) ; fonctions de la bibliothèque standard (input) (2h) ; concaténation des strings et des listes (5h) ; comparaison des strings (1h)
 
-#linebreak()
 == Baptiste
-*Controles sémantiques dynamique* : comparaison generique (10h); "and", "or", "not", "if" -> cast n'importe quel type en booléen (2h); verif boucle for : list ou range (4h)\
-*Config LLVM* : configuration des librairies et recherches, choix entre inkwell et llvm-ir (20h); config du linker LLVM pour Linux (20h); adaptation du CLI pour compilation et execution (5h)\
-*Assembleur* : structure base : function main, setup initial (4h); expression (2h); loops : boucle "for" (12h); fonctions "and", "or", "not" (4h); fonction "len", "list", "range" (6h); creation d'une librairie standard (3h);
+*Contrôles sémantiques dynamiques* : comparaison générique (10h) ; "and", "or", "not", "if" -> cast de tout type en booléen (2h) ; vérification boucle for : list ou range (4h)\
+*Configuration LLVM* : configuration des bibliothèques et recherches, choix entre inkwell et llvm-ir (20h) ; configuration du linker LLVM pour Linux (20h) ; adaptation du CLI pour compilation et exécution (5h)\
+*Assembleur* : structure de base : fonction main, setup initial (4h) ; expressions (2h) ; boucles : boucle "for" (12h) ; fonctions "and", "or", "not" (4h) ; fonctions "len", "list", "range" (6h) ; création d'une bibliothèque standard (3h)
 
-#linebreak()
-== Luca 
-*TDS* : remplissage de la TDS depuis l'AST (7h); gestion des offsets (5h)\
-*Contrôle sémantiques statiques* : portée des variables (4h);\
-*Configuration LLVM* : adaptation config linker LLVM pour macOS en préservant config Linux (4h)\
-*Assembleur* : opérations binaire (3h); compairaison statiques (4h); fonctions internes : range et list (5h); affichage des erreurs pendant l'éxecution (2h); localisation des erreurs d'execution (5h);
 
-#linebreak()
+== Luca
+*Table des symboles* : remplissage de la TDS depuis l'AST (7h) ; gestion des offsets (5h)\
+*Contrôles sémantiques statiques* : portée des variables (4h)\
+*Configuration LLVM* : adaptation de la configuration du linker LLVM pour macOS en préservant la compatibilité Linux (4h)\
+*Assembleur* : opérations binaires (3h) ; comparaisons statiques (4h) ; fonctions internes : range et list (5h) ; affichage des erreurs d'exécution (2h) ; localisation des erreurs d'exécution (5h) ; fonction interne type (5h)
+
+
 == Romain
-*TDS* : affinage des structures de données (2h);\
-*Contrôles sémantiques statiques* : verification des arguments et retours de fonctions (3h);\
-*Assembleur* :  typage dynamique des fonctions (4h); appel de fonctions (2h);  branching if else (2h); accès et assignation de liste (3h); comparaison liste (6h); appels de fonction mutuellement récursif (1h); fonction interne int (3h); fonction interne surchage plus (4h)
+*Table des symboles* : affinage des structures de données (2h)\
+*Contrôles sémantiques statiques* : vérification des arguments et retours de fonctions (3h)\
+*Assembleur* : typage dynamique des fonctions (4h) ; appel de fonctions (2h) ; branchement if-else (2h) ; accès et assignation de liste (3h) ; comparaison de listes (6h) ; appels de fonctions mutuellement récursives (1h) ; fonction interne int (3h) ; surcharge de l'opérateur plus (4h)

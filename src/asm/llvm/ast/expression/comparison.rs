@@ -1,15 +1,9 @@
 use crate::{
     asm::{
-        codegen::CodeGen,
-        get_internal_func,
-        internal_functions::InternalFuctions,
-        internal_global_constants::RuntimeErrorMsg,
-        llvm::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError},
-    },
-    ast::nodes::BinOp,
-    common::localizable::LocalizationInfo,
-    typing::Type,
+        codegen::CodeGen, get_internal_func, get_internal_global_const, internal_functions::InternalFuctions, internal_global_constants::RuntimeErrorMsg, llvm::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError}, InternalGlobalConst
+    }, ast::nodes::BinOp, common::localizable::LocalizationInfo, smollib::{get_smollib_func, SmollibFunctionNames}, typing::Type
 };
+use clap::Error;
 use inkwell::AddressSpace;
 use inkwell::{
     values::{FunctionValue, IntValue},
@@ -451,6 +445,36 @@ pub fn init_internal_compare_generic_function<'ctx>(
             let res = cg.create_variable(Type::Bool, cg.context.i64_type().const_int(1, false))?;
             cg.builder.build_return(Some(&res))?;
         }
+        BinOp::LESS => build_type_error(
+            cg,
+            value1,
+            value2,
+            RuntimeErrorMsg::CompareLess,
+        )?,
+        BinOp::GREATER => {
+            build_type_error(
+                cg,
+                value1,
+                value2,
+                RuntimeErrorMsg::CompareGreater,
+            )?;
+        }
+        BinOp::LESSEQ => {
+            build_type_error(
+                cg,
+                value1,
+                value2,
+                RuntimeErrorMsg::CompareLessEq,
+            )?;
+        }
+        BinOp::GREATEREQ => {
+            build_type_error(
+                cg,
+                value1,
+                value2,
+                RuntimeErrorMsg::CompareGreaterEq,
+            )?;
+        }
         _ => {
             smolpp_panic_with_unreachable::<LocalizationInfo>(
                 cg,
@@ -535,6 +559,28 @@ fn build_switch_compare_generic_same_type<'ctx>(
             let result = compare_none_values(value1, value2, operation, cg)?;
             cg.builder.build_return(Some(&result))?;
         }
+        BinOp::LESS => build_type_error_none(
+            cg,
+            RuntimeErrorMsg::CompareLess,
+        )?,
+        BinOp::GREATER => {
+            build_type_error_none(
+                cg,
+                RuntimeErrorMsg::CompareGreater,
+            )?;
+        }
+        BinOp::LESSEQ => {
+            build_type_error_none(
+                cg,
+                RuntimeErrorMsg::CompareLessEq,
+            )?;
+        }
+        BinOp::GREATEREQ => {
+            build_type_error_none(
+                cg,
+                RuntimeErrorMsg::CompareGreaterEq,
+            )?;
+        }
         _ => {
             smolpp_panic_with_unreachable::<LocalizationInfo>(
                 cg,
@@ -565,6 +611,89 @@ fn build_switch_compare_generic_same_type<'ctx>(
         RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric,
         &[t1.into()],
         None, //FIXME: potentially add localization info, but i don't know how I am supposed to do that with generic functions
+    )?;
+
+    return Ok(());
+}
+
+fn build_type_error<'ctx>(
+    cg: &CodeGen<'ctx>,
+    value: SmolVar<'ctx>,
+    value2: SmolVar<'ctx>,
+    error: RuntimeErrorMsg,
+) -> Result<(), LLVMCodegenError> {
+    // Value
+    let call_type_value = cg.builder.build_call(
+        get_smollib_func!(cg, SmollibFunctionNames::SmolType),
+        &[value.into()],
+        "type_call",
+    )?;
+
+    // La fonction Type retourne directement un pointeur
+    let smol_var = call_type_value
+        .try_as_basic_value()
+        .left()
+        .unwrap()
+        .into_struct_value();
+
+    let smol_var_value = cg.get_variable_value(smol_var)?.into_int_value();
+
+    let ptr_type = cg.context.ptr_type(AddressSpace::default());
+
+    let smol_var_ptr = cg
+        .builder
+        .build_int_to_ptr(smol_var_value, ptr_type, "smol_var_ptr")?;
+
+    let actual_type_ptr = cg.build_get_string_array_ptr_from_ptr(smol_var_ptr)?;
+
+    let call_type_value2 = cg.builder.build_call(
+        get_smollib_func!(cg, SmollibFunctionNames::SmolType),
+        &[value2.into()],
+        "type_call",
+    )?;
+
+    // La fonction Type retourne directement un pointeur
+    let smol_var2 = call_type_value2
+        .try_as_basic_value()
+        .left()
+        .unwrap()
+        .into_struct_value();
+
+    let smol_var_value2 = cg.get_variable_value(smol_var2)?.into_int_value();
+
+    let smol_var_ptr2 = cg
+        .builder
+        .build_int_to_ptr(smol_var_value2, ptr_type, "smol_var_ptr")?;
+
+    let actual_type_ptr2 = cg.build_get_string_array_ptr_from_ptr(smol_var_ptr2)?;
+
+    // Call the panic function with the two types
+    smolpp_panic_with_unreachable::<LocalizationInfo>(
+        cg,
+        error,
+        &[actual_type_ptr.into(), actual_type_ptr2.into()],
+        None,
+    )?;
+
+    return Ok(());
+}
+
+fn build_type_error_none<'ctx>(
+    cg: &CodeGen<'ctx>,
+    error: RuntimeErrorMsg,
+) -> Result<(), LLVMCodegenError> {
+    
+
+    // Call the panic function with the two types
+    smolpp_panic_with_unreachable::<LocalizationInfo>(
+        cg,
+        error,
+        &[get_internal_global_const!(cg, InternalGlobalConst::NoneType)
+                            .as_pointer_value()
+                            .into(), get_internal_global_const!(cg, InternalGlobalConst::NoneType)
+                            .as_pointer_value()
+                            .into()],
+        None,
     )?;
 
     return Ok(());

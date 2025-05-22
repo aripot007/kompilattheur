@@ -1,4 +1,5 @@
 a = [[0], "hello"]
+b = [None, "hello"]
 
 # println(a[0] + a[1]) # assert Dyn
 
@@ -6,3 +7,5 @@ a = [[0], "hello"]
 
 # for i in a[1]: # assert One Of
 #     println(i)
+
+println(b[0] < b[1])

@@ -83,6 +83,11 @@ pub enum RuntimeErrorMsg {
     TypeError,
     TypeErrorDyn,
 
+    CompareGreater,
+    CompareGreaterEq,
+    CompareLess,
+    CompareLessEq,
+
     /// index, length
     IndexOutOfBound,
 
@@ -162,6 +167,10 @@ impl Into<&'static str> for RuntimeErrorMsg {
             RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric => {
                 internal_global_prefix!("panic_invalid_type_compare_generic")
             }
+            RuntimeErrorMsg::CompareGreater => internal_global_prefix!("compare_greater"),
+            RuntimeErrorMsg::CompareGreaterEq => internal_global_prefix!("compare_greater_eq"),
+            RuntimeErrorMsg::CompareLess => internal_global_prefix!("compare_less"),
+            RuntimeErrorMsg::CompareLessEq => internal_global_prefix!("compare_less_eq"),
             RuntimeErrorMsg::PanicInvalidInternalTypeAddGeneric => {
                 internal_global_prefix!("panic_invalid_type_add_generic")
             }
@@ -400,6 +409,80 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
     );
 
     create_global_error_string(
+        RuntimeErrorMsg::CompareGreater,
+        format!(
+            "{} {}{}",
+            "TypeError:"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "'>' not supported between instances of %s and %s".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
+        cg,
+    );
+
+    create_global_error_string(
+        RuntimeErrorMsg::CompareGreaterEq,
+        format!(
+            "{} {}{}",
+            "TypeError:"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "'>=' not supported between instances of %s and %s".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
+        cg,
+    );
+
+    create_global_error_string(
+        RuntimeErrorMsg::CompareLess,
+        format!(
+            "{} {}{}",
+            "TypeError:"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "'<' not supported between instances of %s and %s".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
+        cg,
+    );
+
+    create_global_error_string(
+        RuntimeErrorMsg::CompareLessEq,
+        format!(
+            "{} {}{}",
+            "TypeError:"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "'<=' not supported between instances of %s and %s".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
+        cg,
+    );
+
+
+
+    create_global_error_string(
         RuntimeErrorMsg::IndexOutOfBound,
         format!(
             "{} {}{}",
@@ -421,7 +504,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric,
         format!(
             "{} {}{}",
-            "TypeError:"
+            "PANIC:"
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
             "Invalid internal type value for generic comparison".truecolor(

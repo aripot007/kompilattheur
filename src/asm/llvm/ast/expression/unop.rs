@@ -79,7 +79,7 @@ fn llvm_compute_neg<'ctx, T>(
 where
     T: Localizable,
 {
-    assert_type(Type::Int, &val, cg, None, loc)?;
+    assert_type(Type::Int, &val, cg, loc)?;
     return llvm_compute_neg_unchecked(val, cg);
 }
 

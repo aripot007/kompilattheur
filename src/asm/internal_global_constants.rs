@@ -46,6 +46,16 @@ pub enum InternalGlobalConst {
     ListType,
     RangeType,
     NoneType,
+
+    // Expected types
+    ExpectedTypeNone,
+    ExpectedTypeInt,
+    ExpectedTypeBool,
+    ExpectedTypeString,
+    ExpectedTypeList,
+    ExpectedTypeRange,
+
+    CanOnlyConcatenate,
 }
 
 /// Internal global string constants used for runtime error printing
@@ -71,6 +81,7 @@ pub enum RuntimeErrorMsg {
     ///
     /// Takes a string message as an argument
     TypeError,
+    TypeErrorDyn,
 
     /// index, length
     IndexOutOfBound,
@@ -120,6 +131,19 @@ impl Into<&'static str> for InternalGlobalConst {
             InternalGlobalConst::ListType => internal_global_prefix!("list_type"),
             InternalGlobalConst::RangeType => internal_global_prefix!("range_type"),
             InternalGlobalConst::NoneType => internal_global_prefix!("none_type"),
+            InternalGlobalConst::ExpectedTypeNone => internal_global_prefix!("expected_type_none"),
+            InternalGlobalConst::ExpectedTypeInt => internal_global_prefix!("expected_type_int"),
+            InternalGlobalConst::ExpectedTypeBool => internal_global_prefix!("expected_type_bool"),
+            InternalGlobalConst::ExpectedTypeString => {
+                internal_global_prefix!("expected_type_string")
+            }
+            InternalGlobalConst::ExpectedTypeList => internal_global_prefix!("expected_type_list"),
+            InternalGlobalConst::ExpectedTypeRange => {
+                internal_global_prefix!("expected_type_range")
+            }
+            InternalGlobalConst::CanOnlyConcatenate => {
+                internal_global_prefix!("can_only_concatenate")
+            }
         }
     }
 }
@@ -133,6 +157,7 @@ impl Into<&'static str> for RuntimeErrorMsg {
             RuntimeErrorMsg::PanicNotImplemented => internal_global_prefix!("panic_unimplemented"),
             RuntimeErrorMsg::PanicGetlineError => internal_global_prefix!("panic_getline_error"),
             RuntimeErrorMsg::TypeError => internal_global_prefix!("error_type"),
+            RuntimeErrorMsg::TypeErrorDyn => internal_global_prefix!("error_type_dyn"),
             RuntimeErrorMsg::IndexOutOfBound => internal_global_prefix!("error_out_of_bound"),
             RuntimeErrorMsg::PanicInvalidInternalTypeCompareGeneric => {
                 internal_global_prefix!("panic_invalid_type_compare_generic")
@@ -172,6 +197,13 @@ impl InternalGlobalConst {
             InternalGlobalConst::ListType => "List",
             InternalGlobalConst::RangeType => "Range",
             InternalGlobalConst::NoneType => "None",
+            InternalGlobalConst::ExpectedTypeNone => "Expected type None",
+            InternalGlobalConst::ExpectedTypeInt => "Expected type Int",
+            InternalGlobalConst::ExpectedTypeBool => "Expected type Bool",
+            InternalGlobalConst::ExpectedTypeString => "Expected type String",
+            InternalGlobalConst::ExpectedTypeList => "Expected type List",
+            InternalGlobalConst::ExpectedTypeRange => "Expected type Range",
+            InternalGlobalConst::CanOnlyConcatenate => "can only concatenate",
             #[cfg(feature = "smollib-input")]
             InternalGlobalConst::StdinFile => panic!("stdin value should not be used"),
         }
@@ -247,6 +279,16 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
     create_global_string(InternalGlobalConst::ListType, cg);
     create_global_string(InternalGlobalConst::RangeType, cg);
     create_global_string(InternalGlobalConst::NoneType, cg);
+
+    // Expected types
+    create_global_string(InternalGlobalConst::ExpectedTypeNone, cg);
+    create_global_string(InternalGlobalConst::ExpectedTypeInt, cg);
+    create_global_string(InternalGlobalConst::ExpectedTypeBool, cg);
+    create_global_string(InternalGlobalConst::ExpectedTypeString, cg);
+    create_global_string(InternalGlobalConst::ExpectedTypeList, cg);
+    create_global_string(InternalGlobalConst::ExpectedTypeRange, cg);
+
+    create_global_string(InternalGlobalConst::CanOnlyConcatenate, cg);
 
     // Error messages
     create_global_error_string(
@@ -329,6 +371,24 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
             "%s but got %s".truecolor(
+                HIGHLIGHT_ERROR_COLOR.0,
+                HIGHLIGHT_ERROR_COLOR.1,
+                HIGHLIGHT_ERROR_COLOR.2
+            ),
+            "\x1b[0m\n"
+        )
+        .as_str(),
+        cg,
+    );
+
+    create_global_error_string(
+        RuntimeErrorMsg::TypeErrorDyn,
+        format!(
+            "{} {}{}",
+            "TypeError:"
+                .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
+                .bold(),
+            "%s %s (not %s) to %s".truecolor(
                 HIGHLIGHT_ERROR_COLOR.0,
                 HIGHLIGHT_ERROR_COLOR.1,
                 HIGHLIGHT_ERROR_COLOR.2

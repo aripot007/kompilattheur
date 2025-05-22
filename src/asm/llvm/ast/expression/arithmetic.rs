@@ -1,16 +1,13 @@
 use crate::{
     asm::{
-        codegen::CodeGen,
-        get_internal_func,
-        llvm::{
+        codegen::CodeGen, get_internal_func, llvm::{
             assert_type::{assert_dyn_type, assert_type},
             lists::llvm_build_list_concat,
             panic::smolpp_panic_with_unreachable,
             smolvar::SmolVar,
             strings::llvm_build_string_concat,
             LLVMCodegenError,
-        },
-        InternalFuctions, RuntimeErrorMsg,
+        }, InternalFuctions, InternalGlobalConst, RuntimeErrorMsg
     },
     common::localizable::{Localizable, LocalizationInfo},
     typing::Type,
@@ -26,8 +23,8 @@ pub fn compute_mult<'ctx, T>(
 where
     T: Localizable,
 {
-    assert_type(Type::Int, &x, cg, None, loc1)?;
-    assert_type(Type::Int, &y, cg, None, loc2)?;
+    assert_type(Type::Int, &x, cg, loc1)?;
+    assert_type(Type::Int, &y, cg, loc2)?;
     return compute_mult_unchecked(x, y, cg);
 }
 
@@ -52,8 +49,8 @@ pub fn compute_div<'ctx, T>(
 where
     T: Localizable,
 {
-    assert_type(Type::Int, &x, cg, None, loc1)?;
-    assert_type(Type::Int, &y, cg, None, loc2)?;
+    assert_type(Type::Int, &x, cg, loc1)?;
+    assert_type(Type::Int, &y, cg, loc2)?;
     return compute_div_unchecked(x, y, cg);
 }
 
@@ -78,8 +75,8 @@ pub fn compute_mod<'ctx, T>(
 where
     T: Localizable,
 {
-    assert_type(Type::Int, &x, cg, None, loc1)?;
-    assert_type(Type::Int, &y, cg, None, loc2)?;
+    assert_type(Type::Int, &x, cg, loc1)?;
+    assert_type(Type::Int, &y, cg, loc2)?;
     return compute_mod_unchecked(x, y, cg);
 }
 
@@ -104,8 +101,8 @@ pub fn compute_sub<'ctx, T>(
 where
     T: Localizable,
 {
-    assert_type(Type::Int, &x, cg, None, loc1)?;
-    assert_type(Type::Int, &y, cg, None, loc2)?;
+    assert_type(Type::Int, &x, cg, loc1)?;
+    assert_type(Type::Int, &y, cg, loc2)?;
     return compute_sub_unchecked(x, y, cg);
 }
 
@@ -130,8 +127,8 @@ pub fn compute_add<'ctx, T>(
 where
     T: Localizable,
 {
-    assert_type(Type::Int, &x, cg, None, loc1)?;
-    assert_type(Type::Int, &y, cg, None, loc2)?;
+    assert_type(Type::Int, &x, cg, loc1)?;
+    assert_type(Type::Int, &y, cg, loc2)?;
     return compute_add_unchecked(x, y, cg);
 }
 
@@ -219,7 +216,7 @@ pub fn init_internal_add_generic_function<'ctx>(
         .into_struct_value();
 
     // Assert they are the same type
-    assert_dyn_type::<LocalizationInfo>(&value1, &value2, cg, None)?; //FIXME: potentially add localization info, but i don't know how I am supposed to do that with generic functions
+    assert_dyn_type::<LocalizationInfo>(&value1, &value2, cg, InternalGlobalConst::CanOnlyConcatenate, None)?; //FIXME: potentially add localization info, but i don't know how I am supposed to do that with generic functions
 
     // Load runtime type tags
     let typ = cg.get_variable_type(value1)?;

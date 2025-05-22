@@ -120,7 +120,6 @@ pub fn access_to_ptr<'ctx>(
         Type::List,
         &base_value,
         cg,
-        Some("Expected list for access".into()),
         Some(expr1),
     )?;
 

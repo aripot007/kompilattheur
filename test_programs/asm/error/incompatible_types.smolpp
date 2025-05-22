@@ -1,3 +1,8 @@
-a = [5, "hello"]
+a = [[0], "hello"]
 
-println(a[0] - a[1])
+# println(a[0] + a[1]) # assert Dyn
+
+# println(a[1][0]) # assert One Type
+
+# for i in a[1]: # assert One Of
+#     println(i)

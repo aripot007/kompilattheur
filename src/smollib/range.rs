@@ -42,7 +42,7 @@ impl SmollibFunction for SmolRange {
             .unwrap()
             .into_struct_value();
 
-        assert_type::<LocalizationInfo>(Type::Int, &var1, cg, None, None)?;
+        assert_type::<LocalizationInfo>(Type::Int, &var1, cg, None)?;
 
         let var1_value = cg.get_variable_value(var1)?.into_int_value();
 

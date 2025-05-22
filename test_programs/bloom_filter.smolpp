@@ -1,0 +1,250 @@
+def custom_ord(char):
+    if char == "a":
+        return 97
+    if char == "b":
+        return 98
+    if char == "c":
+        return 99
+    if char == "d":
+        return 100
+    if char == "e":
+        return 101
+    if char == "f":
+        return 102
+    if char == "g":
+        return 103
+    if char == "h":
+        return 104
+    if char == "i":
+        return 105
+    if char == "j":
+        return 106
+    if char == "k":
+        return 107
+    if char == "l":
+        return 108
+    if char == "m":
+        return 109
+    if char == "n":
+        return 110
+    if char == "o":
+        return 111
+    if char == "p":
+        return 112
+    if char == "q":
+        return 113
+    if char == "r":
+        return 114
+    if char == "s":
+        return 115
+    if char == "t":
+        return 116
+    if char == "u":
+        return 117
+    if char == "v":
+        return 118
+    if char == "w":
+        return 119
+    if char == "x":
+        return 120
+    if char == "y":
+        return 121
+    if char == "z":
+        return 122
+    if char == "A":
+        return 65
+    if char == "B":
+        return 66
+    if char == "C":
+        return 67
+    if char == "D":
+        return 68
+    if char == "E":
+        return 69
+    if char == "F":
+        return 70
+    if char == "G":
+        return 71
+    if char == "H":
+        return 72
+    if char == "I":
+        return 73
+    if char == "J":
+        return 74
+    if char == "K":
+        return 75
+    if char == "L":
+        return 76
+    if char == "M":
+        return 77
+    if char == "N":
+        return 78
+    if char == "O":
+        return 79
+    if char == "P":
+        return 80
+    if char == "Q":
+        return 81
+    if char == "R":
+        return 82
+    if char == "S":
+        return 83
+    if char == "T":
+        return 84
+    if char == "U":
+        return 85
+    if char == "V":
+        return 86
+    if char == "W":
+        return 87
+    if char == "X":
+        return 88
+    if char == "Y":
+        return 89
+    if char == "Z":
+        return 90
+    if char == "0":
+        return 48
+    if char == "1":
+        return 49
+    if char == "2":
+        return 50
+    if char == "3":
+        return 51
+    if char == "4":
+        return 52
+    if char == "5":
+        return 53
+    if char == "6":
+        return 54
+    if char == "7":
+        return 55
+    if char == "8":
+        return 56
+    if char == "9":
+        return 57
+    if char == " ":
+        return 32
+    if char == ".":
+        return 46
+    if char == ",":
+        return 44
+    if char == "!":
+        return 33
+    if char == "?":
+        return 63
+    return 0
+
+def initialize_filter():
+    return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+def print_filter(filter):
+    i = 0
+    while i < 70:
+        print(filter[i])
+        i = i + 1
+    println("")
+
+def hash_char_sum(word_chars):
+    result = 0
+    i = 0
+    while i < len(word_chars):
+        char_value = custom_ord(word_chars[i])
+        result = result + char_value
+        i = i + 1
+    return result
+
+def hash_position_weighted(word_chars):
+    result = 0
+    i = 0
+    while i < len(word_chars):
+        char_value = custom_ord(word_chars[i])
+        position_value = i + 1
+        result = result + (char_value * position_value)
+        i = i + 1
+    return result
+
+def hash_multiplication(word_chars):
+    result = 1
+    i = 0
+    while i < len(word_chars):
+        char_value = custom_ord(word_chars[i])
+        if char_value > 0:
+            result = result * char_value
+        i = i + 1
+    return result
+
+def hash1(word):
+    if len(word) == 0:
+        return 0
+    word_chars = list(word)
+    hash_value = hash_char_sum(word_chars)
+    hash_value = hash_value * 17
+    return hash_value % 70
+
+def hash2(word):
+    if len(word) == 0:
+        return 0
+    word_chars = list(word)
+    hash_value = hash_position_weighted(word_chars)
+    hash_value = hash_value * 23
+    return hash_value % 70
+
+def hash3(word):
+    if len(word) == 0:
+        return 0
+    word_chars = list(word)
+    hash_value = hash_multiplication(word_chars)
+    hash_value = hash_value * 31
+    return hash_value % 70
+
+def add_word(filter, word):
+    pos1 = hash1(word)
+    pos2 = hash2(word)
+    pos3 = hash3(word)
+    filter[pos1] = 1
+    filter[pos2] = 1
+    filter[pos3] = 1
+
+def check_word(filter, word):
+    pos1 = hash1(word)
+    pos2 = hash2(word)
+    pos3 = hash3(word)
+    if filter[pos1] == 1:
+        if filter[pos2] == 1:
+            if filter[pos3] == 1:
+                return True
+    return False
+
+# Main program
+filter = initialize_filter()
+println("Initial filter state:")
+print_filter(filter)
+running = True
+
+while running:
+    println("1. Add a word")
+    println("2. Check if a word is in the filter")
+    println("3. Quit")
+    print("Your choice: ")
+    
+    choice_str = input()
+    if choice_str == "1" or choice_str == "2" or choice_str == "3":
+        choice = int(choice_str)
+        if choice == 1:
+            print("Enter word to add: ")
+            word = input()
+            add_word(filter, word)
+            println("Word added! Filter state:")
+            print_filter(filter)
+        if choice == 2:
+            print("Enter word to check: ")
+            word = input()
+            if check_word(filter, word):
+                println("The word is probably in the filter")
+            else:
+                println("The word is definitely not in the filter")
+        if choice == 3:
+            running = False
+    else:
+        println("Invalid choice!")

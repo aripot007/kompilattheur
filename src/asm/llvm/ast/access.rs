@@ -116,12 +116,7 @@ pub fn access_to_ptr<'ctx>(
         .into_struct_value();
 
     // TODO: optimize if not Weak
-    assert_type::assert_type(
-        Type::List,
-        &base_value,
-        cg,
-        Some(expr1),
-    )?;
+    assert_type::assert_type(Type::List, &base_value, cg, Some(expr1))?;
 
     // Evaluate the index expression
     let index_value = super::llvm_compute_expr(expr2, cg)?;

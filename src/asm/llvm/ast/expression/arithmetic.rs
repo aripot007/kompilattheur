@@ -1,15 +1,21 @@
+use inkwell::AddressSpace;
+
 use crate::{
     asm::{
-        codegen::CodeGen, get_internal_func, llvm::{
+        codegen::CodeGen,
+        get_internal_func,
+        llvm::{
             assert_type::{assert_dyn_type, assert_type},
             lists::llvm_build_list_concat,
             panic::smolpp_panic_with_unreachable,
             smolvar::SmolVar,
             strings::llvm_build_string_concat,
             LLVMCodegenError,
-        }, InternalFuctions, InternalGlobalConst, RuntimeErrorMsg
+        },
+        InternalFuctions, InternalGlobalConst, RuntimeErrorMsg,
     },
     common::localizable::{Localizable, LocalizationInfo},
+    smollib::{get_smollib_func, SmollibFunctionNames},
     typing::Type,
 };
 
@@ -216,7 +222,13 @@ pub fn init_internal_add_generic_function<'ctx>(
         .into_struct_value();
 
     // Assert they are the same type
-    assert_dyn_type::<LocalizationInfo>(&value1, &value2, cg, InternalGlobalConst::CanOnlyConcatenate, None)?; //FIXME: potentially add localization info, but i don't know how I am supposed to do that with generic functions
+    assert_dyn_type::<LocalizationInfo>(
+        &value1,
+        &value2,
+        cg,
+        InternalGlobalConst::CanOnlyConcatenate,
+        None,
+    )?; //FIXME: potentially add localization info, but i don't know how I am supposed to do that with generic functions
 
     // Load runtime type tags
     let typ = cg.get_variable_type(value1)?;
@@ -281,11 +293,35 @@ pub fn init_internal_add_generic_function<'ctx>(
     // Default case, print error message
     cg.builder.position_at_end(default_block);
 
+    let call_type_value = cg.builder.build_call(
+        get_smollib_func!(cg, SmollibFunctionNames::SmolType),
+        &[value1.into()],
+        "type_call",
+    )?;
+
+    // La fonction Type retourne directement un pointeur
+    let smol_var = call_type_value
+        .try_as_basic_value()
+        .left()
+        .unwrap()
+        .into_struct_value();
+
+    let smol_var_value = cg.get_variable_value(smol_var)?.into_int_value();
+
+    let ptr_type = cg.context.ptr_type(AddressSpace::default());
+
+    let smol_var_ptr = cg
+        .builder
+        .build_int_to_ptr(smol_var_value, ptr_type, "smol_var_ptr")?;
+
+    let actual_type_ptr = cg.build_get_string_array_ptr_from_ptr(smol_var_ptr)?;
+
+    // Call the panic function with the two types
     smolpp_panic_with_unreachable::<LocalizationInfo>(
         cg,
         RuntimeErrorMsg::PanicInvalidInternalTypeAddGeneric,
-        &[typ.into()],
-        None, //FIXME: potentially add localization info, but i don't know how I am supposed to do that with generic functions
+        &[actual_type_ptr.into(), actual_type_ptr.into()],
+        None,
     )?;
 
     // Return builder to main block because it's init function

@@ -44,9 +44,9 @@ pub fn init_internal_bool_cast_function(cg: &mut CodeGen) -> Result<(), LLVMCode
     let case_none = cg
         .context
         .append_basic_block(function, "bool_cast_case_none");
-    let case_int_bool = cg
+    let case_int_bool_range = cg
         .context
-        .append_basic_block(function, "bool_cast_case_int");
+        .append_basic_block(function, "bool_cast_case_int_bool_range");
     let case_string_list = cg
         .context
         .append_basic_block(function, "bool_cast_case_string");
@@ -64,11 +64,15 @@ pub fn init_internal_bool_cast_function(cg: &mut CodeGen) -> Result<(), LLVMCode
             ),
             (
                 i8_type.const_int(Type::Bool.get_bitmask().into(), false),
-                case_int_bool,
+                case_int_bool_range,
             ),
             (
                 i8_type.const_int(Type::Int.get_bitmask().into(), false),
-                case_int_bool,
+                case_int_bool_range,
+            ),
+            (
+                i8_type.const_int(Type::Range.get_bitmask().into(), false),
+                case_int_bool_range,
             ),
             (
                 i8_type.const_int(Type::String.get_bitmask().into(), false),
@@ -86,7 +90,7 @@ pub fn init_internal_bool_cast_function(cg: &mut CodeGen) -> Result<(), LLVMCode
     let false_value = cg.context.bool_type().const_zero();
     cg.builder.build_return(Some(&false_value))?;
 
-    cg.builder.position_at_end(case_int_bool);
+    cg.builder.position_at_end(case_int_bool_range);
     // Si Int / Bool => compare NE 0
     let result = cg.builder.build_int_compare(
         IntPredicate::NE,

@@ -480,8 +480,6 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         cg,
     );
 
-
-
     create_global_error_string(
         RuntimeErrorMsg::IndexOutOfBound,
         format!(
@@ -522,10 +520,10 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
         RuntimeErrorMsg::PanicInvalidInternalTypeAddGeneric,
         format!(
             "{} {}{}",
-            "PANIC:"
+            "TypeError:"
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
-            "Invalid internal type value for generic addition".truecolor(
+            "unsupported operand type(s) for +: %s and %s".truecolor(
                 HIGHLIGHT_ERROR_COLOR.0,
                 HIGHLIGHT_ERROR_COLOR.1,
                 HIGHLIGHT_ERROR_COLOR.2
@@ -543,7 +541,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
             "TypeError:"
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
-            "Invalid type for list function".truecolor(
+            "%s object is not iterable".truecolor(
                 HIGHLIGHT_ERROR_COLOR.0,
                 HIGHLIGHT_ERROR_COLOR.1,
                 HIGHLIGHT_ERROR_COLOR.2
@@ -579,7 +577,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
             "PANIC:"
                 .truecolor(ERROR_COLOR.0, ERROR_COLOR.1, ERROR_COLOR.2)
                 .bold(),
-            "Invalid internal type value for type function".truecolor(
+            "Invalid internal type value for type function (bitmask: %s)".truecolor(
                 HIGHLIGHT_ERROR_COLOR.0,
                 HIGHLIGHT_ERROR_COLOR.1,
                 HIGHLIGHT_ERROR_COLOR.2

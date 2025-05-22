@@ -1,9 +1,17 @@
 use crate::{
     asm::{
-        codegen::CodeGen, get_internal_func, get_internal_global_const, internal_functions::InternalFuctions, internal_global_constants::RuntimeErrorMsg, llvm::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError}, InternalGlobalConst
-    }, ast::nodes::BinOp, common::localizable::LocalizationInfo, smollib::{get_smollib_func, SmollibFunctionNames}, typing::Type
+        codegen::CodeGen,
+        get_internal_func, get_internal_global_const,
+        internal_functions::InternalFuctions,
+        internal_global_constants::RuntimeErrorMsg,
+        llvm::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar, LLVMCodegenError},
+        InternalGlobalConst,
+    },
+    ast::nodes::BinOp,
+    common::localizable::LocalizationInfo,
+    smollib::{get_smollib_func, SmollibFunctionNames},
+    typing::Type,
 };
-use clap::Error;
 use inkwell::AddressSpace;
 use inkwell::{
     values::{FunctionValue, IntValue},
@@ -445,35 +453,15 @@ pub fn init_internal_compare_generic_function<'ctx>(
             let res = cg.create_variable(Type::Bool, cg.context.i64_type().const_int(1, false))?;
             cg.builder.build_return(Some(&res))?;
         }
-        BinOp::LESS => build_type_error(
-            cg,
-            value1,
-            value2,
-            RuntimeErrorMsg::CompareLess,
-        )?,
+        BinOp::LESS => build_type_error(cg, value1, value2, RuntimeErrorMsg::CompareLess)?,
         BinOp::GREATER => {
-            build_type_error(
-                cg,
-                value1,
-                value2,
-                RuntimeErrorMsg::CompareGreater,
-            )?;
+            build_type_error(cg, value1, value2, RuntimeErrorMsg::CompareGreater)?;
         }
         BinOp::LESSEQ => {
-            build_type_error(
-                cg,
-                value1,
-                value2,
-                RuntimeErrorMsg::CompareLessEq,
-            )?;
+            build_type_error(cg, value1, value2, RuntimeErrorMsg::CompareLessEq)?;
         }
         BinOp::GREATEREQ => {
-            build_type_error(
-                cg,
-                value1,
-                value2,
-                RuntimeErrorMsg::CompareGreaterEq,
-            )?;
+            build_type_error(cg, value1, value2, RuntimeErrorMsg::CompareGreaterEq)?;
         }
         _ => {
             smolpp_panic_with_unreachable::<LocalizationInfo>(
@@ -559,27 +547,15 @@ fn build_switch_compare_generic_same_type<'ctx>(
             let result = compare_none_values(value1, value2, operation, cg)?;
             cg.builder.build_return(Some(&result))?;
         }
-        BinOp::LESS => build_type_error_none(
-            cg,
-            RuntimeErrorMsg::CompareLess,
-        )?,
+        BinOp::LESS => build_type_error_none(cg, RuntimeErrorMsg::CompareLess)?,
         BinOp::GREATER => {
-            build_type_error_none(
-                cg,
-                RuntimeErrorMsg::CompareGreater,
-            )?;
+            build_type_error_none(cg, RuntimeErrorMsg::CompareGreater)?;
         }
         BinOp::LESSEQ => {
-            build_type_error_none(
-                cg,
-                RuntimeErrorMsg::CompareLessEq,
-            )?;
+            build_type_error_none(cg, RuntimeErrorMsg::CompareLessEq)?;
         }
         BinOp::GREATEREQ => {
-            build_type_error_none(
-                cg,
-                RuntimeErrorMsg::CompareGreaterEq,
-            )?;
+            build_type_error_none(cg, RuntimeErrorMsg::CompareGreaterEq)?;
         }
         _ => {
             smolpp_panic_with_unreachable::<LocalizationInfo>(
@@ -682,17 +658,18 @@ fn build_type_error_none<'ctx>(
     cg: &CodeGen<'ctx>,
     error: RuntimeErrorMsg,
 ) -> Result<(), LLVMCodegenError> {
-    
-
     // Call the panic function with the two types
     smolpp_panic_with_unreachable::<LocalizationInfo>(
         cg,
         error,
-        &[get_internal_global_const!(cg, InternalGlobalConst::NoneType)
-                            .as_pointer_value()
-                            .into(), get_internal_global_const!(cg, InternalGlobalConst::NoneType)
-                            .as_pointer_value()
-                            .into()],
+        &[
+            get_internal_global_const!(cg, InternalGlobalConst::NoneType)
+                .as_pointer_value()
+                .into(),
+            get_internal_global_const!(cg, InternalGlobalConst::NoneType)
+                .as_pointer_value()
+                .into(),
+        ],
         None,
     )?;
 

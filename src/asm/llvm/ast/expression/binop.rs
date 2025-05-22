@@ -9,7 +9,8 @@ use crate::{
             },
             smolvar::SmolVar,
             LLVMCodegenError,
-        }, InternalGlobalConst,
+        },
+        InternalGlobalConst,
     },
     ast::nodes::{BinOp, Expression},
     typing::{Type, Typeable},
@@ -109,19 +110,37 @@ fn llvm_compute_add<'ctx>(
         (Type::String, Type::String) => return compute_add_string(val1, val2, cg),
         (Type::String, t) | (t, Type::String) => {
             assert!(t.is_compatible(Type::String));
-            assert_dyn_type(&val1, &val2, cg, InternalGlobalConst::CanOnlyConcatenate, Some(e1))?;
+            assert_dyn_type(
+                &val1,
+                &val2,
+                cg,
+                InternalGlobalConst::CanOnlyConcatenate,
+                Some(e1),
+            )?;
             return compute_add_string(val1, val2, cg);
         }
         (Type::List, Type::List) => return compute_add_list(val1, val2, cg),
         (Type::List, t) | (t, Type::List) => {
             assert!(t.is_compatible(Type::List));
-            assert_dyn_type(&val1, &val2, cg, InternalGlobalConst::CanOnlyConcatenate, Some(e1))?;
+            assert_dyn_type(
+                &val1,
+                &val2,
+                cg,
+                InternalGlobalConst::CanOnlyConcatenate,
+                Some(e1),
+            )?;
             return compute_add_list(val1, val2, cg);
         }
         (Type::Range, Type::Range) => return compute_add_range(val1, val2, cg),
         (Type::Range, t) | (t, Type::Range) => {
             assert!(t.is_compatible(Type::Range));
-            assert_dyn_type(&val1, &val2, cg, InternalGlobalConst::CanOnlyConcatenate, Some(e1))?;
+            assert_dyn_type(
+                &val1,
+                &val2,
+                cg,
+                InternalGlobalConst::CanOnlyConcatenate,
+                Some(e1),
+            )?;
             return compute_add_range(val1, val2, cg);
         }
         _ => return compute_add_generic(val1, val2, cg),

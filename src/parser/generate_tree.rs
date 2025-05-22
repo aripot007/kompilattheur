@@ -1,5 +1,4 @@
 use colored::Colorize;
-use libc::IW_AUTH_CIPHER_WEP104;
 
 use super::lexem::Lexem;
 use crate::analysis_table::AnalysisTable;

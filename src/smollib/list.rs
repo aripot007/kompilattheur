@@ -7,16 +7,14 @@ use inkwell::{
 use crate::{
     asm::{
         codegen::CodeGen,
-        llvm::{
-            assert_type::assert_type_oneof, panic::smolpp_panic_with_unreachable, smolvar::SmolVar,
-        },
+        llvm::{panic::smolpp_panic_with_unreachable, smolvar::SmolVar},
         LLVMCodegenError, RuntimeErrorMsg,
     },
     common::localizable::LocalizationInfo,
     typing::{Function, Type, Weak},
 };
 
-use super::SmollibFunction;
+use super::{get_smollib_func, SmollibFunction, SmollibFunctionNames};
 
 pub(super) struct SmolList {}
 
@@ -52,14 +50,6 @@ impl SmollibFunction for SmolList {
             .get_nth_param(0 as u32)
             .unwrap()
             .into_struct_value();
-
-        assert_type_oneof::<LocalizationInfo>(
-            &[Type::List, Type::String, Type::Range],
-            &var1,
-            cg,
-            None,
-            None,
-        )?;
 
         // Si type == Range => return Create the list with the range
 
@@ -118,10 +108,34 @@ impl SmollibFunction for SmolList {
 
         // Default case, print error message
         cg.builder.position_at_end(default_block);
+
+        let call_type_value = cg.builder.build_call(
+            get_smollib_func!(cg, SmollibFunctionNames::SmolType),
+            &[var1.into()],
+            "type_call",
+        )?;
+
+        // La fonction Type retourne directement un pointeur
+        let smol_var = call_type_value
+            .try_as_basic_value()
+            .left()
+            .unwrap()
+            .into_struct_value();
+
+        let smol_var_value = cg.get_variable_value(smol_var)?.into_int_value();
+
+        let ptr_type = cg.context.ptr_type(AddressSpace::default());
+
+        let smol_var_ptr = cg
+            .builder
+            .build_int_to_ptr(smol_var_value, ptr_type, "smol_var_ptr")?;
+
+        let actual_type_ptr = cg.build_get_string_array_ptr_from_ptr(smol_var_ptr)?;
+
         smolpp_panic_with_unreachable::<LocalizationInfo>(
             cg,
             RuntimeErrorMsg::InvalidTypeListFunction,
-            &[t1.into()],
+            &[actual_type_ptr.into()],
             None,
         )?;
 

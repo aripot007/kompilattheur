@@ -1,7 +1,7 @@
 use colored::Colorize;
 use inkwell::targets::TargetMachine;
-use inkwell::AddressSpace;
-use std::ffi::CStr;
+use inkwell::AddressSpace; // Don't remove behind a feature
+use std::ffi::CStr; // Don't remove behind a feature
 
 use super::codegen::CodeGen;
 

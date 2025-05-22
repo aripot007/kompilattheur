@@ -1,5 +1,7 @@
 use colored::Colorize;
+use inkwell::targets::TargetMachine;
 use inkwell::AddressSpace;
+use std::ffi::CStr;
 
 use super::codegen::CodeGen;
 
@@ -114,7 +116,15 @@ impl Into<&'static str> for InternalGlobalConst {
     fn into(self) -> &'static str {
         match self {
             #[cfg(feature = "smollib-input")]
-            InternalGlobalConst::StdinFile => "stdin",
+            InternalGlobalConst::StdinFile => {
+                let target_triple = TargetMachine::get_default_triple();
+                let target_str = target_triple.as_str().to_str().unwrap_or("");
+                if target_str.contains("apple") {
+                    "__stdinp"
+                } else {
+                    "stdin"
+                }
+            }
             InternalGlobalConst::NoneString => internal_global_prefix!("none_string"),
             InternalGlobalConst::TrueString => internal_global_prefix!("true_string"),
             InternalGlobalConst::FalseString => internal_global_prefix!("false_string"),

@@ -6,7 +6,7 @@ use crate::{
         InternalFuctions,
     },
     ast::nodes::{Expression, UnOp},
-    common::localizable::Localizable,
+    common::{diagnostic::Diagnostic, localizable::Localizable},
     typing::Type,
 };
 
@@ -24,6 +24,10 @@ pub fn llvm_compute_unop<'ctx>(
         (UnOp::NOT, _) => llvm_compute_not(val, cg),
         (UnOp::NEG, Some(Type::Int)) => llvm_compute_neg_unchecked(val, cg),
         (UnOp::NEG, _) => llvm_compute_neg(val, cg, Some(expr)),
+        _ => {
+            cg.errors.push(Diagnostic::unimplemented_llvm(expr));
+            return Err(LLVMCodegenError::Unimplemented(format!("")));
+        }
     }
 }
 

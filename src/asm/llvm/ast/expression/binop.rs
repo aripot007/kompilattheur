@@ -47,7 +47,7 @@ pub fn llvm_compute_binop<'ctx>(
             return llvm_compute_arithmetic(e1, op, e2, cg)
         }
 
-        BinOp::FLOATDIV => {
+        BinOp::FLOATDIV | BinOp::FLOATADD | BinOp::FLOATSUB | BinOp::FLOATMULT => {
             cg.errors.push(Diagnostic::unimplemented_llvm(_root));
             return Err(LLVMCodegenError::Unimplemented(format!(
                 "Unimplemented LLVM"

@@ -29,14 +29,14 @@ impl Type {
     /// Get a bitmask representing this type
     pub fn get_bitmask(&self) -> u8 {
         match self {
-            Type::None =>   0b00000001,
-            Type::Bool =>   0b00000010,
-            Type::Int =>    0b00000100,
-            Type::Float =>  0b00001000,
+            Type::None => 0b00000001,
+            Type::Bool => 0b00000010,
+            Type::Int => 0b00000100,
+            Type::Float => 0b00001000,
             Type::String => 0b00010000,
-            Type::List =>   0b00100000,
-            Type::Range =>  0b01000000,
-            Type::Any =>    0b01111111,
+            Type::List => 0b00100000,
+            Type::Range => 0b01000000,
+            Type::Any => 0b01111111,
             Type::Weak(w) => w
                 .get_possible()
                 .iter()

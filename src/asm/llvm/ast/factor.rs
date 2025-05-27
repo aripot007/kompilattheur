@@ -68,7 +68,6 @@ fn llvm_compute_float_value<'ctx>(
     return cg.create_variable(Type::Int, int_const);
 }
 
-
 fn llvm_compute_bool_value<'ctx>(
     value: bool,
     cg: &mut CodeGen<'ctx>,

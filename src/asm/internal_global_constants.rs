@@ -1,10 +1,7 @@
 use colored::Colorize;
-#[cfg(feature = "smollib-input")]
-use {
-    inkwell::targets::TargetMachine,
-    std::ffi::CStr
-};
 use inkwell::AddressSpace;
+#[cfg(feature = "smollib-input")]
+use {inkwell::targets::TargetMachine, std::ffi::CStr};
 
 use super::codegen::CodeGen;
 

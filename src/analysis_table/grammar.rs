@@ -128,8 +128,11 @@ impl Grammar {
             "-" => terminal!("-", Token::Sub),
             "*" => terminal!("*", Token::Mult),
             "//" => terminal!("//", Token::Div),
-            "/" => terminal!("/", Token::FloatDiv),
             "%" => terminal!("%", Token::Mod),
+            "./" => terminal!("./", Token::FloatDiv),
+            ".+" => terminal!(".+", Token::FloatAdd),
+            ".-" => terminal!(".-", Token::FloatSub),
+            ".*" => terminal!(".*", Token::FloatMult),
             "=" => terminal!("=", Token::Assign),
 
             // Boolean

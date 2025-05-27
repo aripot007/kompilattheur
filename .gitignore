@@ -4,6 +4,7 @@ generated_table.rs
 p.html
 p.ll
 p.mmd
+p.lex
 p.s
 p.o
 symbol_table.mmd

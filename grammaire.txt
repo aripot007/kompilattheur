@@ -68,15 +68,19 @@
                   | ;
 "<expr_add>"      : "<expr_mult>""<expr_add2>";
 "<expr_add2>"     : "+" "<expr_mult>""<expr_add2>"
+                  | ".+" "<expr_mult>""<expr_add2>"
                   | "-" "<expr_mult>""<expr_add2>"
+                  | ".-" "<expr_mult>""<expr_add2>"
                   | ;
 "<expr_mult>"     : "<expr_neg>""<expr_mult2>";
 "<expr_mult2>"    : "*" "<expr_neg>""<expr_mult2>"
+                  | ".*" "<expr_neg>""<expr_mult2>"
                   | "//" "<expr_neg>""<expr_mult2>"
-                  | "/" "<expr_neg>""<expr_mult2>"
+                  | "./" "<expr_neg>""<expr_mult2>"
                   | "%" "<expr_neg>""<expr_mult2>"
                   | ;
 "<expr_neg>"      : "-" "<expr_access>"
+                  | ".-" "<expr_access>"
                   | "<expr_access>";
 
 "<expr_access>"   : "<factor>" "<expr_access2>";
@@ -104,18 +108,23 @@
 "<expr_add_no_access>"      : "<expr_mult_no_access>""<expr_add2_no_access>";
 "<expr_add_no_ident_no_access>" : "<expr_mult_no_ident_no_access>""<expr_add2_no_access>";
 "<expr_add2_no_access>"     : "+" "<expr_mult_no_access>""<expr_add2_no_access>"
+                  | ".+" "<expr_mult_no_access>""<expr_add2_no_access>"
                   | "-" "<expr_mult_no_access>""<expr_add2_no_access>"
+                  | ".-" "<expr_mult_no_access>""<expr_add2_no_access>"
                   | ;
 "<expr_mult_no_access>"     : "<expr_neg_no_access>""<expr_mult2_no_access>";
 "<expr_mult_no_ident_no_access>" : "<expr_neg_no_ident_no_access>""<expr_mult2_no_access>";
 "<expr_mult2_no_access>"    : "*" "<expr_neg_no_access>""<expr_mult2_no_access>"
+                  | ".*" "<expr_neg_no_access>""<expr_mult2_no_access>"
                   | "//" "<expr_neg_no_access>""<expr_mult2_no_access>"
-                  | "/" "<expr_neg_no_access>""<expr_mult2_no_access>"
+                  | "./" "<expr_neg_no_access>""<expr_mult2_no_access>"
                   | "%" "<expr_neg_no_access>""<expr_mult2_no_access>"
                   | ;
 "<expr_neg_no_access>"      : "-" "<factor>"
+                  | ".-" "<factor>"
                   | "<factor>";
 "<expr_neg_no_ident_no_access>"      : "-" "<factor>"
+                  | ".-" "<factor>"
                   | "<factor_no_ident>";
 
 "<expr_access2>"  : "[" "<expr>" "]" "<expr_access2>"

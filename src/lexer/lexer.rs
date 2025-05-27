@@ -13,8 +13,11 @@ pub fn get_operator_token(op: &str) -> Option<Token> {
         "-" => Some(Token::Sub),
         "*" => Some(Token::Mult),
         "//" => Some(Token::Div),
-        "/" => Some(Token::FloatDiv),
         "%" => Some(Token::Mod),
+        "./" => Some(Token::FloatDiv),
+        ".+" => Some(Token::FloatAdd),
+        ".-" => Some(Token::FloatSub),
+        ".*" => Some(Token::FloatMult),
         "=" => Some(Token::Assign),
 
         // Boolean
@@ -245,6 +248,10 @@ impl Lexer {
         match self.peek {
             Some('0') => {
                 self.read_next_char();
+                if let Some('.') = self.peek {
+                    self.read_next_char();
+                    return self.parse_float(number);
+                }
                 return Ok(self.construct_file_elem(Token::integer(0)));
             }
             Some(c) if c.is_digit(10) => {}
@@ -608,6 +615,33 @@ impl Iterator for Lexer {
                     return operator_file_elem!(format!("{}=", c).as_str());
                 }
                 _ => return operator_file_elem!(c.to_string().as_str()),
+            },
+
+            // .+, .-, .*, ./
+            Some('.') => match self.read_next_char() {
+                Some(c) => match get_operator_token(&format!(".{}", c)) {
+                    Some(token) => {
+                        self.read_next_char();
+                        return Some(self.construct_file_elem(token));
+                    }
+                    None => {
+                        return self.skip_with_error(
+                            String::from("InvalidToken"),
+                            format!(
+                                "Unrecognized token '{}'",
+                                format!(".{}", c).truecolor(255, 0, 0)
+                            ),
+                            self.char_num - 1,
+                        )
+                    }
+                },
+                None => {
+                    return self.skip_with_error(
+                        String::from("InvalidToken"),
+                        format!("Unrecognized token '{}'", ".".truecolor(255, 0, 0)),
+                        self.char_num - 1,
+                    )
+                }
             },
 
             // Tokens à 1 caractère

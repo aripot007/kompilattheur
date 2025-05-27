@@ -25,6 +25,7 @@ impl Weak {
             Type::None,
             Type::Bool,
             Type::Int,
+            Type::Float,
             Type::String,
             Type::List,
             Type::Range,

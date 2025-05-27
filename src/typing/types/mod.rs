@@ -15,6 +15,7 @@ pub enum Type {
     None,
     Bool,
     Int,
+    Float,
     String,
     List,
     Range,
@@ -28,19 +29,20 @@ impl Type {
     /// Get a bitmask representing this type
     pub fn get_bitmask(&self) -> u8 {
         match self {
-            Type::None => 0b00000001,
-            Type::Bool => 0b00000010,
-            Type::Int => 0b00000100,
-            Type::String => 0b00001000,
-            Type::List => 0b00010000,
-            Type::Range => 0b00100000,
-            Type::Any => 0b00111111,
+            Type::None =>   0b00000001,
+            Type::Bool =>   0b00000010,
+            Type::Int =>    0b00000100,
+            Type::Float =>  0b00001000,
+            Type::String => 0b00010000,
+            Type::List =>   0b00100000,
+            Type::Range =>  0b01000000,
+            Type::Any =>    0b01111111,
             Type::Weak(w) => w
                 .get_possible()
                 .iter()
                 .map(Type::get_bitmask)
                 .reduce(u8::bitor)
-                .unwrap(), // TODO(Aristide): remove because should be infered
+                .unwrap(),
             Type::NTuple(_) | Type::Function(_) => {
                 panic!("Cannot get discriminant for type {}", self)
             }
@@ -54,6 +56,7 @@ impl Display for Type {
             Type::None => write!(f, "none"),
             Type::Bool => write!(f, "bool"),
             Type::Int => write!(f, "int"),
+            Type::Float => write!(f, "float"),
             Type::String => write!(f, "string"),
             Type::List => write!(f, "list"),
             Type::Range => write!(f, "range"),
@@ -71,6 +74,7 @@ impl Type {
             Type::None => 0,
             Type::Bool => WORD_SIZE + 1,
             Type::Int => WORD_SIZE + 1,
+            Type::Float => WORD_SIZE + 1,
             Type::String => WORD_SIZE + 1,
             Type::List => WORD_SIZE + 1,
             Type::Range => WORD_SIZE + 1,

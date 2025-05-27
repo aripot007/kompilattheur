@@ -15,6 +15,7 @@ impl Typeable for Factor {
 
         let res = match &mut self.kind {
             FactorKind::Integer(_) => Ok(Type::Int),
+            FactorKind::Float(_) => Ok(Type::Float),
             FactorKind::String(_) => Ok(Type::String),
             FactorKind::True(_) | FactorKind::False(_) => Ok(Type::Bool),
             FactorKind::None(_) => Ok(Type::None),

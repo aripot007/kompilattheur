@@ -1,7 +1,10 @@
 use colored::Colorize;
-use inkwell::targets::TargetMachine;
-use inkwell::AddressSpace; // Don't remove behind a feature
-use std::ffi::CStr; // Don't remove behind a feature
+#[cfg(feature = "smollib-input")]
+use {
+    inkwell::targets::TargetMachine,
+    std::ffi::CStr
+};
+use inkwell::AddressSpace;
 
 use super::codegen::CodeGen;
 

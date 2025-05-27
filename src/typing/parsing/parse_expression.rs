@@ -105,7 +105,7 @@ fn try_parse_binop(
         BinOp::LESS | BinOp::LESSEQ | BinOp::GREATER | BinOp::GREATEREQ => {
             try_parse_comparison(root_localization, t1, op, t2, context)
         }
-        BinOp::MULT | BinOp::DIV | BinOp::MOD | BinOp::SUB => {
+        BinOp::MULT | BinOp::DIV | BinOp::FLOATDIV | BinOp::MOD | BinOp::SUB => {
             match (&t1, &t2) {
                 (Type::Weak(w1), Type::Weak(w2)) => {
                     w1.intersection(&w2);

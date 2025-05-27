@@ -23,6 +23,9 @@ pub fn llvm_compute_factor<'ctx>(
         FactorKind::Integer(file_element) => {
             return llvm_compute_int_value(file_element.element, cg)
         }
+        FactorKind::Float(file_element) => {
+            return llvm_compute_float_value(file_element.element, cg)
+        }
         FactorKind::True(_) => return llvm_compute_bool_value(true, cg),
         FactorKind::False(_) => return llvm_compute_bool_value(false, cg),
         FactorKind::None(_) => return llvm_compute_none_value(cg),
@@ -55,6 +58,16 @@ fn llvm_compute_int_value<'ctx>(
 
     return cg.create_variable(Type::Int, int_const);
 }
+
+fn llvm_compute_float_value<'ctx>(
+    value: f64,
+    cg: &mut CodeGen<'ctx>,
+) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
+    let int_const = cg.context.f64_type().const_float(value);
+
+    return cg.create_variable(Type::Int, int_const);
+}
+
 
 fn llvm_compute_bool_value<'ctx>(
     value: bool,

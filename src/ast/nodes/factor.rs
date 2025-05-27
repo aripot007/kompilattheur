@@ -1,7 +1,7 @@
 use crate::analysis_table::NonTerminal;
 use crate::ast::nodes::parse_list_filter;
 use crate::common::localizable::Localizable;
-use crate::common::types::IdToken;
+use crate::common::types::{FloatToken, IdToken};
 use crate::typing::Type;
 use crate::{
     common::types::{file_element::file_element_from, FileElement, Node, NumToken, Token, Tree},
@@ -17,6 +17,7 @@ pub struct Factor {
 
 pub enum FactorKind {
     Integer(FileElement<u64>),
+    Float(FileElement<f64>),
     String(FileElement<String>),
     True(FileElement<Token>),
     False(FileElement<Token>),
@@ -35,6 +36,7 @@ impl AstNode for Factor {
     fn get_string_repr(&self) -> String {
         String::from(match &self.kind {
             FactorKind::Integer(_) => "Factor::Integer",
+            FactorKind::Float(_) => "Factor::Float",
             FactorKind::String(_) => "Factor::String",
             FactorKind::True(_) => "Factor::True",
             FactorKind::False(_) => "Factor::False",
@@ -94,6 +96,9 @@ impl From<Tree<FileElement<Lexem>>> for Factor {
             match val.element {
                 Lexem::Terminal(Token::Integer(NumToken { value })) => {
                     return FactorKind::Integer(file_element_from!(val, value)).into()
+                }
+                Lexem::Terminal(Token::Float(FloatToken { value })) => {
+                    return FactorKind::Float(file_element_from!(val, value)).into()
                 }
                 Lexem::Terminal(Token::String(string)) => {
                     return FactorKind::String(file_element_from!(val, string)).into()
@@ -195,6 +200,7 @@ impl Into<Tree<String>> for &Factor {
     fn into(self) -> Tree<String> {
         let mut s = match &self.kind {
             FactorKind::Integer(file_element) => format!("{}", file_element.element),
+            FactorKind::Float(file_element) => format!("{}", file_element.element),
             FactorKind::String(file_element) => {
                 format!("String : \"{}\"", file_element.element.escape_debug())
             }
@@ -263,6 +269,7 @@ impl Localizable for &Factor {
     fn get_len(&self) -> usize {
         match &self.kind {
             FactorKind::Integer(fe) => fe.get_len(),
+            FactorKind::Float(fe) => fe.get_len(),
             FactorKind::String(fe) => fe.get_len(),
             FactorKind::True(fe) | FactorKind::False(fe) | FactorKind::None(fe) => fe.get_len(),
             FactorKind::Identifier(fe) => fe.get_len(),
@@ -279,6 +286,7 @@ impl Localizable for &Factor {
     fn get_start_line(&self) -> usize {
         match &self.kind {
             FactorKind::Integer(fe) => fe.get_start_line(),
+            FactorKind::Float(fe) => fe.get_start_line(),
             FactorKind::String(fe) => fe.get_start_line(),
             FactorKind::True(fe) | FactorKind::False(fe) | FactorKind::None(fe) => {
                 fe.get_start_line()
@@ -300,6 +308,7 @@ impl Localizable for &Factor {
     fn get_end_line(&self) -> usize {
         match &self.kind {
             FactorKind::Integer(fe) => fe.get_end_line(),
+            FactorKind::Float(fe) => fe.get_end_line(),
             FactorKind::String(fe) => fe.get_end_line(),
             FactorKind::True(fe) | FactorKind::False(fe) | FactorKind::None(fe) => {
                 fe.get_end_line()
@@ -321,6 +330,7 @@ impl Localizable for &Factor {
     fn get_start_char(&self) -> usize {
         match &self.kind {
             FactorKind::Integer(fe) => fe.get_start_char(),
+            FactorKind::Float(fe) => fe.get_start_char(),
             FactorKind::String(fe) => fe.get_start_char(),
             FactorKind::True(fe) | FactorKind::False(fe) | FactorKind::None(fe) => {
                 fe.get_start_char()
@@ -342,6 +352,7 @@ impl Localizable for &Factor {
     fn get_end_char(&self) -> usize {
         match &self.kind {
             FactorKind::Integer(fe) => fe.get_end_char(),
+            FactorKind::Float(fe) => fe.get_end_char(),
             FactorKind::String(fe) => fe.get_end_char(),
             FactorKind::True(fe) | FactorKind::False(fe) | FactorKind::None(fe) => {
                 fe.get_end_char()

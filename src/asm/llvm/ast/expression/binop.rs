@@ -11,9 +11,7 @@ use crate::{
             LLVMCodegenError,
         },
         InternalGlobalConst,
-    },
-    ast::nodes::{BinOp, Expression},
-    typing::{Type, Typeable},
+    }, ast::nodes::{BinOp, Expression}, common::diagnostic::Diagnostic, typing::{Type, Typeable}
 };
 
 use super::{
@@ -44,6 +42,11 @@ pub fn llvm_compute_binop<'ctx>(
 
         BinOp::MULT | BinOp::DIV | BinOp::MOD | BinOp::SUB => {
             return llvm_compute_arithmetic(e1, op, e2, cg)
+        }
+
+        BinOp::FLOATDIV => {
+            cg.errors.push(Diagnostic::unimplemented_llvm(_root));
+            return Err(LLVMCodegenError::Unimplemented(format!("Unimplemented LLVM")));
         }
 
         BinOp::ADD => return llvm_compute_add(e1, e2, cg),

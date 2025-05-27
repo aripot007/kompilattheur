@@ -22,6 +22,7 @@ impl Typeable for Expression {
             ExpressionKind::UNOP(un_op, ref mut expr) => {
                 match (&un_op, expr.as_mut().parse_type(context)) {
                     (UnOp::NEG, Ok(Type::Int)) => Ok(Type::Int),
+                    (UnOp::FLOATNEG, Ok(Type::Float)) => Ok(Type::Float),
                     (UnOp::NOT, Ok(_)) => Ok(Type::Bool),
                     (UnOp::NEG, Ok(Type::Weak(weak))) => {
                         let possible = weak.get_possible();
@@ -31,6 +32,20 @@ impl Typeable for Expression {
                                 context.errors.push(Diagnostic::invalid_unop_weak_type(
                                     expr.as_ref(),
                                     UnOp::NEG,
+                                    &possible,
+                                ));
+                                Err(())
+                            }
+                        }
+                    }
+                    (UnOp::FLOATNEG, Ok(Type::Weak(weak))) => {
+                        let possible = weak.get_possible();
+                        match weak.restrict(&[Type::Float]) {
+                            Ok(t) => Ok(t),
+                            Err(_) => {
+                                context.errors.push(Diagnostic::invalid_unop_weak_type(
+                                    expr.as_ref(),
+                                    UnOp::FLOATNEG,
                                     &possible,
                                 ));
                                 Err(())
@@ -139,6 +154,40 @@ fn try_parse_binop(
             ));
             return Err(());
         }
+        BinOp::FLOATMULT | BinOp::FLOATDIV | BinOp::FLOATSUB | BinOp::FLOATADD => {
+            match (&t1, &t2) {
+                (Type::Weak(w1), Type::Weak(w2)) => {
+                    w1.intersection(&w2);
+                    match w1.restrict(&[Type::Float]) {
+                        Ok(_) => return Ok(Type::Float),
+                        Err(_) => (),
+                    }
+                }
+                (t, Type::Weak(weak)) | (Type::Weak(weak), t) if t.is_compatible(Type::Float) => {
+                    match weak.restrict(&[Type::Float]) {
+                        Ok(_) => return Ok(Type::Float),
+                        Err(_) => (),
+                    }
+                }
+                (t1, t2) if t1.is_compatible(Type::Float) && t2.is_compatible(Type::Float) => {
+                    return Ok(Type::Float)
+                }
+                _ => (),
+            }
+
+            context.errors.push(Diagnostic::from_localizable(
+                root_localization,
+                DiagnosticGravity::Error,
+                String::from("TypeError"),
+                format!(
+                    "Incompatible types {} and {} for operand {}",
+                    format!("{}", t1).color(Color::Yellow),
+                    format!("{}", t2).color(Color::Yellow),
+                    format!("{}", op).color(Color::Magenta)
+                ),
+            ));
+            return Err(());
+        }
         BinOp::ADD => return try_parse_add(root_localization, t1, t2, context),
         BinOp::ACCESS => {
             if t2.is_compatible(Type::Int) {
@@ -160,7 +209,6 @@ fn try_parse_binop(
             ));
             Err(())
         }
-        _ => todo!(),
     }
 }
 

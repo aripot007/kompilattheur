@@ -109,7 +109,7 @@ pub struct CompileArgs {
     pub target: TargetLanguage,
 
     /// Niveau d'optimisation à utiliser lors de la compilation
-    #[arg(long, short = 'O', num_args = 0..=1, value_enum, default_value_t=OptimizationLevel::Default)]
+    #[arg(long, short = 'O', num_args = 0..=1, value_enum, default_value_t=OptimizationLevel::None)]
     pub optimization: OptimizationLevel,
 
     /// Lance le programme compilé (ou ouvre le fichier résultant en fonction de l'étape de compilation)

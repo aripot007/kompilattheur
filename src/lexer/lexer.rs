@@ -287,7 +287,79 @@ impl Lexer {
             //return Err(diag);
         }
 
+        // Parse floats
+        if let Some('.') = self.peek {
+            self.read_next_char();
+            return self.parse_float(number);
+        }
+
         return Ok(self.construct_file_elem(Token::integer(number)));
+    }
+
+    // Parse la partie fractionnaire d'un float à partir du caractère courant
+    fn parse_float(&mut self, int_part: u64) -> Result<FileElement<Token>, Diagnostic> {
+        let mut number: f64 = int_part as f64;
+
+        let starting_char = self.char_num;
+
+        match self.peek {
+            Some(c) if c.is_digit(10) => {}
+
+            // Ici on doit panic car la fonction parse_integer a été appelée par erreur du développeur et non
+            // a cause d'une erreur lexicale
+            _ => panic!("trying to use parse_integer while not on a digit"),
+        }
+
+        let mut pow = 10;
+
+        while self.peek.is_some_and(|c| c.is_digit(10)) {
+            let v: f64 = self.peek.unwrap().to_digit(10).unwrap().into();
+
+            // Calcule la valeur de l'entier en vérifiant qu'elle peut
+            // être contenue dans un entier machine
+            // n = 10 * n + v
+            let v = v / pow as f64;
+            let n = number + v;
+
+            number = n;
+            pow *= 10;
+            self.read_next_char();
+        }
+
+        if f64::is_nan(number) {
+            let diag = Diagnostic::new(
+                DiagnosticGravity::Warning,
+                "FloatOverflow :".to_string(),
+                self.line_num,
+                self.line_num,
+                starting_char,
+                self.char_num - 1,
+                "Float cannot be represented on a 64 bit float, it will be represented as NaN"
+                    .to_string(),
+            );
+            diag.display();
+            self.diagnostics.push(diag);
+            self.nb_warnings += 1;
+        } else if f64::is_infinite(number) {
+            let diag = Diagnostic::new(
+                DiagnosticGravity::Warning,
+                "FloatOverflow :".to_string(),
+                self.line_num,
+                self.line_num,
+                starting_char,
+                self.char_num - 1,
+                format!(
+                    "Value cannot be represented as a finite float, it will be represented as {}",
+                    number
+                ),
+            );
+            diag.display();
+            self.diagnostics.push(diag);
+            self.nb_warnings += 1;
+            number = 0.;
+        }
+
+        return Ok(self.construct_file_elem(Token::float(number)));
     }
 
     // Parse un identifier à partir du caractère courant

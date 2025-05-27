@@ -1,5 +1,6 @@
 use crate::analysis_table::NonTerminal;
 use crate::ast::nodes::parse_list_filter;
+use crate::common::format_float;
 use crate::common::localizable::Localizable;
 use crate::common::types::{FloatToken, IdToken};
 use crate::typing::Type;
@@ -200,7 +201,7 @@ impl Into<Tree<String>> for &Factor {
     fn into(self) -> Tree<String> {
         let mut s = match &self.kind {
             FactorKind::Integer(file_element) => format!("{}", file_element.element),
-            FactorKind::Float(file_element) => format!("{}", file_element.element),
+            FactorKind::Float(file_element) => format_float(file_element.element),
             FactorKind::String(file_element) => {
                 format!("String : \"{}\"", file_element.element.escape_debug())
             }

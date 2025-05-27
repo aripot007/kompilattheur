@@ -1,5 +1,7 @@
 use std::{fmt::Display, hash::Hash};
 
+use crate::common::format_float;
+
 #[derive(Clone, Hash, Debug, PartialEq, Eq)]
 pub struct NumToken {
     pub value: u64,
@@ -84,6 +86,7 @@ impl Display for Token {
             Token::Identifier(_) => write!(f, "<Identifier, {}>", self.repr()),
             Token::String(_) => write!(f, "<String, \"{}\">", self.repr()),
             Token::Integer(_) => write!(f, "<Int, {}>", self.repr()),
+            Token::Float(_) => write!(f, "<Float, {}>", self.repr()),
             _ => write!(f, "{}", self.repr()),
         }
     }
@@ -127,7 +130,7 @@ impl Token {
     pub fn repr(&self) -> String {
         match self {
             Token::Integer(num_token) => num_token.value.to_string(),
-            Token::Float(float_token) => float_token.value.to_string(),
+            Token::Float(float_token) => format_float(float_token.value),
             Token::Identifier(id_token) => id_token.name.clone(),
             Token::String(string) => format!("{}", string.escape_debug()),
             Token::Add => String::from("+"),

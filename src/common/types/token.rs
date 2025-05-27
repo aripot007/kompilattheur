@@ -1,16 +1,20 @@
-use std::fmt::Display;
+use std::{fmt::Display, hash::Hash};
 
-#[derive(Clone, Hash, Debug)]
+#[derive(Clone, Hash, Debug, PartialEq, Eq)]
 pub struct NumToken {
     pub value: u64,
 }
 
-impl PartialEq for NumToken {
-    fn eq(&self, other: &Self) -> bool {
-        return self.value == other.value;
+#[derive(Clone, Debug, PartialEq)]
+pub struct FloatToken {
+    pub value: f64,
+}
+
+impl Hash for FloatToken {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        format!("{}", self.value).hash(state);
     }
 }
-impl Eq for NumToken {}
 
 #[derive(Clone, Hash, Debug)]
 pub struct IdToken {
@@ -28,12 +32,14 @@ impl Eq for IdToken {}
 #[derive(Clone, Hash, Debug)]
 pub enum Token {
     Integer(NumToken),
+    Float(FloatToken),
     Identifier(IdToken),
     String(String),
     Add,
     Sub,
     Mult,
     Div,
+    FloatDiv,
     Mod,
     Equal,
     Assign,
@@ -101,6 +107,10 @@ impl Token {
         Token::Integer(NumToken { value })
     }
 
+    pub fn float(value: f64) -> Token {
+        Token::Float(FloatToken { value })
+    }
+
     /// Renvoie la représentation de ce token dans le code source
     /// Pour les tokens simples, les strings, les entiers et les mots clés réservés, renvoie le texte correspondant dans le code source.
     /// Pour les identifier, renvoie l'id de l'identifier
@@ -114,12 +124,14 @@ impl Token {
     pub fn repr(&self) -> String {
         match self {
             Token::Integer(num_token) => num_token.value.to_string(),
+            Token::Float(float_token) => float_token.value.to_string(),
             Token::Identifier(id_token) => id_token.name.clone(),
             Token::String(string) => format!("{}", string.escape_debug()),
             Token::Add => String::from("+"),
             Token::Sub => String::from("-"),
             Token::Mult => String::from("*"),
             Token::Div => String::from("//"),
+            Token::FloatDiv => String::from("/"),
             Token::Mod => String::from("%"),
             Token::Equal => String::from("=="),
             Token::Assign => String::from("="),

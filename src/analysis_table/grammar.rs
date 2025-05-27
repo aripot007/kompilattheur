@@ -128,6 +128,7 @@ impl Grammar {
             "-" => terminal!("-", Token::Sub),
             "*" => terminal!("*", Token::Mult),
             "//" => terminal!("//", Token::Div),
+            "/" => terminal!("/", Token::FloatDiv),
             "%" => terminal!("%", Token::Mod),
             "=" => terminal!("=", Token::Assign),
 
@@ -148,6 +149,7 @@ impl Grammar {
             "]" => terminal!("]", Token::CloseBracket),
 
             "<integer>" => terminal!("<integer>", Token::integer(0)),
+            "<float>" => terminal!("<float>", Token::float(0.)),
             "<string>" => terminal!("<string>", Token::String(String::new())),
             "<ident>" => terminal!(
                 "<ident>",

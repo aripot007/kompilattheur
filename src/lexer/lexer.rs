@@ -13,6 +13,7 @@ pub fn get_operator_token(op: &str) -> Option<Token> {
         "-" => Some(Token::Sub),
         "*" => Some(Token::Mult),
         "//" => Some(Token::Div),
+        "/" => Some(Token::FloatDiv),
         "%" => Some(Token::Mod),
         "=" => Some(Token::Assign),
 
@@ -525,17 +526,7 @@ impl Iterator for Lexer {
                     self.read_next_char();
                     return operator_file_elem!("//");
                 }
-                other => {
-                    return self.skip_with_error(
-                        String::from("InvalidToken"),
-                        format!(
-                            "Unrecognized token '{}', did you mean {} ?",
-                            format!("/{}", other.unwrap_or(' ')).truecolor(255, 0, 0),
-                            "//".truecolor(0, 255, 0)
-                        ),
-                        self.char_num - 1,
-                    )
-                }
+                _ => return operator_file_elem!("/"),
             },
 
             // <, >, =, <=, >=, ==

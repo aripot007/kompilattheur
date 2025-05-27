@@ -3,6 +3,7 @@
 #<ident> ::= (<alpha>|_)(<alpha>|_|<digit>)*
 #
 #<integer> ::= 0|1-9 <digit>*
+#<float> ::= (0|[1-9]\d*)(\.\d+)?
 #
 #Mots clés : 
 #
@@ -72,6 +73,7 @@
 "<expr_mult>"     : "<expr_neg>""<expr_mult2>";
 "<expr_mult2>"    : "*" "<expr_neg>""<expr_mult2>"
                   | "//" "<expr_neg>""<expr_mult2>"
+                  | "/" "<expr_neg>""<expr_mult2>"
                   | "%" "<expr_neg>""<expr_mult2>"
                   | ;
 "<expr_neg>"      : "-" "<expr_access>"
@@ -108,6 +110,7 @@
 "<expr_mult_no_ident_no_access>" : "<expr_neg_no_ident_no_access>""<expr_mult2_no_access>";
 "<expr_mult2_no_access>"    : "*" "<expr_neg_no_access>""<expr_mult2_no_access>"
                   | "//" "<expr_neg_no_access>""<expr_mult2_no_access>"
+                  | "/" "<expr_neg_no_access>""<expr_mult2_no_access>"
                   | "%" "<expr_neg_no_access>""<expr_mult2_no_access>"
                   | ;
 "<expr_neg_no_access>"      : "-" "<factor>"
@@ -133,7 +136,7 @@
 "<factor_ident>"  : "(""<expr_list>"")"
                   | ;
 
-"<const>"         : "<integer>" | "<string>" | "True" | "False" | "None";
+"<const>"         : "<integer>" | "<float>" | "<string>" | "True" | "False" | "None";
 
 # Liste d'expressions séparées par des virgules
 "<expr_list>"         : "<expr>""<expr_list_suite>"

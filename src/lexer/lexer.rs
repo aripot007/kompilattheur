@@ -317,7 +317,7 @@ impl Lexer {
             _ => panic!("trying to use parse_integer while not on a digit"),
         }
 
-        let mut pow = 10;
+        let mut pow = 10.0;
 
         while self.peek.is_some_and(|c| c.is_digit(10)) {
             let v: f64 = self.peek.unwrap().to_digit(10).unwrap().into();
@@ -325,11 +325,11 @@ impl Lexer {
             // Calcule la valeur de l'entier en vérifiant qu'elle peut
             // être contenue dans un entier machine
             // n = 10 * n + v
-            let v = v / pow as f64;
+            let v = v / pow;
             let n = number + v;
 
             number = n;
-            pow *= 10;
+            pow *= 10.0;
             self.read_next_char();
         }
 

@@ -63,7 +63,11 @@ fn llvm_compute_float_value<'ctx>(
     value: f64,
     cg: &mut CodeGen<'ctx>,
 ) -> Result<SmolVar<'ctx>, LLVMCodegenError> {
-    let int_const = cg.context.f64_type().const_float(value);
+    let float_const = cg.context.f64_type().const_float(value);
+
+    let int_const =
+        cg.builder
+            .build_bit_cast(float_const, cg.smolpp_types.dynamic_type_val, "float_const")?;
 
     return cg.create_variable(Type::Int, int_const);
 }

@@ -36,6 +36,7 @@ pub enum InternalGlobalConst {
     //
     /// Format string for converting int to string (eg. for concatenation)
     IntFormatString,
+    FloatFormatString,
     RangeFormatString,
 
     // \n string
@@ -138,6 +139,7 @@ impl Into<&'static str> for InternalGlobalConst {
                 internal_global_prefix!("list_separator_string")
             }
             InternalGlobalConst::IntFormatString => internal_global_prefix!("int_fmt_string"),
+            InternalGlobalConst::FloatFormatString => internal_global_prefix!("float_fmt_string"),
             InternalGlobalConst::RangeFormatString => internal_global_prefix!("range_fmt_string"),
             InternalGlobalConst::LineReturn => internal_global_prefix!("line_return"),
             InternalGlobalConst::IntType => internal_global_prefix!("int_type"),
@@ -208,6 +210,7 @@ impl InternalGlobalConst {
             InternalGlobalConst::ListClosingStr => "]",
             InternalGlobalConst::ListSeparatorStr => ", ",
             InternalGlobalConst::IntFormatString => "%d",
+            InternalGlobalConst::FloatFormatString => "%f",
             InternalGlobalConst::RangeFormatString => "range(%d)",
             InternalGlobalConst::LineReturn => "\n",
             InternalGlobalConst::IntType => "Int",
@@ -288,6 +291,7 @@ pub(super) fn init_internal_global_consts<'ctx>(cg: &CodeGen<'ctx>) {
 
     // Format strings
     create_global_string(InternalGlobalConst::IntFormatString, cg);
+    create_global_string(InternalGlobalConst::FloatFormatString, cg);
     create_global_string(InternalGlobalConst::RangeFormatString, cg);
     create_global_string(InternalGlobalConst::LineReturn, cg);
 

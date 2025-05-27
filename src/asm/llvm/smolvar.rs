@@ -37,6 +37,7 @@ impl<'ctx> CodeGen<'ctx> {
             ],
             false,
         );
+        self.smolpp_types.dynamic_type_val = var_value;
     }
 
     pub fn get_variable_type(

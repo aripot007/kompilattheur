@@ -122,6 +122,7 @@ fn llvm_from_print<'ctx>(
         Type::None => print_none_value(&expr_value, cg)?,
         Type::Bool => print_bool_value(&expr_value, cg)?,
         Type::Int => print_int_value(&expr_value, cg)?,
+        Type::Float => print_float_value(&expr_value, cg)?,
         Type::String => print_string_value(&expr_value, cg)?,
         Type::List => print_list_value(&expr_value, cg).map(|_| ())?,
         Type::Range => print_range_value(&expr_value, cg)?,

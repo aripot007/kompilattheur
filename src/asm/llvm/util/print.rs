@@ -77,6 +77,32 @@ pub fn print_int_value<'ctx>(
     return Ok(());
 }
 
+/// Generate LLVM to print a float value
+pub fn print_float_value<'ctx>(
+    variable: &SmolVar<'ctx>,
+    cg: &CodeGen<'ctx>,
+) -> Result<(), LLVMCodegenError> {
+    // Get the variable value as int
+    let value = cg.get_variable_value(*variable)?.into_int_value();
+    let value = cg
+        .builder
+        .build_bit_cast(value, cg.context.f64_type(), "float_val")?;
+
+    // Call printf("%f", value)
+    cg.builder.build_call(
+        get_internal_func!(cg, InternalFuctions::Printf),
+        &[
+            // Format string
+            get_internal_global_const!(cg, InternalGlobalConst::FloatFormatString)
+                .as_pointer_value()
+                .into(),
+            value.into(), // value
+        ],
+        "printf_float",
+    )?;
+    return Ok(());
+}
+
 /// Generate LLVM to print a range value
 pub fn print_range_value<'ctx>(
     variable: &SmolVar<'ctx>,
@@ -348,6 +374,7 @@ pub fn init_internal_generic_print_function<'ctx>(
     let case_none = cg.context.append_basic_block(function, "case_none");
     let case_bool = cg.context.append_basic_block(function, "case_bool");
     let case_int = cg.context.append_basic_block(function, "case_int");
+    let case_float = cg.context.append_basic_block(function, "case_float");
     let case_string = cg.context.append_basic_block(function, "case_string");
     let case_list = cg.context.append_basic_block(function, "case_list");
     let case_range = cg.context.append_basic_block(function, "case_range");
@@ -370,6 +397,10 @@ pub fn init_internal_generic_print_function<'ctx>(
             (
                 i8_type.const_int(Type::Int.get_bitmask().into(), false),
                 case_int,
+            ),
+            (
+                i8_type.const_int(Type::Float.get_bitmask().into(), false),
+                case_float,
             ),
             (
                 i8_type.const_int(Type::String.get_bitmask().into(), false),
@@ -396,6 +427,10 @@ pub fn init_internal_generic_print_function<'ctx>(
 
     cg.builder.position_at_end(case_int);
     print_int_value(&param, cg)?;
+    cg.builder.build_return(None)?;
+
+    cg.builder.position_at_end(case_float);
+    print_float_value(&param, cg)?;
     cg.builder.build_return(None)?;
 
     cg.builder.position_at_end(case_string);

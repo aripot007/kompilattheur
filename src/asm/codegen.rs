@@ -4,7 +4,7 @@ use inkwell::context::Context;
 use inkwell::module::Module;
 use inkwell::targets::{CodeModel, InitializationConfig, RelocMode, Target, TargetMachine};
 use inkwell::targets::{FileType, TargetTriple};
-use inkwell::types::StructType;
+use inkwell::types::{IntType, StructType};
 use inkwell::values::{FunctionValue, PointerValue};
 use inkwell::OptimizationLevel as InkwellOptLevel;
 use tempfile::NamedTempFile;
@@ -37,6 +37,7 @@ pub struct CodeGen<'ctx> {
 
 pub struct CodeGenTypedefs<'ctx> {
     pub dynamic_type: StructType<'ctx>,
+    pub dynamic_type_val: IntType<'ctx>,
     pub list_type: StructType<'ctx>,
     pub string_type: StructType<'ctx>,
 }
@@ -110,6 +111,7 @@ impl<'ctx> CodeGen<'ctx> {
             current_main_block: basic_block,
             smolpp_types: CodeGenTypedefs {
                 dynamic_type: context.opaque_struct_type("dynamic_type_struct"),
+                dynamic_type_val: context.i64_type(),
                 list_type: context.opaque_struct_type("list_struct"),
                 string_type: context.opaque_struct_type("string_struct"),
             },
